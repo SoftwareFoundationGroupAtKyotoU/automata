@@ -12,7 +12,7 @@ files = {
   :master => '../config.yml',
   :local  => '../local.yml',
   :scheme => 'scheme.yml',
-  :data   => 'data.yml',
+  :data   => '../data.yml',
 }
 
 cb = (cgi.params['callback'][0] || '').strip
