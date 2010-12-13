@@ -8,6 +8,13 @@ require 'yaml'
 require 'time'
 cgi = CGI.new
 
+files = {
+  :master => '../config.yml',
+  :local  => '../local.yml',
+  :scheme => 'scheme.yml',
+  :data   => 'data.yml',
+}
+
 cb = (cgi.params['callback'][0] || '').strip
 cb = nil if cb.length == 0 && cb !~ /^\$?[a-zA-Z0-9\.\_\[\]]+$/
 
@@ -65,8 +72,8 @@ end
 class Conf
   attr_reader :report
 
-  def initialize(data)
-    @su = data['su']
+  def initialize(master, data)
+    @su = master['su']
     @report = data['report']
   end
 
@@ -127,18 +134,24 @@ class User
   end
 end
 
-data_file = 'data.yml'
-data = YAML.load_file(data_file)
-config = Conf.new(data)
+yml = {}
+files.each do |name, file|
+  yml[name] = YAML.load_file(file) rescue yml[name] = {}
+end
+config = Conf.new(yml[:master], yml[:scheme])
 record = {
-  'timestamp' => File.mtime(data_file).iso8601,
-  'year'      => data['year'],
-  'scheme'    => data['scheme'],
+  'year'      => yml[:master]['year'],
+  'scheme'    => yml[:scheme]['scheme'],
   'data'      => [],
 }
+if File.exist?(files[:data])
+  record['timestamp'] = File.mtime(files[:data]).iso8601
+end
 
-user = cgi.remote_user
+user = cgi.remote_user || yml[:local]['user']
 
+data = yml[:data]
+data['data'] ||= {}
 data['data'] = data['data'].map{|u| User.new(u, config)}
 data['data'].reject!{|u| u.login != user} unless config.su?(user)
 data['data'].each{|u| record['data'] << u.to_hash}

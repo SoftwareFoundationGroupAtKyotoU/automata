@@ -1,0 +1,70 @@
+scheme:
+  - id: report1
+    data:
+      - field: name
+        label: "名前"
+      - field: status
+        label: "課題1"
+        class: status
+      - field: unsolved
+        label: "未解答の必修問題"
+        class: unsolved
+      - field: optional
+        label: "オプション問題の解答数"
+  - id: report2
+    data:
+      - field: name
+        label: "名前"
+      - field: status
+        label: "課題2"
+        class: status
+      - field: unsolved
+        label: "未解答の必修問題"
+        class: unsolved
+      - field: optional1
+        label: "★問題の解答数"
+      - field: optional2
+        label: "★★問題の解答数"
+      - field: optional3
+        label: "★★★問題の解答数"
+  - id: report3
+    data:
+      - field: name
+        label: "名前"
+      - field: status
+        label: "課題3"
+        class: status
+      - field: unsolved
+        label: "未解答の必修問題"
+        class: unsolved
+      - field: optional1
+        label: "★問題の解答数"
+      - field: optional2
+        label: "★★問題の解答数"
+      - field: optional3
+        label: "★★★問題の解答数"
+
+report:
+  report1:
+    Ex.2.6(2):  { need: 1 }
+    Ex.2.6(4):  { need: 1 }
+    Ex.3.7(1):  { need: 1 }
+    Ex.3.7(2):  { need: 1 }
+    Ex.3.11(1): { need: 1 }
+    Ex.3.11(2): { need: 1 }
+    Ex.3.11(3): { need: 1 }
+    Ex.3.11(4): { need: 1 }
+    Ex.4.1:     { need: 1 }
+    Ex.4.4:     { need: 1 }
+    Ex.4.5:     { need: 1 }
+    Ex.4.7:     { need: 1 }
+    Ex.5.3:     { need: 4 }
+    Ex.5.6:     { need: 1 }
+    Ex.6.2:     { need: 1 }
+    Ex.6.6:     { need: 1 }
+    Ex.6.9:     { need: 1 }
+    Ex.6.10:    { need: 2 }
+    Ex.7.2:     { need: 1 }
+    Ex.7.4:     { need: 1 }
+    Ex.7.6:     { need: 1 }
+    Ex.7.8:     { need: 1 }

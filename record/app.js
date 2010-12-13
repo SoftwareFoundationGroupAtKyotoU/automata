@@ -17,7 +17,7 @@ var init = function(id) {
             }
 
             // put timestamp
-            $('timestamp').appendChild($text(json.timestamp));
+            $('timestamp').appendChild($text(json.timestamp||''));
 
             // textify function specific to the field
             var toText = function(obj, klass) {
