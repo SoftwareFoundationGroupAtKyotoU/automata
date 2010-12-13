@@ -1,0 +1,36 @@
+body {
+   background-color: #eeffee;
+}
+
+#footer
+{
+   margin: 0.5em 0;
+   border: solid #404040 1px;
+   border-style: solid none none none;
+}
+
+table {
+   margin: 1em;
+}
+th, td {
+   padding: .5em;
+   vertical-align: top;
+}
+
+th {
+   background-color: #99aa99;
+   color: #ffffff;
+   font-weight: bold;
+}
+
+td {
+   background-color: #ddeedd;
+}
+
+tr:nth-child(2n+1) td {
+   background-color: #ccddcc;
+}
+
+td.name, td.status {
+   white-space: nowrap;
+}
