@@ -1,2 +1,4 @@
 local.yml
-record/data.yml
+data.yml
+.htaccess
+.htdigest
