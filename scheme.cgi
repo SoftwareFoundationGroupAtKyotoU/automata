@@ -26,7 +26,7 @@ end
 
 yml = {}
 yml[:config] = YAML.load_file(files[:master])
-yml[:local] = YAML.load_file(files[:local])
+yml[:local] = YAML.load_file(files[:local]) rescue {}
 yml[:scheme] = YAML.load_file(files[:scheme])
 yml[:scheme]['year'] = yml[:config]['year']
 yml[:scheme]['user'] = cgi.remote_user || yml[:local]['user']
