@@ -13,6 +13,8 @@ files = {
   :local  => '../local.yml',
   :scheme => 'scheme.yml',
   :data   => '../data.yml',
+  :kadai  => '../kadai',
+  :log    => 'log.yml',
 }
 
 cb = (cgi.params['callback'][0] || '').strip
@@ -44,28 +46,36 @@ class Counter
 
   def initialize(report)
     @report = Marshal.load(Marshal.dump((report || {}))) # deep copy
-    @overflow = []
+    @overflow = {}
   end
 
   def vote(ex)
     r = @report[ex.to_s] || @report[ex.major]
     if r
-      if (r['need']||0) > 0
-        r['need'] = r['need'] - 1
+      if (r['required']||0) > 0
+        r['required'] = r['required'] - 1
       else
-        @overflow << ex.to_s
+        add_overflow(r, ex)
       end
     else
-      @overflow << ex.to_s
+      add_overflow({}, ex)
     end
   end
 
   def insufficient()
     insuf = []
     @report.each do |ex, val|
-      insuf << [ex, val['need']] if (val['need']||0) > 0
+      insuf << [ex, val['required']] if (val['required']||0) > 0
     end
     return insuf
+  end
+
+  private
+
+  def add_overflow(scheme, ex)
+    level = (scheme['level']||'').to_s
+    @overflow[level] = [] unless @overflow[level]
+    @overflow[level] << ex.to_s
   end
 end
 
@@ -85,6 +95,7 @@ class User
     @user = user
     @conf = conf
     @counter = nil
+    @log = {}
   end
 
   def number() return @user['number'] end
@@ -104,6 +115,10 @@ class User
     return counter(k).overflow
   end
 
+  def add_log(report_id, data)
+    @log[report_id] = data
+  end
+
   def to_hash()
     hash = {
       'number'   => number,
@@ -111,25 +126,45 @@ class User
       'name'     => name,
       'report'   => {},
     }
+
     report.each do |k|
       hash['report'][k] = {
         'status'   => !!submit?(k),
         'unsolved' => unsolved(k),
-        'optional' => optional(k),
+        # 'optional' => optional(k),
       }
+      optional(k).each do |level, solved|
+        hash['report'][k]['optional'+level] = solved
+      end
     end
+
+    @log.each do |k, data|
+      counter = make_counter(k, data['report'])
+      hash['report'][k] = {
+        'status'    => data['status'],
+        'timestamp' => data['timestamp'],
+        'unsolved'  => counter.insufficient,
+      }
+      counter.overflow.each do |level, solved|
+        hash['report'][k]['optional'+level] = solved
+      end
+    end
+
     return hash
   end
 
   private
 
-  def counter(k)
-    unless @counter
-      @counter = Counter.new(@conf.report[k])
-      submit?(k).each do |ex|
-        @counter.vote(Exercise.new(ex))
-      end
+  def make_counter(k, data=nil)
+    counter = Counter.new(@conf.report[k])
+    (data||[]).each do |ex|
+      counter.vote(Exercise.new(ex))
     end
+    return counter
+  end
+
+  def counter(k)
+    @counter = make_counter(k, submit?(k)) unless @counter
     return @counter
   end
 end
@@ -150,12 +185,32 @@ end
 
 user = cgi.remote_user || yml[:local]['user']
 
+#### reports in record/data.yml
+
 data = yml[:data]
 data['data'] ||= {}
-data['data'] = data['data'].map{|u| User.new(u, config)}
-data['data'].reject!{|u| u.login != user} unless config.su?(user)
-data['data'].each{|u| record['data'] << u.to_hash}
+users = data['data'].map{|u| User.new(u, config)}
+users.reject!{|u| u.login != user} unless config.su?(user)
 
+#### reports in kadai/log.yml
+
+scheme = yml[:scheme]['scheme']
+scheme.each do |report|
+  users.each do |u|
+    user = {}
+    user[:log] = File.join(files[:kadai], report['id'], u.login, files[:log])
+    if File.exist?(user[:log])
+      user[:data] = YAML.load_file(user[:log]) rescue user[:data] = {}
+      user[:data] = user[:data]['data'] || {}
+      user[:data] = user[:data].first if user[:data].is_a?(Array)
+      u.add_log(report['id'], user[:data])
+    end
+  end
+end
+
+#### write out
+
+users.each{|u| record['data'] << u.to_hash}
 json = record.to_json
 json = "#{cb}(#{json});" if cb
 

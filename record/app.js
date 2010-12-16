@@ -21,18 +21,8 @@ var init = function(id) {
 
             // textify function specific to the field
             var toText = function(obj, klass) {
-                switch (klass) {
-                case 'status':
-                    return obj ? '提出済' : '';
-                case 'unsolved':
-                    return obj.map(function(x) {
-                        if (x[1] == 1) {
-                            return x[0];
-                        } else {
-                            return x[0] + 'のうち残り' + x[1] + '問';
-                        }
-                    }).join(', ');
-                case 'optional':
+                if (obj == null) return '';
+                if (/^optional/.test(klass)) {
                     // return obj.length+'';
                     if (obj.length == 0) return '0';
                     var a = $new('a', {
@@ -52,6 +42,27 @@ var init = function(id) {
                         show = !show;
                     });
                     return a;
+                }
+
+                switch (klass) {
+                case 'status':
+                    if (typeof obj == 'boolean') obj = 'OK';
+                    switch (obj) {
+                    case 'OK': return '提出済';
+                    case 'NG': return '失敗';
+                    case 'build':
+                    case 'check':
+                        return '確認中';
+                    }
+                    return '';
+                case 'unsolved':
+                    return obj.map(function(x) {
+                        if (x[1] == 1) {
+                            return x[0];
+                        } else {
+                            return x[0] + 'のうち残り' + x[1] + '問';
+                        }
+                    }).join(', ');
                 default:
                     return obj;
                 }
@@ -69,21 +80,24 @@ var init = function(id) {
                         });
                     }) })
                 });
+                var log = $new('div', {
+                    id: [ sc.id, 'log' ].join('_'),
+                    klass: 'log'
+                });
                 json.data.forEach(function(student) { // for each student
                     var tr = $new('tr');
                     sc.data.forEach(function(col) {
                         var fld = student[col.field];
                         fld = fld || (student.report[sc.id]||{})[col.field];
-                        if (fld) {
-                            tr.appendChild($new('td', {
-                                klass: col.field,
-                                child: toText(fld, col['field'])
-                            }));
-                        }
+                        tr.appendChild($new('td', {
+                            klass: col.field,
+                            child: toText(fld, col['field'])
+                        }));
                     });
                     table.appendChild(tr);
                 });
                 div.appendChild(table);
+                div.appendChild(log);
             });
         });
     }

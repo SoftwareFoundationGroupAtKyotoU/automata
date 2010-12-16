@@ -3,16 +3,44 @@
                       "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja">
 <head>
+  <script type="text/javascript" src="./util.js"></script>
+  <script type="text/javascript" src="./uri.js"></script>
+  <script type="text/javascript" src="./jsonp.js"></script>
+  <script type="text/javascript" src="./ui.js"></script>
+  <script type="text/javascript" src="./app.js"></script>
+  <link rel="stylesheet" type="text/css" href="./default.css" />
   <title>Submission</title>
 </head>
-<body>
+<body onload="init('form')">
   <div id="article">
     <h2>工学部情報学科計算機科学コース</h2>
     <h1>計算機科学実験及演習4(プログラム検証)<br />レポート提出(<span class="year"></span>年度)</h1>
+
     <form method="post" action="post.cgi" enctype="multipart/form-data">
-      <input type="hidden" name="report_id" value="report2" />
-      <input type="file" name="report_file" />
-      <input type="submit" value="提出" />
+      <div id="form">
+        <input type="hidden" id="report_id" name="report_id" value="report2" />
+        <h3>課題を選択して下さい</h3>
+        <ul id="selector"></ul>
+
+        <h3>提出情報</h3>
+        <dl class="info">
+          <dt>アカウント名</dt>
+          <dd id="login"></dd>
+          <dt>提出する課題</dt>
+          <dd id="selected_report"></dd>
+        </dl>
+
+        <h3>解いた問題にチェックして下さい</h3>
+        <ul>
+          <li>必修課題にはチェックがついています(間に合わなかった問題はチェックを外して下さい)</li>
+          <li>再提出の場合は, すでに提出した問題もすべてチェックして下さい</li>
+        </ul>
+        <ul id="ex"></ul>
+
+        <h3>ファイルを選択して下さい</h3>
+        <input type="file" name="report_file" />
+        <input type="submit" value="提出" />
+      </div>
     </form>
   </div>
 </body>
