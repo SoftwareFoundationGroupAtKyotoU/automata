@@ -5,3 +5,30 @@ su:
   - t-sekiym
 
 year:   2010
+
+status:
+  failure:        0
+  build_complete: 1
+
+build:
+  command:
+    - ocamlbuild -I src main.native -no-hygiene && ocamlbuild -clean
+    - ocamlbuild -I src test.native -no-hygiene && ocamlbuild -clean
+  file_location:
+    - id: report2
+      location: report2
+    - id: report3
+      exercise:
+      - ex8
+      - ex9
+      location: report3-89
+    - id: report3
+      exercise:
+      - ex9
+      location: report3-9
+    - id: report3
+      exercise:
+      - ex8
+      location: report3-8
+    - id: report3
+      location: report3
