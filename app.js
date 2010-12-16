@@ -1,4 +1,4 @@
-var init = function(id) {
+var init = function() {
     var lexcmp = function(a, b) {
         if (a.length <= 0 && b.length <= 0) return 0;
         if (a.length <= 0) return -1;
@@ -23,8 +23,7 @@ var init = function(id) {
             var exes = [];
             for (var ex in report) exes.push(ex);
             exes.sort(function(a, b) {
-                var regex = new RegExp('\\.');
-                return lexcmp(a.split(regex), b.split(regex));
+                return lexcmp(a.split('.'), b.split('.'));
             }).forEach(function(ex) {
                 var li = $new('li');
                 var check = $new('input', {
@@ -56,7 +55,14 @@ var init = function(id) {
             });
         };
 
-        var div = $(id);
+        var form = $('form');
+        new Observer(form, 'onsubmit', function(e) {
+            if ($('file').value == '') {
+                e.stop();
+                alert('ファイルを選択して下さい');
+            }
+        });
+
         var uri = GNN.URI.location();
         uri.local.push('scheme.cgi')
         GNN.JSONP(uri, function(json) {

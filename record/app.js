@@ -23,7 +23,6 @@ var init = function(id) {
             var toText = function(obj, klass) {
                 if (obj == null) return '';
                 if (/^optional/.test(klass)) {
-                    // return obj.length+'';
                     if (obj.length == 0) return '0';
                     var a = $new('a', {
                         attr: { href: '.' },

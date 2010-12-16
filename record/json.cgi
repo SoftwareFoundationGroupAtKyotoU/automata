@@ -38,6 +38,17 @@ class Exercise
     @minor ||= ''
   end
 
+  def to_a()
+    arr = []
+    arr = $1.split('.').map{|x|x.to_i} if @major =~ /^Ex([0-9.]+)$/
+    arr.push($1.to_i) if @minor =~ /^\(([0-9]+)\)$/
+    return arr
+  end
+
+  def <=>(other)
+    return to_a <=> other.to_a
+  end
+
   def to_s() return @major+@minor end
 end
 
@@ -67,7 +78,7 @@ class Counter
     @report.each do |ex, val|
       insuf << [ex, val['required']] if (val['required']||0) > 0
     end
-    return insuf
+    return insuf.sort{|a,b| Exercise.new(a[0]) <=> Exercise.new(b[0])}
   end
 
   private
@@ -131,7 +142,6 @@ class User
       hash['report'][k] = {
         'status'   => !!submit?(k),
         'unsolved' => unsolved(k),
-        # 'optional' => optional(k),
       }
       optional(k).each do |level, solved|
         hash['report'][k]['optional'+level] = solved

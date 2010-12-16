@@ -11,14 +11,15 @@
   <link rel="stylesheet" type="text/css" href="./default.css" />
   <title>Submission</title>
 </head>
-<body onload="init('form')">
+<body onload="init()">
   <div id="article">
     <h2>工学部情報学科計算機科学コース</h2>
     <h1>計算機科学実験及演習4(プログラム検証)<br />レポート提出(<span class="year"></span>年度)</h1>
 
-    <form method="post" action="post.cgi" enctype="multipart/form-data">
-      <div id="form">
+    <form id="form" method="post" action="post.cgi" enctype="multipart/form-data">
+      <div>
         <input type="hidden" id="report_id" name="report_id" value="report2" />
+
         <h3>課題を選択して下さい</h3>
         <ul id="selector"></ul>
 
@@ -38,10 +39,14 @@
         <ul id="ex"></ul>
 
         <h3>ファイルを選択して下さい</h3>
-        <input type="file" name="report_file" />
-        <input type="submit" value="提出" />
+        <input type="file" id="file" name="report_file" />
+        <input type="submit" id="submit" value="提出" />
       </div>
     </form>
+  </div>
+  <div id="footer">
+    <a href="http://www.sato.kuis.kyoto-u.ac.jp/~igarashi/class/isle4/">戻る</a>
+    <a href="./record/">提出状況確認</a>
   </div>
 </body>
 </html>
