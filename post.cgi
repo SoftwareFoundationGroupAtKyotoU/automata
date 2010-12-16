@@ -68,7 +68,7 @@ begin
       entries_dir = entries[0]
       Dir.mktmpdir do |tmpdir|
         src_files = Dir.glob("#{entries_dir}/*", File::FNM_DOTMATCH)
-        src_file.reject!{|f| f =~ /^\.+/}
+        src_files.reject!{|f| f =~ /\/\.+$/}
         FileUtils.mv(src_files, tmpdir)
         FileUtils.rmdir(entries_dir)
         FileUtils.mv(Dir.glob("#{tmpdir}/*"), src_dir)
