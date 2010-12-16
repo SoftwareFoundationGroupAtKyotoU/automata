@@ -16,14 +16,31 @@
     <h2>工学部情報学科計算機科学コース</h2>
     <h1>計算機科学実験及演習4(プログラム検証)<br />レポート提出(<span class="year"></span>年度)</h1>
 
+    <h3>レポート作成手順</h3>
+    <ol>
+      <li>レポート(テキストファイル)とプログラムのソースコードをまとめたzipファイルを作成</li>
+      <li>下のフォームに従って提出</li>
+    </ol>
+
+    <h3>注意点</h3>
+    <ul>
+      <li>提出するファイルはインタプリタ, 型推論でそれぞれ1つずつ(<em>必修・オプション課題毎に提出するのではない</em>)</li>
+      <li>不備に自分で気づいた場合はこのフォームを使って再度提出すること</li>
+      <li>ソースコードはmakeできるようにすること</li>
+      <li>
+        <em>ファイル投稿欄に記載されたインタフェース仕様を満たすこと</em>
+      </li>
+      <li>不明な点はTAに問い合わせること</li>
+    </ul>
+
     <form id="form" method="post" action="post.cgi" enctype="multipart/form-data">
       <div>
         <input type="hidden" id="report_id" name="report_id" value="report2" />
 
-        <h3>課題を選択して下さい</h3>
+        <h4>課題を選択して下さい</h4>
         <ul id="selector"></ul>
 
-        <h3>提出情報</h3>
+        <h4>提出情報</h4>
         <dl class="info">
           <dt>アカウント名</dt>
           <dd id="login"></dd>
@@ -31,14 +48,42 @@
           <dd id="selected_report"></dd>
         </dl>
 
-        <h3>解いた問題にチェックして下さい</h3>
+        <h4>解いた問題にチェックして下さい</h4>
         <ul>
           <li>必修課題にはチェックがついています(間に合わなかった問題はチェックを外して下さい)</li>
           <li>再提出の場合は, すでに提出した問題もすべてチェックして下さい</li>
         </ul>
         <ul id="ex"></ul>
 
-        <h3>ファイルを選択して下さい</h3>
+        <h4>ファイルを選択して下さい</h4>
+
+        <div id="notice_report2">
+          <h5>ソースファイルは以下のインタフェース仕様を満たすこと</h5>
+          (ocamlc -i eval.ml等で確認できる)
+          <ul>
+            <li><code>Parsing.toplevel : (Lexing.lexbuf -> token) -> Lexing.lexbuf -> Syntax.program</code></li>
+            <li><code>Eval.eval_exp : dnval Environment.t -> Syntax.exp -> dnval</code></li>
+            <li><code>Eval.string_of_exval : exval -> string</code>
+            <br />
+            <em>テキストに記載がないので注意すること.</em>
+            (<code>string_of_exval</code>は<code>exval</code>を与えると文字列を返す関数であり, OCaml インタラクティブコンパイラが返す出力のうち, <code>=</code>より右側の部分に相当する文字列を返す. 例えば, <code>string_of_exval</code>に<code>(IntV 3)</code>を与えると<code>3</code>を返し, <code>ProcV (_, _, _)</code>を与えると<code>&lt;fun&gt;</code>という文字列を返す.)
+            </li>
+          </ul>
+        </div>
+
+        <div id="notice_report3">
+          <h5>ソースファイルは以下のインタフェース仕様を満たすこと</h5>
+          (ocamlc -i typing.ml等で確認できる)
+          <ul>
+            <li><code>Syntax.ty = TyInt | TyBool | TyVar of tyvar | TyFun of ty * ty <span class="option">| TyList of ty</span></code>
+            <br />
+            (ただし<span class="option">TyList</span>はEx.4.8を解いた場合のみ)</li>
+            <li><code>Syntax.pp_ty : Syntax.ty -> unit</code></li>
+            <li><code>Parsing.toplevel : (Lexing.lexbuf -> token) -> Lexing.lexbuf ->  Syntax.program</code></li>
+            <li><code>Typing.ty_exp : tyenv -> Syntax.exp -> (Syntax.tyvar * Syntax.ty) list * Syntax.ty</code></li>
+          </ul>
+        </div>
+
         <input type="file" id="file" name="report_file" />
         <input type="submit" id="submit" value="提出" />
       </div>

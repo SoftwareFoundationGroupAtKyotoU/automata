@@ -85,15 +85,18 @@ var init = function(id) {
                 });
                 json.data.forEach(function(student) { // for each student
                     var tr = $new('tr');
+                    var alt = student.report[sc.id]||{};
                     sc.data.forEach(function(col) {
                         var fld = student[col.field];
-                        fld = fld || (student.report[sc.id]||{})[col.field];
+                        fld = fld || alt[col.field];
                         tr.appendChild($new('td', {
                             klass: col.field,
-                            child: toText(fld, col['field'])
+                            child: toText(fld, col.field)
                         }));
                     });
                     table.appendChild(tr);
+                    var error = student.error || alt.error;
+                    if (error) log.appendChild($node(error));
                 });
                 div.appendChild(table);
                 div.appendChild(log);

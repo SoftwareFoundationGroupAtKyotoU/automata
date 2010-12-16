@@ -155,6 +155,7 @@ class User
         'timestamp' => data['timestamp'],
         'unsolved'  => counter.insufficient,
       }
+      hash['report'][k]['error'] = data['error'] if data['error']
       counter.overflow.each do |level, solved|
         hash['report'][k]['optional'+level] = solved
       end

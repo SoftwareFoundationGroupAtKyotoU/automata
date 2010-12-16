@@ -10,11 +10,24 @@ var init = function() {
         return a0 == b0 ? lexcmp(a.slice(1), b.slice(1)) : (a0 < b0 ? -1 : 1);
     };
     with (GNN.UI) {
+        var unselect = function(ids) {
+            ids.forEach(function(id) {
+                var button = $('button_'+id);
+                button.className = '';
+                var notice = $('notice_'+id);
+                notice.style.display = 'none';
+            });
+        };
         var select = function(json, id, name) {
             $('report_id').value = id;
             var selected = $('selected_report');
             removeAllChildren(selected);
             selected.appendChild($node(name));
+
+            var button = $('button_'+id);
+            button.className = 'selected';
+            var notice = $('notice_'+id);
+            notice.style.display = 'block';
 
             var ul = $('ex');
             removeAllChildren(ul);
@@ -95,12 +108,14 @@ var init = function() {
                 });
                 new Observer(button, 'click', function(e) {
                     e.stop();
+                    unselect(json.post);
                     select(json, id, scheme[id].name);
                 });
                 li.appendChild(button);
             });
 
             var id = $('report_id').value;
+            unselect(json.post);
             select(json, id, scheme[id].name);
         });
     }

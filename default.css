@@ -9,6 +9,57 @@ body {
    border-style: solid none none none;
 }
 
+em
+{
+   color: #ee5577;
+}
+
+h1, h2, h3, h4, h5, h6, h7
+{
+   margin-bottom: .5em;
+}
+
+h5
+{
+   margin-top: 0;
+}
+
+a
+{
+   text-decoration: underline;
+}
+
+a:hover, a:active
+{
+   text-decoration: none;
+   outline-style: solid;
+   outline-width: 1px;
+}
+a:link
+{
+   color: darkblue;
+}
+a:visited
+{
+   color: purple;
+}
+a:link:hover
+{
+   background-color: #e0e0ff;
+   outline-color: blue;
+}
+a:visited:hover
+{
+   background-color: #ffe0ff;
+   outline-color: purple;
+}
+a:active
+{
+   color: red;
+   outline-color: red ! important;
+   background-color: #ffe0e0 ! important;
+}
+
 table {
    margin: 1em;
 }
@@ -33,4 +84,79 @@ tr:nth-child(2n+1) td {
 
 td.name, td.status {
    white-space: nowrap;
+}
+
+ul
+{
+   margin: 0;
+}
+
+ul#selector
+{
+   display: inline;
+   list-style-type: none;
+   margin: 0;
+   padding: 0 .5em;
+}
+
+ul#selector li
+{
+   display: inline;
+   margin-left: 0;
+}
+
+#selector a
+{
+   font-weight: bold;
+   padding: 0.3em;
+   margin: 1em;
+}
+
+#selector a:visited
+{
+   color: darkblue;
+}
+
+#selector a:visited:hover
+{
+   background-color: #e0e0ff;
+   outline-color: blue;
+}
+
+#selector .selected a,
+#selector .selected a:hover,
+#selector .selected a:active,
+#selector .selected a:link,
+#selector .selected a:visited
+{
+   color: white;
+   background-color: gray;
+   text-decoration: none;
+   outline: none;
+   -moz-border-radius: 4px;
+   -webkit-border-radius: 4px;
+}
+
+ul#ex
+{
+   display: inline;
+   list-style-type: none;
+   margin: 0;
+   padding: 0;
+}
+
+ul#ex li
+{
+   margin: 0 3em;
+}
+
+#selected_report
+{
+   font-weight: bold;
+   color: #ee5577;
+}
+
+.option
+{
+   color: blue;
 }
