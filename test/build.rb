@@ -28,8 +28,8 @@ yml[:build] = yml[:config]['build']
 
 build_commands = yml[:build]['command']
 status_code = {
-  :failure  => yml[:config]['status']['failure'],
-  :complete => yml[:config]['status']['build_complete'],
+  :failure  => 'NG',
+  :complete => 'build',
 }
 
 file_loc = nil

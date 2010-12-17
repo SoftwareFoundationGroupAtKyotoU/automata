@@ -6,10 +6,6 @@ su:
 
 year:   2010
 
-status:
-  failure:        0
-  build_complete: 1
-
 build:
   command:
     - ocamlbuild -I src main.native -no-hygiene && ocamlbuild -clean
