@@ -1,18 +1,15 @@
 #! /usr/bin/env ruby
 
-# Usage: scheme [type=<type>] [id=<id>] [field] [exercise]
+# Usage: scheme [type=<type>] [id=<id>] [record] [exercise]
 #   scheme.ymlのデータを取得
 # Options:
 #   type      typeプロパティが<type>のものだけ取得
 #   report    idプロパティが<id>のものだけ取得
-#   field     レコード表示用のフィールド情報を取得
+#   record    レコード表示用のフィールド情報を取得
 #   exercise  個別の問題の定義を取得
 
 KEY = [ :id, :type, :name, ]
-OPTIONAL = {
-  :data     => 'field',
-  :exercise => 'exercise',
-}
+OPTIONAL = [ :record, :exercise, ]
 FILTER = [ :id, :type, ]
 
 $KCODE='UTF8'
@@ -29,7 +26,7 @@ scheme['scheme'].each do |report|
   if FILTER.all?{|k| app.optional(k).include?(report[k.to_s])}
     entry = {}
     keys = KEY.dup
-    OPTIONAL.each{|k,v| keys << k unless app.params[v].empty?}
+    OPTIONAL.each{|k| keys << k unless app.params[k.to_s].empty?}
     keys.each{|k| entry[k.to_s] = report[k.to_s]}
     result << entry
   end

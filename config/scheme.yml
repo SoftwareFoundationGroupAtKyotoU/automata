@@ -1,7 +1,7 @@
 scheme:
   - id: report1
     type: manual
-    data:
+    record:
       - field: name
         label: "名前"
       - field: status
@@ -15,7 +15,7 @@ scheme:
   - id: report2
     type: post
     name: "課題2: インタプリタ作成実験"
-    data:
+    record:
       - field: name
         label: "名前"
       - field: status
@@ -33,7 +33,7 @@ scheme:
   - id: report3
     type: post
     name: "課題3: 型検査・推論器作成実験"
-    data:
+    record:
       - field: name
         label: "名前"
       - field: status
