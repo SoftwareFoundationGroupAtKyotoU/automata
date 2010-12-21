@@ -9,9 +9,9 @@ require 'time'
 cgi = CGI.new
 
 files = {
-  :master => 'config.yml',
-  :local  => 'local.yml',
-  :scheme => 'record/scheme.yml',
+  :master => './config/config.yml',
+  :local  => './config/local.yml',
+  :scheme => './config/scheme.yml',
 }
 
 cb = (cgi.params['callback'][0] || '').strip

@@ -1,5 +1,5 @@
-local.yml
-data.yml
+config/local.yml
+db/data.yml
 .htaccess
 .htdigest
-kadai
+db/kadai

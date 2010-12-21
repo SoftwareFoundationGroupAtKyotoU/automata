@@ -43,8 +43,8 @@ class Log
 end
 
 files = {
-  :local  => './local.yml',
-  :scheme => './record/scheme.yml',
+  :local  => './config/local.yml',
+  :scheme => './config/scheme.yml',
 }
 
 err = {

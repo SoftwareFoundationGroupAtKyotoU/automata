@@ -9,11 +9,11 @@ require 'time'
 cgi = CGI.new
 
 files = {
-  :master => '../config.yml',
-  :local  => '../local.yml',
-  :scheme => 'scheme.yml',
-  :data   => '../data.yml',
-  :kadai  => '../kadai',
+  :master => '../config/config.yml',
+  :local  => '../config/local.yml',
+  :scheme => '../config/scheme.yml',
+  :data   => '../db/data.yml',
+  :kadai  => '../db/kadai',
   :log    => 'log.yml',
 }
 
