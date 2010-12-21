@@ -1,5 +1,6 @@
 scheme:
   - id: report1
+    type: manual
     data:
       - field: name
         label: "名前"
@@ -12,6 +13,7 @@ scheme:
       - field: optional
         label: "オプション問題の解答数"
   - id: report2
+    type: post
     name: "課題2: インタプリタ作成実験"
     data:
       - field: name
@@ -29,6 +31,7 @@ scheme:
       - field: optional3
         label: "★★★問題の解答数"
   - id: report3
+    type: post
     name: "課題3: 型検査・推論器作成実験"
     data:
       - field: name
@@ -45,10 +48,6 @@ scheme:
         label: "★★問題の解答数"
       - field: optional3
         label: "★★★問題の解答数"
-
-post:
-  - report2
-  - report3
 
 report:
   report1:
