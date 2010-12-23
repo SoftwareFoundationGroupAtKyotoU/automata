@@ -1,14 +1,13 @@
 #! /usr/bin/env ruby
 
-# Usage: mater [year]
+# Usage: mater [year] [user]
 #   基本設定を取得
 # Options:
+#   user      ログインユーザ名を取得
 #   year      年度を取得
 
 KEY = []
-OPTIONAL = {
-  :year     => 'year',
-}
+OPTIONAL = [ :year, :user, ]
 
 $KCODE='UTF8'
 
@@ -18,9 +17,10 @@ require 'app'
 app = App.new
 
 master = app.file(:master)
+master['user'] = app.user
 entry = {}
 keys = KEY.dup
-OPTIONAL.each{|k,v| keys << k unless app.params[v].empty?}
+OPTIONAL.each{|k| keys << k unless app.params[k.to_s].empty?}
 keys.each{|k| entry[k.to_s] = master[k.to_s]}
 result = entry
 
