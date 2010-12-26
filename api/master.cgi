@@ -1,6 +1,6 @@
 #! /usr/bin/env ruby
 
-# Usage: mater [year] [user]
+# Usage: master [year] [user]
 #   基本設定を取得
 # Options:
 #   user      ログインユーザ名を取得
