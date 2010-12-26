@@ -119,9 +119,10 @@ class App
 
     case type
     when 'solved'
-      return Report::Solved.new(id, src, u)
+      return Report::Solved.new(src)
     when 'record'
-      return Report::Record.new(id, src, u)
+      scheme = (file(:scheme)['report'] || {})[id] || {}
+      return Report::Record.new(src, scheme)
     else
       return src
     end
