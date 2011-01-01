@@ -1,23 +1,38 @@
 var init = function(id) {
+    var base = function() {
+        var uri = GNN.URI.location();
+        uri.local.pop(); uri.local.pop();
+        return uri;
+    };
+    var api = function(name, args) {
+        var uri = base();
+        uri.local.push('api');
+        uri.local.push(name+'.cgi');
+        uri.params = args || {};
+        return uri;
+    };
+
     with (GNN.UI) {
         var div = GNN.UI.$(id);
-        var uri = GNN.URI.location();
-        uri.local.push('json.cgi')
-        GNN.JSONP(uri, function(json) {
+
+        GNN.JSONP.retrieve({
+            master: api('master', { year: true }),
+            user: api('user', { type: 'status', status: 'record' }),
+            scheme: api('scheme', { record: true })
+        }, function(json) {
             // set year
             document.title = [
                 document.title,
-                ' (Winter Semester ', json.year, ')'
+                ' (Winter Semester ', json.master.year, ')'
             ].join('');
             var spans = document.getElementsByTagName('span');
             for (var i=0; i < spans.length; i++) {
                 if (spans[i].className == 'year') {
-                    spans[i].appendChild($text(json.year));
+                    spans[i].appendChild($text(json.master.year));
                 }
             }
 
-            // put timestamp
-            $('timestamp').appendChild($text(json.timestamp||''));
+            // TODO: timestamp
 
             // textify function specific to the field
             var toText = function(obj, klass) {
@@ -72,7 +87,7 @@ var init = function(id) {
                 var table = $new('table', {
                     id: sc.id,
                     summary: sc.id,
-                    child: $new('tr', { child: sc.data.map(function(col) {
+                    child: $new('tr', { child: sc.record.map(function(col) {
                         return $new('th', {
                             klass: col.field,
                             child: col.label
@@ -83,10 +98,10 @@ var init = function(id) {
                     id: [ sc.id, 'log' ].join('_'),
                     klass: 'log'
                 });
-                json.data.forEach(function(student) { // for each student
+                json.user.forEach(function(student) { // for each student
                     var tr = $new('tr');
                     var alt = student.report[sc.id]||{};
-                    sc.data.forEach(function(col) {
+                    sc.record.forEach(function(col) {
                         var fld = student[col.field];
                         fld = fld || alt[col.field];
                         tr.appendChild($new('td', {

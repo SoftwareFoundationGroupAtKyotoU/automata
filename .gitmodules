@@ -1,0 +1,3 @@
+[submodule "modules/jsdeferred"]
+	path = modules/jsdeferred
+	url = git://github.com/cho45/jsdeferred.git
