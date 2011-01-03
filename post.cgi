@@ -96,7 +96,7 @@ begin
     path = file.path
     file.close
 
-    res = system("env unzip #{path} -d #{src_dir} > /dev/null 2>&1")
+    res = system("env 7z x -o#{src_dir} #{path} > /dev/null 2>&1")
     raise RuntimeError, err[:unzip] unless res
 
     entries = Dir.glob("#{src_dir}/*")
