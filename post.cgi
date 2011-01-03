@@ -72,7 +72,7 @@ raise ArgumentError, (err[:invalid] % rep_id) unless rep_defined
 
 user_name = cgi.remote_user || yml[:local]['user']
 user_dir = File.join(File.dirname(__FILE__),
-                     'kadai',
+                     'db/kadai',
                      rep_id,
                      user_name)
 log_file = File.join(user_dir, 'log.yml')
