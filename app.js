@@ -66,6 +66,7 @@ var init = function() {
                 var ul = $('ex');
                 removeAllChildren(ul);
 
+                var lastSolved = (solved[report.id]||{}).solved;
                 report.exercise.forEach(function(ex) {
                     var name = ex[0];
                     var option = ex[1];
@@ -78,6 +79,9 @@ var init = function() {
                             value: 'yes'
                         }
                     });
+                    if (lastSolved && lastSolved.indexOf(name) >= 0) {
+                        check.checked = true;
+                    }
                     if (option.level) {
                         var stars = '';
                         var level = parseInt(option.level);
@@ -86,7 +90,7 @@ var init = function() {
                     }
                     if (option.required) {
                         name += ' [必修課題]';
-                        check.checked = true;
+                        if (!lastSolved) check.checked = true;
                     }
                     var label = $new('label', {
                         child: $node(name),
@@ -106,7 +110,6 @@ var init = function() {
 
         GNN.JSONP.retrieve({
             master: api('master', { year: true, user: true }),
-            user: api('user', { type: 'status', status: 'solved' }),
             scheme: api('scheme', { type: 'post', exercise: true })
         }, function(json) {
             // set year
@@ -125,8 +128,16 @@ var init = function() {
             var login = $('login');
             login.appendChild($node(json.master.user));
 
-            // setup uploader
-            new Uploader(json.scheme, json.user.report);
+            new GNN.JSONP(api('user', {
+                user: json.master.user,
+                type: 'status',
+                status: 'solved'
+            }), function(user) {
+                // setup uploader
+                user = user[0]||{};
+                var report = user.login==json.master.user ? user.report : null;
+                new Uploader(json.scheme, report||{});
+            });
         });
     }
 };
