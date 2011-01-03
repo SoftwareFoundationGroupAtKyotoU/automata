@@ -1,122 +1,132 @@
 var init = function() {
-    var lexcmp = function(a, b) {
-        if (a.length <= 0 && b.length <= 0) return 0;
-        if (a.length <= 0) return -1;
-        var a0 = a[0]; var b0 = b[0];
-        var isNum = /^\d+$/;
-        if (isNum.test(a0) && isNum(b0)) {
-            a0 = parseInt(a0); b0 = parseInt(b0);
-        }
-        return a0 == b0 ? lexcmp(a.slice(1), b.slice(1)) : (a0 < b0 ? -1 : 1);
-    };
-    with (GNN.UI) {
-        var unselect = function(ids) {
-            ids.forEach(function(id) {
-                var button = $('button_'+id);
-                button.className = '';
-                var notice = $('notice_'+id);
-                notice.style.display = 'none';
-            });
-        };
-        var select = function(json, id, name) {
-            $('report_id').value = id;
-            var selected = $('selected_report');
-            removeAllChildren(selected);
-            selected.appendChild($node(name));
-
-            var button = $('button_'+id);
-            button.className = 'selected';
-            var notice = $('notice_'+id);
-            notice.style.display = 'block';
-
-            var ul = $('ex');
-            removeAllChildren(ul);
-
-            var report = json.report[id];
-            var exes = [];
-            for (var ex in report) exes.push(ex);
-            exes.sort(function(a, b) {
-                return lexcmp(a.split('.'), b.split('.'));
-            }).forEach(function(ex) {
-                var li = $new('li');
-                var check = $new('input', {
-                    id: ex,
-                    attr: {
-                        type: 'checkbox',
-                        name: ex,
-                        value: 'yes'
-                    }
-                });
-                var name = ex;
-                if (report[ex].level) {
-                    var stars = '';
-                    var level = parseInt(report[ex].level);
-                    for (var i=0; i < level; i++) stars += '★';
-                    name += '['+stars+']';
-                }
-                if (report[ex].required) {
-                    name += ' [必修課題]';
-                    check.checked = true;
-                }
-                var label = $new('label', {
-                    child: $node(name),
-                    attr: { 'for': ex }
-                });
-                li.appendChild(check);
-                li.appendChild(label);
-                ul.appendChild(li);
-            });
-        };
-
-        var form = $('form');
-        new Observer(form, 'onsubmit', function(e) {
-            if ($('file').value == '') {
-                e.stop();
-                alert('ファイルを選択して下さい');
-            }
-        });
-
+    var base = function() {
         var uri = GNN.URI.location();
-        uri.local.push('scheme.cgi')
-        GNN.JSONP(uri, function(json) {
-            // set year
-            document.title = [
-                document.title,
-                ' (Winter Semester ', json.year, ')'
-            ].join('');
-            var spans = document.getElementsByTagName('span');
-            for (var i=0; i < spans.length; i++) {
-                if (spans[i].className == 'year') {
-                    spans[i].appendChild($text(json.year));
+        uri.local.pop();
+        return uri;
+    };
+    var api = function(name, args) {
+        var uri = base();
+        uri.local.push('api');
+        uri.local.push(name+'.cgi');
+        uri.params = args || {};
+        return uri;
+    };
+
+    with (GNN.UI) {
+        var Uploader = function(scheme, solved) {
+            var self = {};
+
+            var form = $('form');
+            new Observer(form, 'onsubmit', function(e) {
+                if ($('file').value == '') {
+                    e.stop();
+                    alert('ファイルを選択して下さい');
                 }
-            }
+            });
 
-            var login = $('login');
-            login.appendChild($node(json.user));
-
-            var scheme = {};
-            json.scheme.forEach(function(rep) { scheme[rep.id] = rep; });
-
-            json.post.forEach(function(id) {
+            scheme.forEach(function(report) {
                 var selector = $('selector');
-                var li = $new('li', { id: 'button_'+id });
+                var li = $new('li', { id: 'button_'+report.id });
                 selector.appendChild(li);
 
                 var button = $new('a', {
                     attr: { href: '.' },
-                    child: $text(scheme[id].name)
+                    child: $text(report.name)
                 });
                 new Observer(button, 'click', function(e) {
                     e.stop();
-                    unselect(json.post);
-                    select(json, id, scheme[id].name);
+                    self.unselectAll();
+                    self.select(report);
                 });
                 li.appendChild(button);
             });
 
-            var id = $('report_id').value;
-            unselect(json.post);
-            select(json, id, scheme[id].name);
+            self.unselect = function(id) {
+                var button = $('button_'+id);
+                button.className = '';
+                var notice = $('notice_'+id);
+                notice.style.display = 'none';
+            };
+
+            self.unselectAll = function() {
+                scheme.forEach(function(report){ self.unselect(report.id); });
+            };
+
+            self.select = function(report) {
+                $('report_id').value = report.id;
+                var selected = $('selected_report');
+                removeAllChildren(selected);
+                selected.appendChild($node(report.name));
+
+                var button = $('button_'+report.id);
+                button.className = 'selected';
+                var notice = $('notice_'+report.id);
+                notice.style.display = 'block';
+
+                var ul = $('ex');
+                removeAllChildren(ul);
+
+                report.exercise.forEach(function(ex) {
+                    var name = ex[0];
+                    var option = ex[1];
+                    var li = $new('li');
+                    var check = $new('input', {
+                        id: name,
+                        attr: {
+                            type: 'checkbox',
+                            name: name,
+                            value: 'yes'
+                        }
+                    });
+                    if (option.level) {
+                        var stars = '';
+                        var level = parseInt(option.level);
+                        for (var i=0; i < level; i++) stars += '★';
+                        name += '['+stars+']';
+                    }
+                    if (option.required) {
+                        name += ' [必修課題]';
+                        check.checked = true;
+                    }
+                    var label = $new('label', {
+                        child: $node(name),
+                        attr: { 'for': name }
+                    });
+                    li.appendChild(check);
+                    li.appendChild(label);
+                    ul.appendChild(li);
+                });
+            };
+
+            self.unselectAll();
+            self.select(scheme[0]);
+
+            return self;
+        };
+
+        GNN.JSONP.retrieve({
+            master: api('master', { year: true, user: true }),
+            user: api('user', { type: 'status', status: 'solved' }),
+            scheme: api('scheme', { type: 'post', exercise: true })
+        }, function(json) {
+            // set year
+            document.title = [
+                document.title,
+                ' (Winter Semester ', json.master.year, ')'
+            ].join('');
+            var spans = document.getElementsByTagName('span');
+            for (var i=0; i < spans.length; i++) {
+                if (spans[i].className == 'year') {
+                    spans[i].appendChild($text(json.master.year));
+                }
+            }
+
+            // set login name
+            var login = $('login');
+            login.appendChild($node(json.master.user));
+
+            // setup uploader
+            new Uploader(json.scheme, json.user.report);
         });
     }
 };
