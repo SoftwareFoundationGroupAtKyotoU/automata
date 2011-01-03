@@ -17,12 +17,14 @@ $KCODE='UTF8'
 $:.unshift('./lib')
 
 require 'app'
+require 'report/exercise'
 app = App.new
 
 result = []
 scheme = app.file(:scheme)
 scheme['scheme'].each do |report|
-  report['exercise'] = scheme['report'][report['id']]
+  exes = scheme['report'][report['id']].sort{|a,b| a[0].to_ex <=> b[0].to_ex}
+  report['exercise'] = exes
   if FILTER.all?{|k| app.optional(k).include?(report[k.to_s])}
     entry = {}
     keys = KEY.dup
