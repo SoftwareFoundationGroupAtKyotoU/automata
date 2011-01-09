@@ -42,4 +42,4 @@ if app.params['type'][0] == 'status'
 end
 
 print(app.header)
-puts(app.json(users.map{|u| u.to_hash}))
+puts(app.json(users.map(&:to_hash)))

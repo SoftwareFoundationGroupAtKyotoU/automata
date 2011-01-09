@@ -16,7 +16,7 @@ module Report
       return to_a <=> other.to_ex.to_a
     end
 
-    def to_s() return @arr.map{|x| x.to_s}.join('') end
+    def to_s() return @arr.map(&:to_s).join('') end
     def to_a() return @arr end
 
     private
@@ -92,7 +92,7 @@ module Report
       def to_s()
         open = par.to_s
         close = PAREN[open]
-        return open + sub.map{|x| x.to_s}.join('') + close
+        return open + sub.map(&:to_s).join('') + close
       end
 
       def match(other)
