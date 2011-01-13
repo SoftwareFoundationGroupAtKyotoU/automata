@@ -58,7 +58,8 @@ a:active
 }
 
 table {
-   margin: 1em;
+   margin: 1em 0 0 0;
+   width: 100%;
 }
 th, td {
    padding: .5em;
@@ -79,8 +80,22 @@ tr:nth-child(2n+1) td {
    background-color: #ccddcc;
 }
 
+tr.selected td {
+   background-color: #eeddee;
+}
+
 td.name, td.status {
    white-space: nowrap;
+}
+
+.log {
+   margin-bottom: 2em;
+}
+
+.log-msg {
+   padding: 0.5em;
+   border: solid #99aa99 4px;
+   background-color: #ddeedd;
 }
 
 ul

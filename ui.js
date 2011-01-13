@@ -29,6 +29,33 @@ if (typeof GNN.UI == 'undefined') GNN.UI = {};
     };
     ns.$text = function(str){ return ns.doc().createTextNode(str); };
     ns.$node = function(x){ return ns.isNode(x) ? x : ns.$text(x); };
+    ns.$select = function(args) {
+        if (!args.klass) args.klass = [];
+        if (!(args.klass instanceof Array)) args.klass = [args.klass];
+        var elems = ns.doc().getElementsByTagName(args.tag);
+        var result = [];
+        for (var i=0; i < elems.length; i++) {
+            var klass = ns.classNames(elems[i]);
+            if (args.klass.every(function(k){ return klass.indexOf(k)>=0; })) {
+                result.push(elems[i]);
+            }
+        }
+        return result;
+    };
+    ns.classNames = function(e) {
+        return (e.className||'').split(/\s+/);
+    };
+    ns.hasClass = function(e, klass) {
+        return ns.classNames(e).indexOf(klass) >= 0;
+    };
+    ns.appendClass = function(e, klass) {
+        e.className = ns.classNames(e).concat([klass]).join(' ');
+    };
+    ns.removeClass = function(e, klass) {
+        e.className = ns.classNames(e).filter(function(k) {
+            return k != klass;
+        }).join(' ');
+    };
     ns.removeAllChildren = function(node) {
         while (node.firstChild) node.removeChild(node.firstChild);
     };

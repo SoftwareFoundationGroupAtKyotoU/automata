@@ -30,7 +30,7 @@ class Log
   def err(msg)
     val = {
       'status'    => 'NG',
-      'error'     => msg,
+      'log'       => { 'error' => msg },
       'timestamp' => @time.iso8601,
     }
     @log['data'].unshift(val)
@@ -48,10 +48,14 @@ files = {
 }
 
 err = {
-  :require  => 'parameter "%s" is required',
-  :invalid  => 'invalid parameter "%s"',
-  :capacity => 'over capacity',
-  :unzip    => 'unable to unzip the uploaded file',
+  :require  => '必須なパラメータが "%s"が指定されませんでした',
+  # 'parameter "%s" is required',
+  :invalid  => '不正なパラメータ "%s"が指定されました',
+  # 'invalid parameter "%s"',
+  :capacity => '頻度が高すぎるためリクエストを拒否しました',
+  # 'over capacity',
+  :unzip    => 'アップロードされたファイルの展開に失敗しました',
+  # 'unable to unzip the uploaded file',
 }
 
 cgi = CGI.new

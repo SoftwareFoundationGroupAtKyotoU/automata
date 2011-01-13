@@ -5,35 +5,46 @@ module Report
     class Manual
       attr_reader :data
 
-      def initialize(data)
+      def initialize(data, log, timestamp)
         @data = data
+        @log = log
+        @timestamp = timestamp
       end
 
       def status?() return !@data.empty? end
 
       def solved() return @data end
 
+      def log() return nil end
+
       def to_hash()
-        return { 'status' => status? }
+        hash = { 'status' => status?, 'timestamp' => @timestamp }
+        hash['log'] = log if @log
+        return hash
       end
     end
 
     class Post
       attr_reader :data
 
-      def initialize(data)
+      def initialize(data, log)
         @data = data
+        @log = log
       end
 
       def status?() @data['status'] end
 
       def solved() @data['report'] end
 
+      def log() return @data['log'] end
+
       def to_hash()
-        return {
+        hash = {
           'status'    => status?,
           'timestamp' => @data['timestamp'],
         }
+        hash['log'] = log if @log
+        return hash
       end
     end
   end
@@ -69,5 +80,13 @@ module Report
 
       return hash
     end
+  end
+
+  class Log
+    def initialize(src)
+      @src = src
+    end
+
+    def to_hash() return @src.log end
   end
 end

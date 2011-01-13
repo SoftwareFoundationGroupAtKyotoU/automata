@@ -32,12 +32,12 @@ if app.params['type'][0] == 'status'
 
   schemes.each do |s|
     users.each do |u|
-      u[s['id']] = app.report(app.params['status'][0], s['id'], u.login)
+      option = {
+        :status => app.params['status'][0],
+        :log    => !app.params['log'].empty?,
+      }
+      u[s['id']] = app.report(option, s['id'], u.login)
     end
-  end
-
-  unless app.params['log'].empty?
-    # TODO
   end
 end
 

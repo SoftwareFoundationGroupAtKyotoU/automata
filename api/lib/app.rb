@@ -1,5 +1,6 @@
 require 'cgi'
 require 'yaml'
+require 'time'
 require 'clone'
 
 require 'rubygems'
@@ -97,8 +98,11 @@ class App
     return @users
   end
 
-  def report(type, id, u)
+  def report(option, id, u)
     require 'report'
+
+    type = option[:type]
+    log = option[:log]
 
     src = nil
     if (file(:scheme)['scheme'].find{|r| r['id']==id} || {})['type'] == 'post'
@@ -107,14 +111,15 @@ class App
       yaml = YAML.load_file(fname) rescue {}
       yaml = yaml['data'] || {}
       yaml = yaml.first if yaml.is_a?(Array)
-      src = Report::Source::Post.new(yaml)
+      src = Report::Source::Post.new(yaml, log)
     else
       yaml = file(:data) rescue {}
       yaml = yaml['data'] || {}
       yaml = yaml.find{|x| x['login'] == u} || {}
       yaml = yaml['report'] || {}
       yaml = yaml[id] || {}
-      src = Report::Source::Manual.new(yaml)
+      timestamp = File.mtime(FILES[:data]).iso8601
+      src = Report::Source::Manual.new(yaml, log, timestamp)
     end
 
     case type
