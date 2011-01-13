@@ -90,7 +90,7 @@ var init = function() {
                     }
                     if (option.required) {
                         name += ' [必修課題]';
-                        if (!lastSolved) check.checked = true;
+                        if (!(lastSolved||[]).length) check.checked = true;
                     }
                     var label = $new('label', {
                         child: $node(name),
