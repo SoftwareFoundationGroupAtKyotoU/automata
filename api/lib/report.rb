@@ -6,7 +6,7 @@ module Report
       attr_reader :data
 
       def initialize(data, log, timestamp)
-        @data = data
+        @data = data || []
         @log = log
         @timestamp = timestamp
       end
@@ -34,7 +34,7 @@ module Report
 
       def status?() @data['status'] end
 
-      def solved() @data['report'] end
+      def solved() @data['report'] || [] end
 
       def log() return @data['log'] end
 
@@ -56,7 +56,7 @@ module Report
 
     def to_hash()
       hash = @src.to_hash
-      hash['solved'] = @src.solved || []
+      hash['solved'] = @src.solved
       return hash
     end
   end
@@ -71,7 +71,7 @@ module Report
       hash = @src.to_hash
 
       counter = Counter.new(@scheme)
-      (@src.solved || []).each{|ex| counter.vote(ex)}
+      @src.solved.each{|ex| counter.vote(ex)}
 
       hash['unsolved'] = counter.insufficient
       counter.overflow.each do |level, solved|
