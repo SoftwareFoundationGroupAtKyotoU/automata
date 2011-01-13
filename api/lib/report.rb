@@ -56,7 +56,7 @@ module Report
 
     def to_hash()
       hash = @src.to_hash
-      hash['solved'] = @src.solved
+      hash['solved'] = @src.solved || []
       return hash
     end
   end
@@ -71,7 +71,7 @@ module Report
       hash = @src.to_hash
 
       counter = Counter.new(@scheme)
-      @src.solved.each{|ex| counter.vote(ex)}
+      (@src.solved || []).each{|ex| counter.vote(ex)}
 
       hash['unsolved'] = counter.insufficient
       counter.overflow.each do |level, solved|
