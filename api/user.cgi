@@ -24,6 +24,9 @@ require 'app'
 app = App.new
 
 users = app.users
+unless app.params['user'].empty?
+  users.reject!{|u| !app.params['user'].include?(u.login)}
+end
 
 if app.params['type'][0] == 'status'
   schemes = app.file(:scheme)['scheme'].reject do |s|

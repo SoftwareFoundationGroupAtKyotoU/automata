@@ -101,7 +101,7 @@ class App
   def report(option, id, u)
     require 'report'
 
-    type = option[:type]
+    status = option[:status]
     log = option[:log]
 
     src = nil
@@ -122,7 +122,7 @@ class App
       src = Report::Source::Manual.new(yaml, log, timestamp)
     end
 
-    case type
+    case status
     when 'solved'
       return Report::Solved.new(src)
     when 'record'
