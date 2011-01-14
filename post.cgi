@@ -1,13 +1,17 @@
 #! /usr/bin/env ruby
 $KCODE = 'UTF8'
 
+$:.unshift('./lib')
+
 require 'fileutils'
 require 'time'
-require 'cgi'
 require 'yaml'
 require 'tempfile'
 require 'tmpdir'
 require 'time'
+
+$base_dir = '.'
+require 'app'
 
 class Log
   def initialize(file, time)
@@ -42,11 +46,6 @@ class Log
   def write() open(@file, 'w'){|io| YAML.dump(@log, io)} end
 end
 
-files = {
-  :local  => './config/local.yml',
-  :scheme => './config/scheme.yml',
-}
-
 err = {
   :require  => '必須なパラメータが "%s"が指定されませんでした',
   # 'parameter "%s" is required',
@@ -58,39 +57,29 @@ err = {
   # 'unable to unzip the uploaded file',
 }
 
-cgi = CGI.new
+app = App.new
 time = Time.now
 
-yml = {}
-files.each do |name, file|
-  yml[name] = YAML.load_file(file) rescue yml[name] = {}
-end
-
 id = 'report_id'
-rep_id = cgi.params[id][0].read
+rep_id = app.cgi.params[id][0].read
 raise ArgumentError, (err[:require] % id) unless defined?(rep_id)
 
-rep_schemes = yml[:scheme]['scheme']
+rep_schemes = app.file(:scheme)['scheme'] || []
 rep_defined = rep_schemes.any?{|r| r['id'] == rep_id}
 raise ArgumentError, (err[:invalid] % rep_id) unless rep_defined
 
-user_name = cgi.remote_user || yml[:local]['user']
-user_dir = File.join(File.dirname(__FILE__),
-                     'db/kadai',
-                     rep_id,
-                     user_name)
-log_file = File.join(user_dir, 'log.yml')
+user_name = app.user
+USER_DIR = App::KADAI + rep_id + user_name
+log_file = USER_DIR['log.yml']
 log = Log.new(log_file, time)
 
 begin
   begin
-    src_dir = File.join(user_dir,
-                        time.iso8601,
-                        'src')
-    raise RuntimeError, err[:capacity] if File.exist?(src_dir)
+    src_dir = USER_DIR + time.iso8601 + 'src'
+    raise RuntimeError, err[:capacity] if File.exist?(src_dir.to_s)
 
-    FileUtils.mkdir_p(src_dir)
-    file = cgi.params['report_file'][0]
+    FileUtils.mkdir_p(src_dir.to_s)
+    file = app.cgi.params['report_file'][0]
 
     unless file.path then
       tmp = Tempfile.open('report.zip')
@@ -112,12 +101,12 @@ begin
         src_files.reject!{|f| f =~ /\/\.+$/}
         FileUtils.mv(src_files, tmpdir)
         FileUtils.rmdir(entries_dir)
-        FileUtils.mv(Dir.glob("#{tmpdir}/*"), src_dir)
+        FileUtils.mv(Dir.glob("#{tmpdir}/*"), src_dir.to_s)
       end
     end
 
     report = []
-    cgi.params.each do |k,v|
+    app.cgi.params.each do |k,v|
       report << k if k =~ /^Ex\.\d+/
     end
     log.add('build', report)
@@ -127,5 +116,5 @@ begin
     log.err(e.to_s)
   end
 ensure
-  print cgi.header('status' => '302 Found', 'Location' => './record/')
+  print app.cgi.header('status' => '302 Found', 'Location' => './record/')
 end

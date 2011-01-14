@@ -26,7 +26,7 @@ class App
     end
   end
 
-  BASE = '..'
+  BASE = $base_dir || '..'
   CONFIG = Location.new(BASE, 'config')
   DB = Location.new(BASE, 'db')
   KADAI = DB + 'kadai'
