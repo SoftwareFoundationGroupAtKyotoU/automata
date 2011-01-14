@@ -26,10 +26,11 @@ class App
     end
   end
 
-  BASE = $base_dir || '..'
-  CONFIG = Location.new(BASE, 'config')
-  DB = Location.new(BASE, 'db')
-  KADAI = DB + 'kadai'
+  BASE   = Location.new($base_dir || '..')
+  CONFIG = BASE + 'config'
+  DB     = BASE + 'db'
+  KADAI  = DB + 'kadai'
+  BUILD  = BASE + 'test'
 
   FILES = {
     :master => CONFIG['config.yml'],
@@ -37,6 +38,7 @@ class App
     :scheme => CONFIG['scheme.yml'],
     :data   => DB['data.yml'],
     :log    => 'log.yml',
+    :build  => BUILD['build.rb'],
   }
 
   attr_reader :cgi
@@ -84,10 +86,12 @@ class App
     return @conf
   end
 
-  def user()
-    @user = cgi.remote_user || file(:local)['user'] unless @user
+  def user(u=nil)
+    @user = u || cgi.remote_user || file(:local)['user'] unless @user
     return @user
   end
+
+  def user_dir(r) return KADAI + r + user end
 
   def users()
     unless @users

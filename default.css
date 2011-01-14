@@ -88,6 +88,14 @@ td.name, td.status {
    white-space: nowrap;
 }
 
+td.status {
+   text-align: center;
+}
+
+td.NG, td.build-NG {
+   background-color: #ddccdd ! important;
+}
+
 .log {
    margin-bottom: 2em;
 }
@@ -96,6 +104,10 @@ td.name, td.status {
    padding: 0.5em;
    border: solid #99aa99 4px;
    background-color: #ddeedd;
+}
+
+.log-msg pre {
+   margin: 0;
 }
 
 ul

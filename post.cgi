@@ -4,47 +4,13 @@ $KCODE = 'UTF8'
 $:.unshift('./lib')
 
 require 'fileutils'
-require 'time'
-require 'yaml'
 require 'tempfile'
 require 'tmpdir'
 require 'time'
 
 $base_dir = '.'
 require 'app'
-
-class Log
-  def initialize(file, time)
-    @file = file
-    @time = time
-    @log = YAML.load_file(file) rescue nil
-    @log = { 'data' => [] } unless @log
-  end
-
-  def add(status, report=nil)
-    val = {
-      'status'    => status,
-      'report'    => report,
-      'timestamp' => @time.iso8601,
-    }
-    @log['data'].unshift(val)
-    write
-  end
-
-  def err(msg)
-    val = {
-      'status'    => 'NG',
-      'log'       => { 'error' => msg },
-      'timestamp' => @time.iso8601,
-    }
-    @log['data'].unshift(val)
-    write
-  end
-
-  private
-
-  def write() open(@file, 'w'){|io| YAML.dump(@log, io)} end
-end
+require 'log'
 
 err = {
   :require  => '必須なパラメータ "%s" が指定されませんでした',
@@ -55,6 +21,7 @@ err = {
   # 'over capacity',
   :unzip    => 'アップロードされたファイルの展開に失敗しました',
   # 'unable to unzip the uploaded file',
+  :build    => '自動コンパイルチェックが失敗しました(TAに問い合わせて下さい)',
 }
 
 app = App.new
@@ -68,10 +35,8 @@ rep_schemes = app.file(:scheme)['scheme'] || []
 rep_defined = rep_schemes.any?{|r| r['id'] == rep_id}
 raise ArgumentError, (err[:invalid] % rep_id) unless rep_defined
 
-user_name = app.user
-USER_DIR = App::KADAI + rep_id + user_name
-log_file = USER_DIR['log.yml']
-log = Log.new(log_file, time)
+USER_DIR = app.user_dir(rep_id)
+log_file = USER_DIR[App::FILES[:log]]
 
 begin
   begin
@@ -107,13 +72,32 @@ begin
 
     report = []
     app.cgi.params.each do |k,v|
-      report << k if k =~ /^Ex\.\d+/
+      report << k if k =~ /#{app.file(:scheme)['regex']}/
     end
-    log.add('build', report)
+    Log.new(log_file, time) do |log|
+      log.write('status' => 'build', 'report' => report)
+    end
 
-    # TODO: run checker
+    # run build checker
+    cmd = "#{App::FILES[:build]} '#{rep_id}' '#{app.user}' '#{time.iso8601}'"
+    cmd = ([cmd]+report).join(' ')
+    if system("#{cmd} > /dev/null 2>&1")
+      Log.new(log_file, time) do |log|
+        hash = (log.build['status'] == 'OK' ?
+                { 'status' => 'check' } :
+                { 'status' => 'build:NG',
+                  'log' => { 'error' => log.build['detail'] } })
+        log.write(hash.merge('timestamp' => log.build['timestamp']))
+      end
+    else
+      raise RuntimeError, err[:build]
+    end
+
+    # TODO: invoke tester
   rescue RuntimeError => e
-    log.err(e.to_s)
+    Log.new(log_file, time) do |log|
+      log.write('status' => 'NG', 'log' => { 'error' => e.to_s })
+    end
   end
 ensure
   print app.cgi.header('status' => '302 Found', 'Location' => './record/')

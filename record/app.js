@@ -61,10 +61,12 @@ var init = function(id) {
                     if (typeof obj == 'boolean') obj = 'OK';
                     switch (obj) {
                     case 'OK': return '提出済';
-                    case 'NG': return '失敗';
+                    case 'NG': return '要再提出';
                     case 'build':
                     case 'check':
                         return '確認中';
+                    case 'build:NG': return '要再提出';
+                    case 'check:NG': return '提出済(テスト未完)';
                     }
                     return '';
                 case 'unsolved':
@@ -77,6 +79,13 @@ var init = function(id) {
                     }).join(', ');
                 default:
                     return obj;
+                }
+            };
+
+            var ppLog = function(k, msg) {
+                switch (k) {
+                case 'error': return $new('pre', { child: $node(msg) });
+                default: return $node(msg);
                 }
             };
 
@@ -96,8 +105,9 @@ var init = function(id) {
                 if (record.log) {
                     var log = record.log;
                     for (var k in log) {
+                        var msg = log[k];
                         dl.appendChild($new('dt', { child: $node(k) }));
-                        dl.appendChild($new('dd', { child: $node(log[k]) }));
+                        dl.appendChild($new('dd', { child: ppLog(k, msg) }));
                     }
                 }
 
@@ -133,10 +143,16 @@ var init = function(id) {
                     var tr = $new('tr');
                     var record = student.report[sc.id]||{};
                     sc.record.forEach(function(col) {
+                        var td = $new('td', { klass: col.field });
+                        tr.appendChild(td);
+
                         var fld = student[col.field];
                         fld = fld || record[col.field];
-
                         var text = toText(fld, col.field);
+
+                        if (col.field == 'status' && (fld||'').length > 0) {
+                            appendClass(td, fld.replace(/[^0-9a-zA-Z]/g, '-'));
+                        }
                         if (col.field == 'status' && json.user.length > 1) {
                             var klass = sc.id+'-status';
                             text = $new('a', {
@@ -167,10 +183,7 @@ var init = function(id) {
                             });
                         }
 
-                        tr.appendChild($new('td', {
-                            klass: col.field,
-                            child: text
-                        }));
+                        td.appendChild($node(text));
                     });
                     table.appendChild(tr);
 

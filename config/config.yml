@@ -11,20 +11,17 @@ build:
     - ocamlbuild -I src main.native -no-hygiene && ocamlbuild -clean
     - ocamlbuild -I src test.native -no-hygiene && ocamlbuild -clean
   file_location:
-    - id: report2
-      location: report2
-    - id: report3
-      exercise:
-        - ex8
-        - ex9
-      location: report3-89
-    - id: report3
-      exercise:
-        - ex9
-      location: report3-9
-    - id: report3
-      exercise:
-        - ex8
-      location: report3-8
-    - id: report3
-      location: report3
+    report2:
+      - location: report2
+    report3:
+      - exercise:
+          - Ex.4.8
+          - Ex.4.9
+        location: report3-89
+      - exercise:
+          - Ex.4.9
+        location: report3-9
+      - exercise:
+          - Ex.4.8
+        location: report3-8
+      - location: report3

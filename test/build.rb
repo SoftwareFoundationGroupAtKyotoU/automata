@@ -1,6 +1,6 @@
 #! /usr/bin/env ruby
 
-Dir.chdir(File.dirname($0))
+Dir.chdir(File.dirname(File.expand_path($0)))
 $:.unshift('./lib')
 
 require 'fileutils'
@@ -8,8 +8,6 @@ require 'yaml'
 require 'time'
 
 require 'app'
-
-app = App.new
 
 report_id = $*.shift
 user      = $*.shift
@@ -26,7 +24,6 @@ files = {
   :log    => dir[:user][App::FILES[:log]],
   :config => App::FILES[:master],
 }
-p files[:log]
 
 yml = {}
 files.each do |name, file|
@@ -41,13 +38,9 @@ status_code = {
 }
 
 file_loc = nil
-yml[:build]['file_location'].each do |loc|
-  next if report_id != loc['id'];
-  unless loc['exercise'] then
-    file_loc = loc
-    break
-  end
-  if (loc['exercise'] & exercises).length == loc['exercise'].length then
+(yml[:build]['file_location'][report_id] || []).each do |loc|
+  ex = loc['exercise']
+  if !ex || (ex & exercises).length = ex.length
     file_loc = loc
     break
   end
@@ -85,7 +78,7 @@ end
 info = {}
 info['id'] = post_tz
 info['src'] = dir[:src].to_s
-info['date'] = Time.now.iso8601
+info['timestamp'] = Time.now.iso8601
 
 if res == 0 then
   ## success

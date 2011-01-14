@@ -49,6 +49,8 @@ scheme:
       - field: optional3
         label: "★★★問題の解答数"
 
+regex: "^Ex((?:\\.\\d+)+)"
+
 report:
   report1:
     Ex.2.6(2):  { required: 1 }
