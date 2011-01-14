@@ -1,35 +1,43 @@
 #! /usr/bin/env ruby
 
+Dir.chdir(File.dirname($0))
+$:.unshift('./lib')
+
 require 'fileutils'
 require 'yaml'
 require 'time'
 
-report_id = ARGV[0]
-user_dir  = ARGV[1]
-post_tz   = ARGV[2]
-exercises = ARGV[3, ARGV.length - 3] || []
+require 'app'
 
-dir = {
-  :test => File.join(user_dir, 'test'),
-  :src  => File.join(user_dir, post_tz, 'src'),
-  :test_target => File.join(user_dir, 'test', 'src'),
-}
+app = App.new
+
+report_id = $*.shift
+user      = $*.shift
+post_tz   = $*.shift
+exercises = $*
+
+dir = {}
+dir[:user]   = App::KADAI + report_id + user
+dir[:test]   = dir[:user] + 'test'
+dir[:src]    = dir[:user] + post_tz + 'src'
+dir[:target] = dir[:test] + 'src'
 
 files = {
-  :log => File.join(user_dir, 'log.yml'),
-  :config => File.join(File.dirname(__FILE__), '..', 'config.yml'),
+  :log    => dir[:user][App::FILES[:log]],
+  :config => App::FILES[:master],
 }
+p files[:log]
 
 yml = {}
 files.each do |name, file|
-  yml[name] = YAML.load_file(file) rescue yml[name] = {}
+  yml[name] = YAML.load_file(file) rescue {}
 end
 yml[:build] = yml[:config]['build']
 
 build_commands = yml[:build]['command']
 status_code = {
   :failure  => 'NG',
-  :complete => 'build',
+  :complete => 'OK',
 }
 
 file_loc = nil
@@ -46,23 +54,24 @@ yml[:build]['file_location'].each do |loc|
 end
 raise "config error" unless file_loc
 
-test_files_dir = File.join(File.dirname(__FILE__), file_loc['location'])
+test_files_dir = file_loc['location']
 
 # copy files
-unless File.exist?(dir[:test]) then
-  FileUtils.mkdir_p(dir[:test])
-  FileUtils.mkdir_p(dir[:test_target])
+unless File.exist?(dir[:test].to_s) then
+  FileUtils.mkdir_p(dir[:test].to_s)
+  FileUtils.mkdir_p(dir[:target].to_s)
 end
 test_files = Dir.glob("#{test_files_dir}/*")
-FileUtils.cp_r(test_files, dir[:test])
+FileUtils.cp_r(test_files, dir[:test].to_s)
 
 src_files = Dir.glob("#{dir[:src]}/*", File::FNM_DOTMATCH)
 src_files.reject!{|f| f =~ /\/\.+$/}
 
-FileUtils.cp_r(src_files, dir[:test_target])
+FileUtils.cp_r(src_files, dir[:target].to_s)
 
 # build
-FileUtils.cd(dir[:test])
+cwd = Dir.pwd
+Dir.chdir(dir[:test].to_s)
 
 last_comm = res_output = res = nil
 build_commands.each do |comm|
@@ -74,14 +83,15 @@ end
 
 # make log
 info = {}
-info['src'] = dir[:src]
+info['id'] = post_tz
+info['src'] = dir[:src].to_s
 info['date'] = Time.now.iso8601
 
 if res == 0 then
-## success
+  ## success
   info['status'] = status_code[:complete]
 else
-## fail
+  ## fail
   info['status'] = status_code[:failure]
   info['detail'] = res_output
   info['command'] = last_comm
@@ -89,10 +99,9 @@ else
 end
 
 log_yml = yml[:log]
-build = log_yml['build'] ||= []
-build.push(info)
+build = log_yml['build'] || []
+build.unshift(info)
 log_yml['build'] = build
 
-file = File.open(files[:log], 'w')
-YAML.dump(log_yml, file)
-file.close
+Dir.chdir(cwd)
+File.open(files[:log], 'w'){|io| YAML.dump(log_yml, io)}

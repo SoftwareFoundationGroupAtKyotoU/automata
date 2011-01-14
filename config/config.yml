@@ -15,16 +15,16 @@ build:
       location: report2
     - id: report3
       exercise:
-      - ex8
-      - ex9
+        - ex8
+        - ex9
       location: report3-89
     - id: report3
       exercise:
-      - ex9
+        - ex9
       location: report3-9
     - id: report3
       exercise:
-      - ex8
+        - ex8
       location: report3-8
     - id: report3
       location: report3
