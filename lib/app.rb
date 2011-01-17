@@ -112,7 +112,7 @@ class App
     if (file(:scheme)['scheme'].find{|r| r['id']==id} || {})['type'] == 'post'
       fname = KADAI[id, u, FILES[:log]]
       return nil unless File.exist?(fname)
-      yaml = YAML.load_file(fname) rescue {}
+      yaml = YAML.load_file(fname)||{} rescue {}
       yaml = yaml['data'] || {}
       yaml = yaml.first if yaml.is_a?(Array)
       src = Report::Source::Post.new(yaml, log)

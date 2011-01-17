@@ -27,7 +27,7 @@ files = {
 
 yml = {}
 files.each do |name, file|
-  yml[name] = YAML.load_file(file) rescue {}
+  yml[name] = YAML.load_file(file)||{} rescue {}
 end
 yml[:build] = yml[:config]['build']
 
