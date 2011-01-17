@@ -21,7 +21,8 @@ err = {
   # 'over capacity',
   :unzip    => 'アップロードされたファイルの展開に失敗しました',
   # 'unable to unzip the uploaded file',
-  :build    => '自動コンパイルチェックが失敗しました(TAに問い合わせて下さい)',
+  :build    => '自動コンパイルチェックに失敗しました; 提出要件を満たしているか確認して下さい',
+  :build_fatal => '自動コンパイルチェックに失敗しました; TAに問い合わせて下さい',
 }
 
 app = App.new
@@ -84,13 +85,16 @@ begin
     if system("#{cmd} > /dev/null 2>&1")
       Log.new(log_file, time) do |log|
         hash = (log.build['status'] == 'OK' ?
-                { 'status' => 'check' } :
+                { 'status' => 'check',
+                  'log' => { 'build'  => 'OK' } } :
                 { 'status' => 'build:NG',
-                  'log' => { 'error' => log.build['detail'] } })
+                  'log'    => {
+                    'error' => log.build['detail'],
+                    'msg'   => err[:build] } })
         log.write(hash.merge('timestamp' => log.build['timestamp']))
       end
     else
-      raise RuntimeError, err[:build]
+      raise RuntimeError, err[:build_fatal]
     end
 
     # TODO: invoke tester

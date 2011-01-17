@@ -62,11 +62,10 @@ var init = function(id) {
                     switch (obj) {
                     case 'OK': return '提出済';
                     case 'NG': return '要再提出';
-                    case 'build':
-                    case 'check':
-                        return '確認中';
+                    case 'build': /* pass through */
+                    case 'check': return '確認中';
                     case 'build:NG': return '要再提出';
-                    case 'check:NG': return '提出済(テスト未完)';
+                    case 'check:NG': return '提出済';
                     }
                     return '';
                 case 'unsolved':
