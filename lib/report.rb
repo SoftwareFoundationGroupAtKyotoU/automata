@@ -75,7 +75,7 @@ module Report
 
       hash['unsolved'] = counter.insufficient
       counter.overflow.each do |level, solved|
-        hash['optional'+level] = solved
+        hash['optional'+level] = solved.sort{|a,b| a.to_ex <=> b.to_ex}
       end
 
       return hash
