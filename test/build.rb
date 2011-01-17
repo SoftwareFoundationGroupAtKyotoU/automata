@@ -8,6 +8,7 @@ require 'yaml'
 require 'time'
 
 require 'app'
+require 'log'
 
 report_id = $*.shift
 user      = $*.shift
@@ -63,7 +64,7 @@ src_files.reject!{|f| f =~ /\/\.+$/}
 FileUtils.cp_r(src_files, dir[:target].to_s)
 
 # build
-log_yml = Dir.chdir(dir[:test].to_s) do
+info = Dir.chdir(dir[:test].to_s) do
   last_comm = res_output = res = nil
   build_commands.each do |comm|
     last_comm = comm
@@ -89,12 +90,7 @@ log_yml = Dir.chdir(dir[:test].to_s) do
     info['return-code'] = res
   end
 
-  log_yml = yml[:log]
-  build = log_yml['build'] || []
-  build.unshift(info)
-  log_yml['build'] = build
-
-  log_yml
+  info
 end
 
-File.open(files[:log], 'w'){|io| YAML.dump(log_yml, io)}
+Log.new(files[:log], Time.iso8601(post_tz)).write_build(info)
