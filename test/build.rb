@@ -6,6 +6,7 @@ $:.unshift('./lib')
 require 'fileutils'
 require 'yaml'
 require 'time'
+require 'dir/each_leaf'
 
 require 'app'
 require 'log'
@@ -14,6 +15,8 @@ report_id = $*.shift
 user      = $*.shift
 post_tz   = $*.shift
 exercises = $*
+
+ignore = [ 'cm[iox]', 'o', 'output', 'depend' ]
 
 dir = {}
 dir[:user]   = App::KADAI + report_id + user
@@ -41,7 +44,7 @@ status_code = {
 file_loc = nil
 (yml[:build]['file_location'][report_id] || []).each do |loc|
   ex = loc['exercise']
-  if !ex || (ex & exercises).length = ex.length
+  if !ex || (ex & exercises).length == ex.length
     file_loc = loc
     break
   end
@@ -63,6 +66,11 @@ src_files = Dir.glob("#{dir[:src]}/*", File::FNM_DOTMATCH)
 src_files.reject!{|f| f =~ /\/\.+$/}
 
 FileUtils.cp_r(src_files, dir[:target].to_s)
+
+# clean
+Dir.each_leaf(dir[:target].to_s, File::FNM_DOTMATCH) do |f|
+  FileUtils.rm(f) if f =~ /\.(?:#{ignore.join('|')})$/
+end
 
 # build
 info = Dir.chdir(dir[:test].to_s) do

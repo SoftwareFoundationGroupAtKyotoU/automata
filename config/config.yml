@@ -9,7 +9,7 @@ year:   2010
 build:
   command:
     - ocamlbuild -I src main.native -no-hygiene && ocamlbuild -clean
-    - ocamlbuild -I src test.native -no-hygiene && ocamlbuild -clean
+    - ocamlbuild -I src test.native -no-hygiene
   file_location:
     report2:
       - location: report2

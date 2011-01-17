@@ -5,8 +5,9 @@ class Log
   def initialize(file, time)
     @file = file
     @time = time
-    log_init = { 'data' => [], 'build' => [] }
-    @log = YAML.load_file(file)||log_init rescue log_init
+    @log = YAML.load_file(file)||{} rescue {}
+    @log['data'] ||= []
+    @log['build'] ||= []
     yield(self) if block_given?
   end
 
