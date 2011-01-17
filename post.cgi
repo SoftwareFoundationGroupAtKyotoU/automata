@@ -55,11 +55,23 @@ begin
     path = file.path
     file.close
 
+    # extract archive file
     res = system("env 7z x -o#{src_dir} #{path} > /dev/null 2>&1")
     raise RuntimeError, err[:unzip] unless res
 
     entries = Dir.glob("#{src_dir}/*")
 
+    # extract tar file
+    if entries.length == 1 && entries[0] =~ /\.tar$/
+      Dir.chdir(src_dir.to_s) do
+        file = File.basename(entries[0])
+        res = system("tar xf '#{file}' > /dev/null 2>&1 && rm '#{file}'")
+      end
+      raise RuntimeError, err[:unzip] unless res
+      entries = Dir.glob("#{src_dir}/*")
+    end
+
+    # move files from a single directory to the parent directory
     if entries.length == 1 && File.directory?(entries[0]) then
       entries_dir = entries[0]
       Dir.mktmpdir do |tmpdir|
@@ -71,6 +83,7 @@ begin
       end
     end
 
+    # solved exercises
     report = []
     app.cgi.params.each do |k,v|
       report << k if k =~ /#{app.file(:scheme)['regex']}/
