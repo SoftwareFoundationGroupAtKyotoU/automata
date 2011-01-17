@@ -95,7 +95,7 @@ begin
     # run build checker
     cmd = "#{App::FILES[:build]} '#{rep_id}' '#{app.user}' '#{time.iso8601}'"
     cmd = ([cmd]+report).join(' ')
-    if system("#{cmd} > /dev/null 2>&1")
+    if system("#{cmd} > /dev/null 2>#{USER_DIR['build_fatal.log']}")
       Log.new(log_file, time) do |log|
         hash = (log.build['status'] == 'OK' ?
                 { 'status' => 'check',
