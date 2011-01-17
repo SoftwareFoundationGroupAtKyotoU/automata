@@ -89,7 +89,7 @@ begin
       report << k if k =~ /#{app.file(:scheme)['regex']}/
     end
     Log.new(log_file, time) do |log|
-      log.write('status' => 'build', 'report' => report)
+      log.write_data('status' => 'build', 'report' => report)
     end
 
     # run build checker
@@ -102,9 +102,9 @@ begin
                   'log' => { 'build'  => 'OK' } } :
                 { 'status' => 'build:NG',
                   'log'    => {
-                    'error' => log.build['detail'],
-                    'msg'   => err[:build] } })
-        log.write(hash.merge('timestamp' => log.build['timestamp']))
+                    'error'   => log.build['detail'],
+                    'message' => err[:build] } })
+        log.write_data(hash.merge('timestamp' => log.build['timestamp']))
       end
     else
       raise RuntimeError, err[:build_fatal]
@@ -113,7 +113,7 @@ begin
     # TODO: invoke tester
   rescue RuntimeError => e
     Log.new(log_file, time) do |log|
-      log.write('status' => 'NG', 'log' => { 'error' => e.to_s })
+      log.write_data('status' => 'NG', 'log' => { 'error' => e.to_s })
     end
   end
 ensure
