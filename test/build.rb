@@ -63,38 +63,38 @@ src_files.reject!{|f| f =~ /\/\.+$/}
 FileUtils.cp_r(src_files, dir[:target].to_s)
 
 # build
-cwd = Dir.pwd
-Dir.chdir(dir[:test].to_s)
+log_yml = Dir.chdir(dir[:test].to_s) do
+  last_comm = res_output = res = nil
+  build_commands.each do |comm|
+    last_comm = comm
+    res_output = `#{comm}`
+    res = $?.to_i
+    break if res != 0
+  end
 
-last_comm = res_output = res = nil
-build_commands.each do |comm|
-  last_comm = comm
-  res_output = `#{comm}`
-  res = $?.to_i
-  break if res != 0
+  # make log
+  info = {}
+  info['id'] = post_tz
+  info['src'] = dir[:src].to_s
+  info['timestamp'] = Time.now.iso8601
+
+  if res == 0 then
+    ## success
+    info['status'] = status_code[:complete]
+  else
+    ## fail
+    info['status'] = status_code[:failure]
+    info['detail'] = res_output
+    info['command'] = last_comm
+    info['return-code'] = res
+  end
+
+  log_yml = yml[:log]
+  build = log_yml['build'] || []
+  build.unshift(info)
+  log_yml['build'] = build
+
+  log_yml
 end
 
-# make log
-info = {}
-info['id'] = post_tz
-info['src'] = dir[:src].to_s
-info['timestamp'] = Time.now.iso8601
-
-if res == 0 then
-  ## success
-  info['status'] = status_code[:complete]
-else
-  ## fail
-  info['status'] = status_code[:failure]
-  info['detail'] = res_output
-  info['command'] = last_comm
-  info['return-code'] = res
-end
-
-log_yml = yml[:log]
-build = log_yml['build'] || []
-build.unshift(info)
-log_yml['build'] = build
-
-Dir.chdir(cwd)
 File.open(files[:log], 'w'){|io| YAML.dump(log_yml, io)}
