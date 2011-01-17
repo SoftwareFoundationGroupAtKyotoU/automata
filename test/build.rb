@@ -51,10 +51,11 @@ raise "config error" unless file_loc
 test_files_dir = file_loc['location']
 
 # copy files
-unless File.exist?(dir[:test].to_s) then
-  FileUtils.mkdir_p(dir[:test].to_s)
-  FileUtils.mkdir_p(dir[:target].to_s)
-end
+FileUtils.rm_r(dir[:test].to_s) if File.exist?(dir[:test].to_s)
+
+FileUtils.mkdir_p(dir[:test].to_s)
+FileUtils.mkdir_p(dir[:target].to_s)
+
 test_files = Dir.glob("#{test_files_dir}/*")
 FileUtils.cp_r(test_files, dir[:test].to_s)
 
