@@ -1,0 +1,46 @@
+#! /usr/bin/env ruby
+
+Dir.chdir(File.dirname(File.expand_path($0)))
+$:.unshift('./lib')
+
+require 'time'
+require 'etc'
+
+require 'app'
+require 'log'
+
+$argv = {}; arg=nil
+$argv[:help] = %w'-h --help'.any?{|x| $*.delete(x)}
+$argv[:id] = $*.reject!{|x|x=~/^--id=(.*)$/&&arg=$1} && arg || $argv[:id]
+
+report_id = $*.shift
+user = $*.shift
+
+if $argv[:help] || !report_id || !user
+  puts("Usage: #{$0} [-h] [--id=YYYY-MM-DDThh:mm:ss+zzzz] report-id user")
+  exit
+end
+
+dir = {}
+dir[:user]   = App::KADAI + report_id + user
+dir[:test]   = dir[:user] + 'test'
+
+log_file = dir[:user][App::FILES[:log]]
+log = if $argv[:id]
+        Log.new(log_file, Time.iso8601($argv[:id])).get(:data)
+      else
+        Log.new(log_file).latest(:data)
+      end
+time = log['id']
+
+# ../test/build.rb report_id user ID ex...
+cmd = "#{App::FILES[:build]} '#{report_id}' '#{user}' '#{log['id']}'"
+cmd = "#{cmd} #{log['report'].join(' ')}"
+
+# sudo su www-data -c "command"
+owner = File.stat(dir[:test].to_s).uid
+if owner != Process.uid
+  cmd = %Q!sudo su #{Etc.getpwuid(owner).name} -c "#{cmd}"!
+end
+
+system(cmd)

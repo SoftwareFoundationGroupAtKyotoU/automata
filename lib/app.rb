@@ -39,6 +39,7 @@ class App
     :data   => DB['data.yml'],
     :log    => 'log.yml',
     :build  => BUILD['build.rb'],
+    :in     => 'solved.in',
   }
 
   attr_reader :cgi

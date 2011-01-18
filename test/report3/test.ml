@@ -62,7 +62,7 @@ let testdataletrec =
 ref (List.map (fun (exp, mono, _) -> (exp, mono)) Testdata.testdata10)
 
 let testdata = 
-  let file = "solved.123" in
+  let file = "solved.in" in
   let ic = open_in file in
   let rec f data = 
     (try 

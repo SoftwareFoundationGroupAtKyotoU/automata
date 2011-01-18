@@ -10,6 +10,7 @@ require 'dir/each_leaf'
 
 require 'app'
 require 'log'
+require 'report/exercise'
 
 report_id = $*.shift
 user      = $*.shift
@@ -70,6 +71,13 @@ FileUtils.cp_r(src_files, dir[:target].to_s)
 # clean
 Dir.each_leaf(dir[:target].to_s, File::FNM_DOTMATCH) do |f|
   FileUtils.rm(f) if f =~ /\.(?:#{ignore.join('|')})$/
+end
+
+# make input file
+input = dir[:test][App::FILES[:in]]
+FileUtils.rm(input) if File.exist?(input)
+open(input, 'w') do |io|
+  exercises.map(&:to_ex).sort.map{|x| x.to_a.last}.each(&io.method(:puts))
 end
 
 # build

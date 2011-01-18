@@ -2,7 +2,7 @@ require 'yaml'
 require 'time'
 
 class Log
-  def initialize(file, time)
+  def initialize(file, time=Time.now)
     @file = file
     @time = time
     @log = YAML.load_file(file)||{} rescue {}
@@ -11,8 +11,14 @@ class Log
     yield(self) if block_given?
   end
 
+  def get_time(x) return x['id'] || x['timestamp'] end
+
+  def latest(what)
+    return @log[what.to_s].sort{|a,b| get_time(a) <=> get_time(b)}.last
+  end
+
   def get(what)
-    return @log[what].find{|x| (x['id']||x['timestamp']) == @time.iso8601}
+    return @log[what.to_s].find{|x| get_time(x) == @time.iso8601}
   end
 
   def put(what, entry)
@@ -20,22 +26,22 @@ class Log
     if hash
       hash.merge!(entry)
     else
-      @log[what].unshift(entry)
+      @log[what.to_s].unshift(entry)
     end
   end
 
-  def data() return get('data')||{} end
+  def data() return get(:build)||{} end
 
   def data!(entry)
     entry = {
       'id'        => data['id'] || @time.iso8601,
       'timestamp' => @time.iso8601,
     }.merge(entry)
-    put('data', entry)
+    put(:build, entry)
   end
 
-  def build() return get('build')||{} end
-  def build!(entry) put('build', entry) end
+  def build() return get(:build)||{} end
+  def build!(entry) put(:build, entry) end
 
   def write(args)
     args.each{|k,v| self.send(k.to_s+'!', v)}
