@@ -1,0 +1,33 @@
+#! /usr/bin/env ruby
+
+Dir.chdir(File.dirname(File.expand_path($0)))
+$:.unshift('./lib')
+
+require 'app'
+
+args = $*.dup
+$argv = {}; arg=nil
+$argv[:help] = %w'-h --help'.any?{|x| $*.delete(x)}
+$argv[:id] = $*.reject!{|x|x=~/^--id=(.*)$/&&arg=$1} && arg || $argv[:id]
+
+report_id = $*.shift
+user = $*.shift
+
+if $argv[:help] || !report_id || !user
+  puts("Usage: #{$0} [-h] [--id=YYYY-MM-DDThh:mm:ss+zzzz] report-id user")
+  exit
+end
+
+dir = {}
+dir[:user]   = App::KADAI + report_id + user
+dir[:test]   = dir[:user] + 'test'
+
+unless File.exist?(dir[:test][App::FILES[:test]])
+  args = args.map{|x| "'"+x+"'"}
+  system("./build #{args.join(' ')}") || exit(1)
+end
+
+Dir.chdir(dir[:test].to_s) do
+  cmd = "./#{App::FILES[:test]}"
+  system(cmd)
+end

@@ -40,6 +40,7 @@ class App
     :log    => 'log.yml',
     :build  => BUILD['build.rb'],
     :in     => 'solved.in',
+    :test   => 'test.native',
   }
 
   attr_reader :cgi
