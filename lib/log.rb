@@ -30,14 +30,14 @@ class Log
     end
   end
 
-  def data() return get(:build)||{} end
+  def data() return get(:data)||{} end
 
   def data!(entry)
     entry = {
       'id'        => data['id'] || @time.iso8601,
       'timestamp' => @time.iso8601,
     }.merge(entry)
-    put(:build, entry)
+    put(:data, entry)
   end
 
   def build() return get(:build)||{} end
