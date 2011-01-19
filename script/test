@@ -10,10 +10,11 @@ require 'app'
 require 'log'
 
 err = {
-  :build    => '自動コンパイルチェックに失敗しました; 提出要件を満たしているか確認して下さい',
+  :build => '自動コンパイルチェックに失敗しました; 提出要件を満たしているか確認して下さい',
   :build_fatal => '自動コンパイルチェックに失敗しました; TAに問い合わせて下さい',
 }
 
+args = $*.dup
 $argv = {}; arg=nil
 $argv[:help] = %w'-h --help'.any?{|x| $*.delete(x)}
 $argv[:rebuild] = %w'-r --rebuild'.any?{|x| $*.delete(x)}
@@ -33,6 +34,15 @@ dir = {}
 dir[:user]   = App::KADAI + report_id + user
 dir[:test]   = dir[:user] + 'test'
 
+# sudo su www-data -c "command args..."
+owner = File.stat(dir[:user].to_s).uid
+if owner != Process.uid
+  args = args.map{|x| "'"+x+"'"}
+  cmd = "./#{File.basename($0)} #{args.join(' ')}"
+  ret = system(%Q!sudo su #{Etc.getpwuid(owner).name} -c "#{cmd}"!)
+  exit(ret ? 0 : 1)
+end
+
 log_file = dir[:user][App::FILES[:log]]
 log = if $argv[:id]
         Log.new(log_file, Time.parse($argv[:id])).get(:data)
@@ -51,13 +61,6 @@ cmd[:build] = "#{cmd[:build]} > /dev/null 2>#{dir[:user]['build_fatal.log']}"
 # ../test/test.rb report_id user post
 cmd[:test] = "#{App::FILES[:sandbox]} '#{report_id}' '#{user}' '#{time}'"
 cmd[:test] = "#{cmd[:test]} > /dev/null 2>&1 &" # do not wait
-
-# sudo su www-data -c "command"
-owner = File.stat(dir[:user].to_s).uid
-if owner != Process.uid
-  cmd.each{|k,c| cmd[k] = %Q!sudo su #{Etc.getpwuid(owner).name} -c "#{c}"!}
-end
-
 
 begin
   build = nil
