@@ -27,7 +27,7 @@ dir[:test]   = dir[:user] + 'test'
 
 log_file = dir[:user][App::FILES[:log]]
 log = if $argv[:id]
-        Log.new(log_file, Time.iso8601($argv[:id])).get(:data)
+        Log.new(log_file, Time.parse($argv[:id])).get(:data)
       else
         Log.new(log_file).latest(:data)
       end
