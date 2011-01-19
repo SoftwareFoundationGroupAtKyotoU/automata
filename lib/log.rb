@@ -18,7 +18,7 @@ class Log
   end
 
   def get(what)
-    return @log[what.to_s].find{|x| Time.parse(get_time(x)) == @time}
+    return @log[what.to_s].find{|x| get_time(x) == @time.iso8601}
   end
 
   def put(what, entry)
