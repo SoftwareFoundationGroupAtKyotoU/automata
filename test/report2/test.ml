@@ -24,27 +24,30 @@ let rec test i = function
       printf "Case #%d:\n" i;
       printf "  exp: %s\n" e;
       (try
-	let Syntax.Exp exp = Parser.toplevel Lexer.main (Lexing.from_string e) in
-	let exval1opt = ValueParser.toplevelvalue ValueLexer.main (Lexing.from_string v) in
-	let exval2opt = ValueParser.toplevelvalue ValueLexer.main
-	(Lexing.from_string ((string_of_exval (eval_exp initial_env exp))^";;")) in
-	printf "  expected value: %s\n" (if v = ";;" then "ERROR" else v);
-	printf "  returned value: "; 
-	(match exval2opt with None ->
-	  print_string "ERROR" | Some exval2 -> pp_test_exval exval2);
-	print_newline ();
-	if match exval1opt, exval2opt with 
-	    None, None -> true
-	  | Some ty1, Some ty2 -> ty1 ==/ty2
-	  | _ -> false
-	    then begin incr successes; print_string " OK!!\n" end
-	    else begin incr failures; print_string " Fail!!\n" end;
-      with Parsing.Parse_error -> 
-        printf "Parsing Error\n";
-	begin incr errors; print_string " Error!!\n" end;	  
-      | Failure("lexing: empty token") ->
-        printf "Lexing Error\n";
-	begin incr errors; print_string " Error!!\n" end);
+	     let Syntax.Exp exp = Parser.toplevel Lexer.main (Lexing.from_string e) in
+	     let exval1opt = ValueParser.toplevelvalue ValueLexer.main (Lexing.from_string v) in
+	     let exval2opt = ValueParser.toplevelvalue ValueLexer.main
+	       (Lexing.from_string ((string_of_exval (eval_exp initial_env exp))^";;")) in
+	       printf "  expected value: %s\n" (if v = ";;" then "ERROR" else v);
+	       printf "  returned value: "; 
+	       (match exval2opt with None ->
+	          print_string "ERROR" | Some exval2 -> pp_test_exval exval2);
+	       print_newline ();
+	       if match exval1opt, exval2opt with 
+	           None, None -> true
+	         | Some ty1, Some ty2 -> ty1 ==/ty2
+	         | _ -> false
+	       then begin incr successes; print_string " OK!!\n" end
+	       else begin incr failures; print_string " Fail!!\n" end;
+       with Parsing.Parse_error -> 
+         printf "Parsing Error\n";
+	     begin incr errors; print_string " Error!!\n" end;	  
+         | Failure("lexing: empty token") ->
+             printf "Lexing Error\n";
+	         begin incr errors; print_string " Error!!\n" end
+         | _ ->
+             printf "Unknown Error\n";
+             begin incr errors; print_string " Error!!\n" end);
       test (i+1) rest
 
 let testdata = Testdata.testdata1 

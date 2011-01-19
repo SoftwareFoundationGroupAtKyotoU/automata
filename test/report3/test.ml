@@ -28,27 +28,30 @@ let rec test i = function
   | (e, t)::rest ->
 	printf "Case #%d:\n" i;
 	printf "  exp: %s\n" e;
-      (try
-      let Exp exp = Parser.toplevel Lexer.main (Lexing.from_string e) in
-      let ty1 = TypeParser.topleveltype TypeLexer.main (Lexing.from_string t) in
-      let ty2 = try Some (snd (ty_exp initial_tyenv exp)) with _ -> None in
-	printf "  expected type: %s\n" (if t = ";;" then "ERROR" else t);
-	printf "  inferred type: "; 
-	(match ty2 with None ->
-	  print_string "ERROR" | Some ty2 -> pp_ty ty2);
-	print_newline ();
-	if match ty1, ty2 with 
-	    None, None -> true
-	  | Some ty1, Some ty2 -> ty1 ==/ty2
-	  | _ -> false
-	    then begin incr successes; print_string " OK!!\n" end
-	    else begin incr failures; print_string " Fail!!\n" end;
-      with Parsing.Parse_error -> 
-        printf "Parsing Error\n";
-	begin incr errors; print_string " Error!!\n" end;	  
-      | Failure("lexing: empty token") ->
-        printf "Lexing Error\n";
-	begin incr errors; print_string " Error!!\n" end);
+    (try
+       let Exp exp = Parser.toplevel Lexer.main (Lexing.from_string e) in
+       let ty1 = TypeParser.topleveltype TypeLexer.main (Lexing.from_string t) in
+       let ty2 = try Some (snd (ty_exp initial_tyenv exp)) with _ -> None in
+	     printf "  expected type: %s\n" (if t = ";;" then "ERROR" else t);
+	     printf "  inferred type: ";
+	     (match ty2 with None ->
+	        print_string "ERROR" | Some ty2 -> pp_ty ty2);
+	     print_newline ();
+	     if match ty1, ty2 with
+	         None, None -> true
+	       | Some ty1, Some ty2 -> ty1 ==/ty2
+	       | _ -> false
+	     then begin incr successes; print_string " OK!!\n" end
+	     else begin incr failures; print_string " Fail!!\n" end;
+     with Parsing.Parse_error ->
+       printf "Parsing Error\n";
+	   begin incr errors; print_string " Error!!\n" end
+       | Failure("lexing: empty token") ->
+           printf "Lexing Error\n";
+	       begin incr errors; print_string " Error!!\n" end
+       | _ ->
+           printf "Unknown Error\n";
+           begin incr errors; print_string " Error!!\n" end);
 	test (i+1) rest
 
 
