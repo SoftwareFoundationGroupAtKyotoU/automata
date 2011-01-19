@@ -14,7 +14,10 @@ report_id = $*.shift
 user      = $*.shift
 post_tz   = $*.shift
 
-ERROR = '自動テストを実行できませんでした; TAに問い合わせて下さい'
+err = {
+  :fatal => '自動テストを実行できませんでした; TAに問い合わせて下さい',
+  :fail  => '自動テストがうまく実行されませんでした; 実装を確認して下さい',
+}
 ZIP = 'test.zip'
 
 dir = {}
@@ -53,16 +56,22 @@ begin
         "zip #{ZIP} #{App::FILES[:test]} #{App::FILES[:in]}",
       ].all?(&proc{|x| (x.is_a?(String)&&system(x))||(x.is_a?(Proc)&&x.call)})
 
-    check ? `#{cmd}` : nil
+    result = nil
+    result = `#{cmd}` if check
+    result = nil unless $? == 0
+
+    result
   end
 
-  result = result.to_a.reject{|l| l =~ /^(?:Case|\s+)/}.join
-  raise RuntimeError, cmd if result.strip.empty?
+  raise RuntimeError, cmd unless result
+  summary = result.to_a.reject{|l| l =~ /^(?:Case|\s+)/}.join
 
+  log = (summary.strip.empty? ?
+         { 'error' => err[:fail] } : { 'test case' => summary })
   info = {
     'status'    => 'OK',
     'timestamp' => Time.now.iso8601,
-    'log'       => { 'test case' => result }
+    'log'       => log,
   }
 
 rescue => e
@@ -70,7 +79,7 @@ rescue => e
     'status'    => 'check:NG',
     'timestamp' => Time.now.iso8601,
     'log'       => {
-      'message' => ERROR,
+      'message' => err[:fatal],
       'reason'  => e.to_s,
     },
   }

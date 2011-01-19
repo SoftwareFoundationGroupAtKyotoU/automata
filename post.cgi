@@ -95,22 +95,34 @@ begin
     # run build checker
     cmd = "#{App::FILES[:build]} '#{rep_id}' '#{app.user}' '#{time.iso8601}'"
     cmd = ([cmd]+report).join(' ')
+    build = nil
     if system("#{cmd} > /dev/null 2>#{USER_DIR['build_fatal.log']}")
       Log.new(log_file, time) do |log|
-        hash = (log.build['status'] == 'OK' ?
-                { 'status' => 'check',
-                  'log' => { 'build'  => 'OK' } } :
-                { 'status' => 'build:NG',
-                  'log'    => {
-                    'error'   => log.build['detail'],
-                    'message' => err[:build] } })
+        hash = {
+          'status' => 'build:NG',
+          'log'    => {
+            'error'   => log.build['detail'],
+            'message' => err[:build] }
+        }
+
+        if log.build['status'] == 'OK'
+          build = true
+          hash = { 'status' => 'check', 'log' => { 'build'  => 'OK' } }
+        end
+
         log.write_data(hash.merge('timestamp' => log.build['timestamp']))
       end
     else
       raise RuntimeError, err[:build_fatal]
     end
 
-    # TODO: invoke tester
+    exit unless build
+
+    # invoke tester in a sandbox
+    cmd = "#{App::FILES[:sandbox]} '#{rep_id}' '#{app.user}' '#{time.iso8601}'"
+    cmd = "#{cmd} > /dev/null 2>&1 &" # do not wait
+    system(cmd)
+
   rescue RuntimeError => e
     Log.new(log_file, time) do |log|
       log.write_data('status' => 'NG', 'log' => { 'error' => e.to_s })
