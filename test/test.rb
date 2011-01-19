@@ -35,7 +35,16 @@ yml[:test] = yml[:config]['test']
 info = nil
 
 begin
-  raise RuntimeError, :dir unless File.exist?(dir[:test].to_s)
+  unless File.exist?(dir[:test].to_s)
+    raise RuntimeError, "'#{dir[:test]}' not found"
+  end
+
+  cmd =
+    [ 'curl',
+      "-F 'file=@#{ZIP}'",
+      "-F 'cmd=#{App::FILES[:test]}'",
+      yml[:test]['sandbox'],
+    ].join(' ')
 
   result = Dir.chdir(dir[:test].to_s) do
     check =
@@ -44,18 +53,11 @@ begin
         "zip #{ZIP} #{App::FILES[:test]} #{App::FILES[:in]}",
       ].all?(&proc{|x| (x.is_a?(String)&&system(x))||(x.is_a?(Proc)&&x.call)})
 
-    cmd =
-      [ 'curl',
-        "-F 'file=@#{ZIP}'",
-        "-F 'cmd=#{App::FILES[:test]}'",
-        yml[:test]['sandbox'],
-      ].join(' ')
-
     check ? `#{cmd}` : nil
   end
 
   result = result.to_a.reject{|l| l =~ /^(?:Case|\s+)/}.join
-  raise RuntimeError, :curl if result.strip.empty?
+  raise RuntimeError, cmd if result.strip.empty?
 
   info = {
     'status'    => 'OK',

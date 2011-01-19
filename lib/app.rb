@@ -33,14 +33,15 @@ class App
   BUILD  = BASE + 'test'
 
   FILES = {
-    :master => CONFIG['config.yml'],
-    :local  => CONFIG['local.yml'],
-    :scheme => CONFIG['scheme.yml'],
-    :data   => DB['data.yml'],
-    :log    => 'log.yml',
-    :build  => BUILD['build.rb'],
-    :in     => 'solved.in',
-    :test   => 'test.native',
+    :master  => CONFIG['config.yml'],
+    :local   => CONFIG['local.yml'],
+    :scheme  => CONFIG['scheme.yml'],
+    :data    => DB['data.yml'],
+    :log     => 'log.yml',
+    :build   => BUILD['build.rb'],
+    :sandbox => BUILD['test.rb'],
+    :in      => 'solved.in',
+    :test    => 'test.native',
   }
 
   attr_reader :cgi
