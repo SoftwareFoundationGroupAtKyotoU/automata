@@ -21,8 +21,6 @@ err = {
   # 'over capacity',
   :unzip    => 'アップロードされたファイルの展開に失敗しました',
   # 'unable to unzip the uploaded file',
-  :build    => '自動コンパイルチェックに失敗しました; 提出要件を満たしているか確認して下さい',
-  :build_fatal => '自動コンパイルチェックに失敗しました; TAに問い合わせて下さい',
 }
 
 app = App.new
@@ -92,35 +90,10 @@ begin
       log.write_data('status' => 'build', 'report' => report)
     end
 
-    # run build checker
-    cmd = "#{App::FILES[:build]} '#{rep_id}' '#{app.user}' '#{time.iso8601}'"
-    cmd = ([cmd]+report).join(' ')
-    build = nil
-    if system("#{cmd} > /dev/null 2>#{USER_DIR['build_fatal.log']}")
-      Log.new(log_file, time) do |log|
-        hash = {
-          'status' => 'build:NG',
-          'log'    => {
-            'error'   => log.build['detail'],
-            'message' => err[:build] }
-        }
-
-        if log.build['status'] == 'OK'
-          build = true
-          hash = { 'status' => 'check', 'log' => { 'build'  => 'OK' } }
-        end
-
-        log.write_data(hash.merge('timestamp' => log.build['timestamp']))
-      end
-    else
-      raise RuntimeError, err[:build_fatal]
-    end
-
-    exit unless build
-
-    # invoke tester in a sandbox
-    cmd = "#{App::FILES[:sandbox]} '#{rep_id}' '#{app.user}' '#{time.iso8601}'"
-    cmd = "#{cmd} > /dev/null 2>&1 &" # do not wait
+    # build and run test
+    cmd = App::FILES[:test_script]
+    cmd = "#{cmd} --rebuild --id=#{time.iso8601} '#{rep_id}' '#{app.user}'"
+    cmd = "#{cmd} > /dev/null 2>&1"
     system(cmd)
 
   rescue RuntimeError => e

@@ -31,6 +31,7 @@ class App
   DB     = BASE + 'db'
   KADAI  = DB + 'kadai'
   BUILD  = BASE + 'test'
+  SCRIPT = BASE + 'script'
 
   FILES = {
     :master  => CONFIG['config.yml'],
@@ -42,6 +43,7 @@ class App
     :sandbox => BUILD['test.rb'],
     :in      => 'solved.in',
     :test    => 'test.native',
+    :test_script => SCRIPT['test'],
   }
 
   attr_reader :cgi

@@ -9,6 +9,11 @@ require 'etc'
 require 'app'
 require 'log'
 
+err = {
+  :build    => '自動コンパイルチェックに失敗しました; 提出要件を満たしているか確認して下さい',
+  :build_fatal => '自動コンパイルチェックに失敗しました; TAに問い合わせて下さい',
+}
+
 $argv = {}; arg=nil
 $argv[:help] = %w'-h --help'.any?{|x| $*.delete(x)}
 $argv[:rebuild] = %w'-r --rebuild'.any?{|x| $*.delete(x)}
@@ -34,17 +39,18 @@ log = if $argv[:id]
       else
         Log.new(log_file).latest(:data)
       end
-time = log['id']
+time = log['id'] || log['timestamp']
 
 cmd = {}
 
 # ../test/build.rb report_id user post ex...
-cmd[:build] = "#{App::FILES[:build]} '#{report_id}' '#{user}' '#{log['id']}'"
+cmd[:build] = "#{App::FILES[:build]} '#{report_id}' '#{user}' '#{time}'"
 cmd[:build] = "#{cmd[:build]} #{log['report'].join(' ')}"
+cmd[:build] = "#{cmd[:build]} > /dev/null 2>#{dir[:user]['build_fatal.log']}"
 
 # ../test/test.rb report_id user post
-cmd[:test] = "#{App::FILES[:sandbox]} '#{report_id}' '#{user}' '#{log['id']}'"
-
+cmd[:test] = "#{App::FILES[:sandbox]} '#{report_id}' '#{user}' '#{time}'"
+cmd[:test] = "#{cmd[:test]} > /dev/null 2>&1 &" # do not wait
 
 # sudo su www-data -c "command"
 owner = File.stat(dir[:user].to_s).uid
@@ -52,16 +58,42 @@ if owner != Process.uid
   cmd.each{|k,c| cmd[k] = %Q!sudo su #{Etc.getpwuid(owner).name} -c "#{c}"!}
 end
 
-# build
-if $argv[:rebuild] || !File.exist?(dir[:test][App::FILES[:test]])
-  unless system(cmd[:build])
+
+begin
+  build = nil
+  if system("#{cmd[:build]}")
+    Log.new(log_file, Time.parse(time)) do |log|
+      hash = {
+        'status' => 'build:NG',
+        'log'    => {
+          'error'   => log.build['detail'],
+          'message' => err[:build] }
+      }
+
+      if log.build['status'] == 'OK'
+        build = true
+        hash = { 'status' => 'check', 'log' => { 'build'  => 'OK' } }
+      end
+
+      log.write_data(hash.merge('timestamp' => log.build['timestamp']))
+    end
+  else
+    raise RuntimeError, err[:build_fatal]
+  end
+
+  unless build
     $stderr.puts('build failed')
     exit(1)
   end
-end
 
-# test
-unless system(cmd[:test])
-  $stderr.puts('test failed')
-  exit(2)
+  # invoke tester in a sandbox
+  unless system(cmd[:test])
+    $stderr.puts('test failed')
+    exit(2)
+  end
+
+rescue => e
+  Log.new(log_file, Time.parse(time)) do |log|
+    log.write_data('status' => 'NG', 'log' => { 'error' => e.to_s })
+  end
 end
