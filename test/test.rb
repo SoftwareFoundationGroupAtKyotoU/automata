@@ -72,6 +72,7 @@ begin
     'status'    => 'OK',
     'timestamp' => Time.now.iso8601,
     'log'       => log,
+    'detail'    => result,
   }
 
 rescue => e
