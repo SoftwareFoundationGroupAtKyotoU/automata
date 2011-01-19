@@ -25,3 +25,6 @@ build:
           - Ex.4.8
         location: report3-8
       - location: report3
+
+test:
+  sandbox: "http://sandbox.sato.kuis.kyoto-u.ac.jp/isle4fp/tester.cgi"

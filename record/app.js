@@ -84,6 +84,7 @@ var init = function(id) {
             var ppLog = function(k, msg) {
                 switch (k) {
                 case 'error': return $new('pre', { child: $node(msg) });
+                case 'test case': return $new('pre', { child: $node(msg) });
                 default: return $node(msg);
                 }
             };
