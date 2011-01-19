@@ -92,6 +92,13 @@ td.status {
    text-align: center;
 }
 
+td.status .loading {
+   padding-right: 0.2em;
+   border: none;
+   width: 16px;
+   height: 16px;
+}
+
 td.NG, td.build-NG {
    background-color: #ddccdd ! important;
 }

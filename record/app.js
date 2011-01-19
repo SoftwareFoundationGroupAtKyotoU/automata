@@ -11,15 +11,15 @@ var init = function(id) {
         uri.params = args || {};
         return uri;
     };
+    var apiMaster = api('master', { year: true });
+    var apiUser = api('user', { type: 'status', status: 'record', log: 1 });
+    var apiScheme = api('scheme', { record: true });
 
     with (GNN.UI) {
+
         var div = GNN.UI.$(id);
 
-        GNN.JSONP.retrieve({
-            master: api('master', { year: true }),
-            user: api('user', { type: 'status', status: 'record', log: 1 }),
-            scheme: api('scheme', { record: true })
-        }, function(json) {
+        var setYear = function(json) {
             // set year
             document.title = [
                 document.title,
@@ -31,6 +31,10 @@ var init = function(id) {
                     spans[i].appendChild($text(json.master.year));
                 }
             }
+        };
+
+        var showRecord = function(json) {
+            removeAllChildren(div);
 
             // textify function specific to the field
             var toText = function(obj, klass) {
@@ -181,9 +185,24 @@ var init = function(id) {
                                     setLog();
                                 }
                             });
+                        } else if (col.field == 'status' && fld == 'check') {
+                            var updateRecord = function() {
+                                GNN.JSONP.retrieve({
+                                    user: apiUser
+                                }, function(json2) {
+                                    json2.scheme = json.scheme;
+                                    showRecord(json2);
+                                });
+                            };
+                            setTimeout(updateRecord, 2000);
+                            td.appendChild($new('img', {
+                                klass: 'loading',
+                                attr: { src: 'loading.gif' }
+                            }));
                         }
 
                         td.appendChild($node(text));
+
                     });
                     table.appendChild(tr);
 
@@ -192,6 +211,15 @@ var init = function(id) {
                 div.appendChild(table);
                 div.appendChild(log);
             });
+        };
+
+        GNN.JSONP.retrieve({
+            master: apiMaster,
+            user: apiUser,
+            scheme: apiScheme
+        }, function(json) {
+            setYear(json);
+            showRecord(json);
         });
     }
 };
