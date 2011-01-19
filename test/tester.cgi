@@ -41,7 +41,7 @@ begin
 
   # extract archive file
   res = system("env 7z x -o#{dir} #{path} > /dev/null 2>&1")
-  raise RuntimeError, err[:unzip] unless res
+  raise RuntimeError, :unzip unless res
 
   # run
   cmd = cgi.params['cmd'][0].read
