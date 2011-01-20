@@ -49,8 +49,8 @@ let rec test i = function
        | Failure("lexing: empty token") ->
            printf "Lexing Error\n";
 	       begin incr errors; print_string " Error!!\n" end
-       | _ ->
-           printf "Unknown Error\n";
+       | e ->
+           print_endline (Printexc.to_string e);
            begin incr errors; print_string " Error!!\n" end);
 	test (i+1) rest
 
