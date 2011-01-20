@@ -86,7 +86,7 @@
             (ただし<span class="option">TyList</span>はEx.4.8を解いた場合のみ)</li>
             <li><code>Syntax.pp_ty : Syntax.ty -> unit</code></li>
             <li><code>Parsing.toplevel : (Lexing.lexbuf -> token) -> Lexing.lexbuf ->  Syntax.program</code></li>
-            <li><code>Typing.ty_exp : tyenv -> Syntax.exp -> (Syntax.tyvar * Syntax.ty) list * Syntax.ty</code></li>
+            <li><code>Typing.ty_exp : Syntax.ty Environment.t -> Syntax.exp -> (Syntax.tyvar * Syntax.ty) list * Syntax.ty</code></li>
           </ul>
         </div>
 
