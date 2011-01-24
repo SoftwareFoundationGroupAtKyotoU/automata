@@ -42,7 +42,7 @@ class App
     :build   => BUILD['build.rb'],
     :sandbox => BUILD['test.rb'],
     :in      => 'solved.in',
-    :test    => 'test.native',
+    :test    => 'test.byte',
     :test_script => SCRIPT['test'],
   }
 
