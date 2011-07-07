@@ -3,3 +3,4 @@ db/data.yml
 .htaccess
 .htdigest
 db/kadai
+script/setup/passwd

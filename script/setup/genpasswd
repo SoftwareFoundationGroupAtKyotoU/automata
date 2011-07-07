@@ -1,0 +1,50 @@
+#! /usr/bin/env ruby
+
+$argv = { :realm => 'isle4fp' }; arg=nil
+$argv[:help] = %w'-h --help'.any?{|x| $*.delete(x)}
+$argv[:realm] = $*.reject!{|x|x=~/^--realm=(.*)$/&&arg=$1}&&arg||$argv[:realm]
+$argv[:file] = $*[0]
+$argv[:file] = File.expand_path($argv[:file]) if $argv[:file]
+$argv[:file] = File.join('..', '..', '.htdigest') unless $argv[:file]
+
+Dir.chdir(File.dirname(File.expand_path($0)))
+$:.unshift('../lib')
+
+if $argv[:help]
+  puts <<"EOM"
+Usage: #{$0} [-h] [--realm=#{$argv[:realm]}] [<file>]
+Options:
+  --realm <realm>   Set realm to <realm>
+  <file>            Output file (default: #{File.expand_path($argv[:file])})
+EOM
+  exit
+end
+
+$base_dir = File.join('..', '..')
+
+require 'yaml'
+require 'webrick'
+require 'string/random'
+require 'app'
+
+master = YAML.load_file(App::FILES[:master])
+local_file = App::FILES[:local]
+master = master.merge(YAML.load_file(local_file)) if File.exist?(local_file)
+data = YAML.load_file(App::FILES[:data])['data']
+raise 'No user information in db/data.yml' unless data
+
+realm = $argv[:realm]
+
+include WEBrick
+htd = HTTPAuth::Htdigest.new($argv[:file])
+File.open('passwd', 'a') do |raw|
+  users = (master['su']||[]) + data.map{|d| d['login']}
+  users.uniq.map{|u| [ u, String.random(8) ]}.each do |u, pass|
+    unless htd.get_passwd(realm, u, false)
+      raw.puts([ u, pass ].join(':'))
+      htd.set_passwd(realm, u, pass)
+    end
+  end
+end
+
+htd.flush
