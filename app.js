@@ -112,17 +112,7 @@ var init = function() {
             master: api('master', { year: true, user: true }),
             scheme: api('scheme', { type: 'post', exercise: true })
         }, function(json) {
-            // set year
-            document.title = [
-                document.title,
-                ' (Winter Semester ', json.master.year, ')'
-            ].join('');
-            var spans = document.getElementsByTagName('span');
-            for (var i=0; i < spans.length; i++) {
-                if (spans[i].className == 'year') {
-                    spans[i].appendChild($text(json.master.year));
-                }
-            }
+            setYear(json.master.year);
 
             // set login name
             var login = $('login');

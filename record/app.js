@@ -19,20 +19,6 @@ var init = function(id) {
 
         var div = GNN.UI.$(id);
 
-        var setYear = function(json) {
-            // set year
-            document.title = [
-                document.title,
-                ' (Winter Semester ', json.master.year, ')'
-            ].join('');
-            var spans = document.getElementsByTagName('span');
-            for (var i=0; i < spans.length; i++) {
-                if (spans[i].className == 'year') {
-                    spans[i].appendChild($text(json.master.year));
-                }
-            }
-        };
-
         var showRecord = function(json) {
             removeAllChildren(div);
 
@@ -218,7 +204,7 @@ var init = function(id) {
             user: apiUser,
             scheme: apiScheme
         }, function(json) {
-            setYear(json);
+            setYear(json.master.year);
             showRecord(json);
         });
     }
