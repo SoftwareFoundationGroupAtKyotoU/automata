@@ -48,7 +48,7 @@ var init = function(id) {
 
                 switch (klass) {
                 case 'status':
-                    if (typeof obj == 'boolean') obj = 'OK';
+                    if (typeof obj == 'boolean' && obj) obj = 'OK';
                     switch (obj) {
                     case 'OK': return '提出済';
                     case 'NG': return '要再提出';
