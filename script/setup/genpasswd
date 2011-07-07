@@ -48,3 +48,4 @@ File.open('passwd', 'a') do |raw|
 end
 
 htd.flush
+system("chmod a+r #{$argv[:file]}")
