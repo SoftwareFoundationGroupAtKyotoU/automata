@@ -1,0 +1,17 @@
+o- api/t
+--- test_exercise.rb
+o-- test_counter.rb
+o-- test_report.rb
+o-- test_user.rb
+o-- test_log.rb
+o-- test_app.rb
+o-- test_api_user.rb
+o-- test_api_scheme.rb
+o-- test_api_master.rb
+o-- テストをすべて実行するスクリプト
+o 課題1も自動でテストしたい
+o ドキュメント
+o セットアップツール?
+  o セットアップが成功しているかどうかのステータスページ
+  o ドキュメントもここでいいか?
+  o アクセス権限どうする?
