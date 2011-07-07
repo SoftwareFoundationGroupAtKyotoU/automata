@@ -16,12 +16,11 @@ $:.unshift('./lib')
 require 'app'
 app = App.new
 
-master = app.file(:master)
-master['user'] = app.user
+app.conf[:user] = app.user
 entry = {}
 keys = KEY.dup
 OPTIONAL.each{|k| keys << k unless app.params[k.to_s].empty?}
-keys.each{|k| entry[k.to_s] = master[k.to_s]}
+keys.each{|k| entry[k.to_s] = app.conf[k]}
 result = entry
 
 print(app.header)

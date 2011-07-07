@@ -86,15 +86,17 @@ class App
   def conf()
     unless @conf
       require 'conf'
-      @conf = Conf.new(file(:master))
+      @conf = Conf.new(file(:master), file(:local))
     end
     return @conf
   end
 
   def user(u=nil)
-    @user = u || cgi.remote_user || file(:local)['user'] unless @user
+    @user = u || cgi.remote_user || conf[:user] unless @user
     return @user
   end
+
+  def su?(user) return conf[:su].include?(user) end
 
   def user_dir(r) return KADAI + r + user end
 
@@ -102,7 +104,7 @@ class App
     unless @users
       require 'user'
       @users = file(:data)['data'].map{|u| User.new(u)}
-      @users.reject!{|u| u.login != user} unless conf.su?(user)
+      @users.reject!{|u| u.login != user} unless su?(user)
     end
     return @users
   end
