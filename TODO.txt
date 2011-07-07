@@ -12,6 +12,8 @@ o-- テストをすべて実行するスクリプト
 o 課題1も自動でテストしたい
 o ドキュメント
 o セットアップツール?
+  o 初期化
+    o db/kadaiを 775 user:www-data で作成
   o adminを変更/追加
     o 最初はデフォルトのlocal.ymlにsuを設定しておく??
     o config/local.ymlを更新
