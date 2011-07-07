@@ -10,11 +10,12 @@ o-- test_api_scheme.rb
 o-- test_api_master.rb
 o-- テストをすべて実行するスクリプト
 o 課題1も自動でテストしたい
+o テストケースの詳細な結果は特権アカウントのときは常に表示
 o ドキュメント
 o セットアップツール?
   o 初期化
     o db/kadaiを 775 user:www-data で作成
-  o adminを変更/追加
+  o 特権アカウントを変更/追加
     o 最初はデフォルトのlocal.ymlにsuを設定しておく??
     o config/local.ymlを更新
     o .htdigest等を更新
