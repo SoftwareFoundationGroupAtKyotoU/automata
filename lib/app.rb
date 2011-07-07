@@ -116,13 +116,17 @@ class App
     log = option[:log]
 
     src = nil
+    optional = []
+    optional << :log if option[:log]
+    optional << :detail if option[:log] && conf[:record, :detail]
+
     if (file(:scheme)['scheme'].find{|r| r['id']==id} || {})['type'] == 'post'
       fname = KADAI[id, u, FILES[:log]]
       return nil unless File.exist?(fname)
       yaml = YAML.load_file(fname)||{} rescue {}
       yaml = yaml['data'] || {}
       yaml = yaml.first if yaml.is_a?(Array)
-      src = Report::Source::Post.new(yaml, log)
+      src = Report::Source::Post.new(yaml, optional)
     else
       yaml = file(:data) rescue {}
       yaml = yaml['data'] || {}
@@ -130,7 +134,7 @@ class App
       yaml = yaml['report'] || {}
       yaml = yaml[id] || {}
       timestamp = File.mtime(FILES[:data]).iso8601
-      src = Report::Source::Manual.new(yaml, log, timestamp)
+      src = Report::Source::Manual.new(yaml, optional, timestamp)
     end
 
     case status

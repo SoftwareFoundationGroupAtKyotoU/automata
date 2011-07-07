@@ -6,6 +6,9 @@ su:
 
 year:   2010
 
+record:
+  detail: false
+
 build:
   command:
     - ocamlbuild -I src main.byte -no-hygiene && ocamlbuild -clean

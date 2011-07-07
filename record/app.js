@@ -73,8 +73,9 @@ var init = function(id) {
 
             var ppLog = function(k, msg) {
                 switch (k) {
-                case 'error': return $new('pre', { child: $node(msg) });
-                case 'test case': return $new('pre', { child: $node(msg) });
+                case 'error':
+                case 'test case':
+                case 'detail': return $new('pre', { child: $node(msg) });
                 default: return $node(msg);
                 }
             };
@@ -93,6 +94,7 @@ var init = function(id) {
                 }
 
                 if (record.log) {
+                    if (record.detail) record.log.detail = record.detail;
                     var log = record.log;
                     for (var k in log) {
                         var msg = log[k];

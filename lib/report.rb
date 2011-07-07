@@ -5,9 +5,9 @@ module Report
     class Manual
       attr_reader :data
 
-      def initialize(data, log, timestamp)
+      def initialize(data, optional, timestamp)
         @data = data || []
-        @log = log
+        @optional = optional
         @timestamp = timestamp
       end
 
@@ -15,11 +15,11 @@ module Report
 
       def solved() return @data end
 
-      def log() return nil end
+      def optional(key) return nil end
 
       def to_hash()
         hash = { 'status' => status?, 'timestamp' => @timestamp }
-        hash['log'] = log if @log
+        @optional.each{|k| hash[k.to_s] = optional(k)}
         return hash
       end
     end
@@ -27,23 +27,23 @@ module Report
     class Post
       attr_reader :data
 
-      def initialize(data, log)
+      def initialize(data, optional)
         @data = data
-        @log = log
+        @optional = optional
       end
 
       def status?() @data['status'] end
 
       def solved() @data['report'] || [] end
 
-      def log() return @data['log'] end
+      def optional(key) return @data[key.to_s] end
 
       def to_hash()
         hash = {
           'status'    => status?,
           'timestamp' => @data['timestamp'],
         }
-        hash['log'] = log if @log
+        @optional.each{|k| hash[k.to_s] = optional(k)}
         return hash
       end
     end
