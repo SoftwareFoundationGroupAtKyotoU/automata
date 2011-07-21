@@ -86,7 +86,7 @@ class App
   def conf()
     unless @conf
       require 'conf'
-      @conf = Conf.new(file(:master), file(:local))
+      @conf = Conf.new(file(:master), (file(:local) rescue nil))
     end
     return @conf
   end
