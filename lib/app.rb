@@ -96,7 +96,7 @@ class App
     return @user
   end
 
-  def su?(user) return conf[:su].include?(user) end
+  def su?(u=nil) return conf[:su].include?(u||user) end
 
   def user_dir(r) return KADAI + r + user end
 
@@ -118,7 +118,7 @@ class App
     src = nil
     optional = []
     optional << :log if option[:log]
-    optional << :detail if option[:log] && conf[:record, :detail]
+    optional << :detail if option[:log] && (conf[:record, :detail] || su?)
 
     if (file(:scheme)['scheme'].find{|r| r['id']==id} || {})['type'] == 'post'
       fname = KADAI[id, u, FILES[:log]]
