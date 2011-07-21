@@ -70,11 +70,9 @@
           <ul>
             <li><code>Parsing.toplevel : (Lexing.lexbuf -> token) -> Lexing.lexbuf -> Syntax.program</code></li>
             <li><code>Eval.eval_exp : dnval Environment.t -> Syntax.exp -> dnval</code></li>
-            <li><code>Eval.string_of_exval : exval -> string</code>
+            <li><code>Eval.exval = IntV of int | BoolV of bool | ProcV of ... <span class="option">| ListV of exval list</span></code>
             <br />
-            <em>テキストに記載がないので注意すること.</em>
-            (<code>string_of_exval</code>は<code>exval</code>を与えると文字列を返す関数であり, OCaml インタラクティブコンパイラが返す出力のうち, <code>=</code>より右側の部分に相当する文字列を返す. 例えば, <code>string_of_exval</code>に<code>(IntV 3)</code>を与えると<code>3</code>を返し, <code>ProcV (_, _, _)</code>を与えると<code>&lt;fun&gt;</code>という文字列を返す.)
-            </li>
+            (ただし<span class="option">ListV</span>はEx.3.16を解いた場合のみ)</li>
           </ul>
         </div>
 

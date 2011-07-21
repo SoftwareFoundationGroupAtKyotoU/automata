@@ -2,6 +2,7 @@
 open Eval
 open Printf
 open Testaux
+open Testaux2
 
 let initial_env = Environment.empty
 
@@ -22,7 +23,8 @@ let eval_test (testcase : (string * string)) : string * string =
       begin
         match program with
           | Syntax.Exp exp -> begin
-              try let v = eval_exp env exp in string_of_exval v with _ -> ""
+              try let v = eval_exp env exp in Testaux2.string_of_exval v
+              with _ -> ""
             end
           | _ ->
               let (id, env, v) = eval_decl env program in eval_loop buf env

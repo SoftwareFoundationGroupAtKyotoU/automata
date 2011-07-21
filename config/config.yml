@@ -15,7 +15,13 @@ build:
     - ocamlbuild -I src test.byte -no-hygiene
   file_location:
     report2:
-      - location: report2
+      - exercise:
+          - Ex.3.16
+        location: report2-16
+      - exercise:
+          - Ex.3.8
+        location: report2
+      - location: report2-4
     report3:
       - exercise:
           - Ex.4.8
