@@ -8,3 +8,7 @@ let initial_tyenv =
 	(Environment.extend "i" TyInt
 	    (Environment.extend "v" TyInt
 		(Environment.extend "x" TyInt Environment.empty))))
+
+let pp_ty typ =
+  let t = typ in
+    print_string (Testaux.ty_name t)

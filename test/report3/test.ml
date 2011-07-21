@@ -35,7 +35,7 @@ let rec test i = function
 	     printf "  expected type: %s\n" (if t = ";;" then "ERROR" else t);
 	     printf "  inferred type: ";
 	     (match ty2 with None ->
-	        print_string "ERROR" | Some ty2 -> pp_ty ty2);
+	        print_string "ERROR" | Some ty2 -> Testaux2.pp_ty ty2);
 	     print_newline ();
 	     if match ty1, ty2 with
 	         None, None -> true
