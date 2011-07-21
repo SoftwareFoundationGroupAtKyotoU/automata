@@ -69,6 +69,7 @@ module Report
 
     def to_hash()
       hash = @src.to_hash
+      return hash unless @src.status?
 
       counter = Counter.new(@scheme)
       @src.solved.each{|ex| counter.vote(ex)}
