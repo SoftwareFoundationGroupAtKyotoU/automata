@@ -104,7 +104,7 @@ class App
     unless @users
       require 'user'
       @users = file(:data)['data'].map{|u| User.new(u)}
-      @users.reject!{|u| u.login != user} unless su?(user)
+      @users.reject!{|u| u.login != user} unless conf[:record, :open] || su?
     end
     return @users
   end
