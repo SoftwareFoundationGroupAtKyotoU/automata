@@ -31,7 +31,7 @@ let rec test i = function
     (try
        let Exp exp = Parser.toplevel Lexer.main (Lexing.from_string e) in
        let ty1 = TypeParser.topleveltype TypeLexer.main (Lexing.from_string t) in
-       let ty2 = try Some (snd (ty_exp initial_tyenv exp)) with _ -> None in
+       let ty2 = try Some (ty_exp initial_tyenv exp) with _ -> None in
 	     printf "  expected type: %s\n" (if t = ";;" then "ERROR" else t);
 	     printf "  inferred type: ";
 	     (match ty2 with None ->
@@ -77,7 +77,7 @@ let testdata =
           testdataletrec := [];
           f (data @ Testdata.testdata1)
       | 6 ->
-          testdatalet := [];
+          testdataletrec := [];
           f (data @ Testdata.testdata6)
       | 7 -> f (data @ Testdata.testdata7)
       | 8 -> f (data @ Testdata.testdata8)

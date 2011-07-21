@@ -27,7 +27,10 @@ build:
       - exercise:
           - Ex.4.8
         location: report3-8
-      - location: report3
+      - exercise:
+          - Ex.4.6
+        location: report3
+      - location: report3-1
 
 test:
   sandbox: "http://sandbox.sato.kuis.kyoto-u.ac.jp/isle4fp/tester.cgi"
