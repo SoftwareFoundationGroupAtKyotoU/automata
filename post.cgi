@@ -92,7 +92,7 @@ begin
 
     # build and run test
     cmd = App::FILES[:test_script]
-    cmd = "#{cmd} --rebuild --id=#{time.iso8601} '#{rep_id}' '#{app.user}'"
+    cmd = "#{cmd} --id=#{time.iso8601} '#{rep_id}' '#{app.user}'"
     cmd = "#{cmd} > /dev/null 2>&1"
     system(cmd)
 
