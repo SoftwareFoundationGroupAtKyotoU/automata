@@ -38,39 +38,40 @@ let eval_test (testcase : (string * string)) : string * string =
 let rec test oc i = function
     [] ->
       fprintf oc "Total: %d\nSuccesses: %d\nFailures: %d\nErrors: %d\n"
-	i !successes !failures !errors;
+        i !successes !failures !errors;
       exit 0
   | testcase::rest ->
       fprintf oc "Case #%d:\n" i;
       fprintf oc "  exp: %s\n" (fst testcase);
-      (try
-         let (a, b) = eval_test testcase in
-         let (buf2, buf1) = (Lexing.from_string a, Lexing.from_string b) in
-	     let exval1opt = ValueParser.toplevelvalue ValueLexer.main buf1 in
-	     let exval2opt = ValueParser.toplevelvalue ValueLexer.main buf2 in
-	       fprintf oc "  expected value: %s\n" (if b=";;" then "ERROR" else b);
-	       fprintf oc "  returned value: ";
-           begin
-	         match exval2opt with
-                 None -> output_string oc "ERROR"
-               | Some exval2 -> output_test_exval oc exval2
-           end;
-	       output_string oc "\n";
-	       if match exval1opt, exval2opt with
-	           None, None -> true
-	         | Some ty1, Some ty2 -> ty1 ==/ ty2
-	         | _ -> false
-	       then begin incr successes; output_string oc " OK!!\n" end
-	       else begin incr failures; output_string oc " Fail!!\n" end;
-       with Parsing.Parse_error ->
-         fprintf oc "Parsing Error\n";
-	     begin incr errors; output_string oc " Error!!\n" end;
-         | Failure("lexing: empty token") ->
-             fprintf oc "Lexing Error\n";
-	         begin incr errors; output_string oc " Error!!\n" end
-         | e ->
-           fprintf oc "%s\n" (Printexc.to_string e);
-           begin incr errors; output_string oc " Error!!\n" end);
+      begin try
+        let (a, b) = eval_test testcase in
+        let (buf2, buf1) = (Lexing.from_string a, Lexing.from_string b) in
+        let exval1opt = ValueParser.toplevelvalue ValueLexer.main buf1 in
+        let exval2opt = ValueParser.toplevelvalue ValueLexer.main buf2 in
+          fprintf oc "  expected value: %s\n" (if b=";;" then "ERROR" else b);
+          fprintf oc "  returned value: ";
+          begin
+            match exval2opt with
+                None -> output_string oc "ERROR"
+              | Some exval2 -> output_test_exval oc exval2
+          end;
+          output_string oc "\n";
+          if match exval1opt, exval2opt with
+              None, None -> true
+            | Some ty1, Some ty2 -> ty1 ==/ ty2
+            | _ -> false
+          then begin incr successes; output_string oc " OK!!\n" end
+          else begin incr failures; output_string oc " Fail!!\n" end;
+      with Parsing.Parse_error ->
+        fprintf oc "Parsing Error\n";
+        begin incr errors; output_string oc " Error!!\n" end;
+        | Failure("lexing: empty token") ->
+            fprintf oc "Lexing Error\n";
+            begin incr errors; output_string oc " Error!!\n" end
+        | e ->
+            fprintf oc "%s\n" (Printexc.to_string e);
+            begin incr errors; output_string oc " Error!!\n" end
+      end;
       test oc (i+1) rest
 
 let testdata = Testdata.testdata1
