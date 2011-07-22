@@ -31,42 +31,43 @@ let eval_test (testcase : (string * string)) : string * string =
       end in
     ( (eval_loop buf initial_env) ^ ";;", snd testcase )
 
-let rec test i = function
+let rec test oc i = function
     [] ->
-      printf "Total: %d\nSuccesses: %d\nFailures: %d\nErrors: %d\n"
+      fprintf oc "Total: %d\nSuccesses: %d\nFailures: %d\nErrors: %d\n"
 	i !successes !failures !errors;
       exit 0
   | testcase::rest ->
-      printf "Case #%d:\n" i;
-      printf "  exp: %s\n" (fst testcase);
+      fprintf oc "Case #%d:\n" i;
+      fprintf oc "  exp: %s\n" (fst testcase);
       (try
          let (a, b) = eval_test testcase in
          let (buf2, buf1) = (Lexing.from_string a, Lexing.from_string b) in
 	     let exval1opt = ValueParser.toplevelvalue ValueLexer.main buf1 in
 	     let exval2opt = ValueParser.toplevelvalue ValueLexer.main buf2 in
-	       printf "  expected value: %s\n" (if b = ";;" then "ERROR" else b);
-	       printf "  returned value: ";
+	       fprintf oc "  expected value: %s\n" (if b=";;" then "ERROR" else b);
+	       fprintf oc "  returned value: ";
            begin
-	         match exval2opt with None ->
-	           print_string "ERROR" | Some exval2 -> pp_test_exval exval2
+	         match exval2opt with
+                 None -> output_string oc "ERROR"
+               | Some exval2 -> output_test_exval oc exval2
            end;
-	       print_newline ();
+	       output_string oc "\n";
 	       if match exval1opt, exval2opt with
 	           None, None -> true
 	         | Some ty1, Some ty2 -> ty1 ==/ ty2
 	         | _ -> false
-	       then begin incr successes; print_string " OK!!\n" end
-	       else begin incr failures; print_string " Fail!!\n" end;
+	       then begin incr successes; output_string oc " OK!!\n" end
+	       else begin incr failures; output_string oc " Fail!!\n" end;
        with Parsing.Parse_error ->
-         printf "Parsing Error\n";
-	     begin incr errors; print_string " Error!!\n" end;
+         fprintf oc "Parsing Error\n";
+	     begin incr errors; output_string oc " Error!!\n" end;
          | Failure("lexing: empty token") ->
-             printf "Lexing Error\n";
-	         begin incr errors; print_string " Error!!\n" end
+             fprintf oc "Lexing Error\n";
+	         begin incr errors; output_string oc " Error!!\n" end
          | e ->
-           print_endline (Printexc.to_string e);
-           begin incr errors; print_string " Error!!\n" end);
-      test (i+1) rest
+           fprintf oc "%s\n" (Printexc.to_string e);
+           begin incr errors; output_string oc " Error!!\n" end);
+      test oc (i+1) rest
 
 let testdata = Testdata.testdata1
 
@@ -99,4 +100,11 @@ let testdata =
       End_of_file -> close_in ic; data)
   in f []
 
-let () = test 0 testdata
+let () =
+  if Array.length Sys.argv > 1
+  then
+    let oc = open_out Sys.argv.(1) in
+      test oc 0 testdata;
+      close_out oc
+  else
+    test stdout 0 testdata

@@ -9,6 +9,6 @@ let initial_tyenv =
 	    (Environment.extend "v" (tysc_of_ty TyInt)
 		(Environment.extend "x" (tysc_of_ty TyInt) Environment.empty))))
 
-let pp_ty typ =
+let output_ty oc typ =
   let TyScheme (_, t) = typ in
-    print_string (Testaux.ty_name t)
+    output_string oc (Testaux.ty_name t)

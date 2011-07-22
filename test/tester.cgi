@@ -43,11 +43,31 @@ begin
   res = system("env 7z x -o#{dir} #{path} > /dev/null 2>&1")
   raise RuntimeError, :unzip unless res
 
+  # command line argument
+  args = []
+
+  # output file (if any)
+  output = cgi.params['output'][0]
+  if output
+    output = output.read
+    if output == ':argument'
+      # supply random file name to the command line argument
+      output = String.random(8)
+      args << output
+    end
+  end
+
   # run
   cmd = cgi.params['cmd'][0].read
   result = Dir.chdir(dir) do
     FileUtils.chmod(0755, cmd)
-    `#{File.join(dir, cmd)}`
+    run = ([ File.join(dir, cmd) ] + args).join(' ')
+    if output
+      system("#{run} > /dev/null 2>&1")
+      File.exist?(output) ? IO.read(output) : ''
+    else
+      `#{run}`
+    end
   end
 
   # clean up

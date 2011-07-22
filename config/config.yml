@@ -44,4 +44,5 @@ test:
     - solved.in
   run: test.byte
   input: solved.in
+  output: :argument
   sandbox: "http://sandbox.sato.kuis.kyoto-u.ac.jp/isle4fp/tester.cgi"

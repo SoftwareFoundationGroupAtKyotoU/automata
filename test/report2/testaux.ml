@@ -6,17 +6,16 @@ type test_exval =
   | TestNilV
 
 (* this implementation must be completed *)
-let rec pp_test_exval = function
-    TestIntV i -> print_int i
-  | TestBoolV b -> print_string (string_of_bool b)
-  | TestProcV -> print_string "<fun>"
-  | TestNilV -> print_string "[]"
+let rec output_test_exval oc = function
+    TestIntV i -> output_string oc (string_of_int i)
+  | TestBoolV b -> output_string oc (string_of_bool b)
+  | TestProcV -> output_string oc "<fun>"
+  | TestNilV -> output_string oc "[]"
   | TestConsV (v1, v2) -> 
-      pp_test_exval v1;
-      print_string " :: (";
-      pp_test_exval v2;
-      print_string ")"
-(*  | TestListV exvals -> print_string "this is a list" *)
+      output_test_exval oc v1;
+      output_string oc " :: (";
+      output_test_exval oc v2;
+      output_string oc ")"
 
 (* value equality *)
 let rec test_exval_eq v1 v2 = 

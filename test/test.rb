@@ -44,13 +44,16 @@ begin
 
   run = yml[:test]['run']
   fs = yml[:test]['files']
+  output = yml[:test]['output']
+  output = output.is_a?(Symbol) ? ':'+output.to_s : output
 
   cmd =
     [ 'curl',
       "-F 'file=@#{ZIP}'",
       "-F 'cmd=#{run}'",
+      output && "-F 'output=#{output}'",
       yml[:test]['sandbox'],
-    ].join(' ')
+    ].compact.join(' ')
 
   result = Dir.chdir(dir[:test].to_s) do
     check =

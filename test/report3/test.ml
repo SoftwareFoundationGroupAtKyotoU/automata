@@ -20,79 +20,49 @@ let successes = ref 0
 let failures = ref 0
 let errors = ref 0 (* parsing/lexing errors *)
 
-let rec test i = function
+let rec test oc i = function
     [] -> 
-      printf "Total: %d\nSuccesses: %d\nFailures: %d\nErrors: %d\n" 
+      fprintf oc "Total: %d\nSuccesses: %d\nFailures: %d\nErrors: %d\n" 
 	i !successes !failures !errors; 
       exit 0
   | (e, t)::rest ->
-	printf "Case #%d:\n" i;
-	printf "  exp: %s\n" e;
+	fprintf oc "Case #%d:\n" i;
+	fprintf oc "  exp: %s\n" e;
     (try
        let Exp exp = Parser.toplevel Lexer.main (Lexing.from_string e) in
        let ty1 = TypeParser.topleveltype TypeLexer.main (Lexing.from_string t) in
        let ty2 = try Some (snd (ty_exp initial_tyenv exp)) with _ -> None in
-	     printf "  expected type: %s\n" (if t = ";;" then "ERROR" else t);
-	     printf "  inferred type: ";
-	     (match ty2 with None ->
-	        print_string "ERROR" | Some ty2 -> Testaux2.pp_ty ty2);
-	     print_newline ();
+	     fprintf oc "  expected type: %s\n" (if t = ";;" then "ERROR" else t);
+	     fprintf oc "  inferred type: ";
+	     (match ty2 with
+              None -> output_string oc "ERROR"
+            | Some ty2 -> Testaux2.output_ty oc ty2);
+         output_string oc "\n";
 	     if match ty1, ty2 with
 	         None, None -> true
 	       | Some ty1, Some ty2 -> ty1 ==/ty2
 	       | _ -> false
-	     then begin incr successes; print_string " OK!!\n" end
-	     else begin incr failures; print_string " Fail!!\n" end;
+	     then begin incr successes; output_string oc " OK!!\n" end
+	     else begin incr failures; output_string oc " Fail!!\n" end;
      with Parsing.Parse_error ->
-       printf "Parsing Error\n";
-	   begin incr errors; print_string " Error!!\n" end
+       fprintf oc "Parsing Error\n";
+	   begin incr errors; output_string oc " Error!!\n" end
        | Failure("lexing: empty token") ->
-           printf "Lexing Error\n";
-	       begin incr errors; print_string " Error!!\n" end
+           fprintf oc "Lexing Error\n";
+	       begin incr errors; output_string oc " Error!!\n" end
        | e ->
-           print_endline (Printexc.to_string e);
-           begin incr errors; print_string " Error!!\n" end);
-	test (i+1) rest
+           fprintf oc "%s\n" (Printexc.to_string e);
+           begin incr errors; output_string oc " Error!!\n" end);
+	test oc (i+1) rest
 
+let testdata = Testaux3.testdata
+  @ !Testaux3.testdatalet @ !Testaux3.testdataletrec
 
-(* Exs. 1 6 7 8 9 10 11 are tested*)
-(* testdata9 and testdata10 is a special data.  Whether ex.9 is solved or not, testing data is prepared. *)
-
-let testdatalet = 
-ref (List.map (fun (exp, mono, _) -> (exp, mono)) Testdata.testdata9)
-
-let testdataletrec = 
-ref (List.map (fun (exp, mono, _) -> (exp, mono)) Testdata.testdata10)
-
-let testdata = 
-  let file = "solved.in" in
-  let ic = open_in file in
-  let rec f data = 
-    (try 
-      let str = input_line ic in
-      let num =  int_of_string str in
-      (match num with
-      | 1 ->
-          testdatalet := [];
-          testdataletrec := [];
-          f (data @ Testdata.testdata1)
-      | 6 ->
-          testdatalet := [];
-          f (data @ Testdata.testdata6)
-      | 7 -> f (data @ Testdata.testdata7)
-      | 8 -> f (data @ Testdata.testdata8)
-      | 9 -> 
-           testdatalet := (List.map (fun (exp, _, poly) -> (exp, poly)) Testdata.testdata9);
-           f data
-      | 10 -> 
-           testdataletrec := (List.map (fun (exp, _, poly) -> (exp, poly)) Testdata.testdata10);
-           f data
-      | 11 -> f (data @ Testdata.testdata11)
-      | _ -> f data)
-    with
-      End_of_file -> close_in ic; data)
-  in f []
-
-let testdata = testdata @ !testdatalet @ !testdataletrec
-
-let () = test 0 testdata
+let () =
+  if Array.length Sys.argv > 1
+  then
+    let oc = open_out Sys.argv.(1) in
+      test oc 0 testdata;
+      close_out oc
+  else
+    test stdout 0 testdata
