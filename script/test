@@ -17,7 +17,6 @@ err = {
 args = $*.dup
 $argv = {}; arg=nil
 $argv[:help] = %w'-h --help'.any?{|x| $*.delete(x)}
-$argv[:rebuild] = %w'-r --rebuild'.any?{|x| $*.delete(x)}
 $argv[:id] = $*.reject!{|x|x=~/^--id=(.*)$/&&arg=$1} && arg || $argv[:id]
 
 report_id = $*.shift
@@ -25,7 +24,7 @@ user = $*.shift
 
 if $argv[:help] || !report_id || !user
   print <<"EOM"
-Usage: #{$0} [-h] [--rebuild] [--id=YYYY-MM-DDThh:mm:ss+zzzz] report-id user
+Usage: #{$0} [-h] [--id=YYYY-MM-DDThh:mm:ss+zzzz] report-id user
 EOM
   exit
 end
