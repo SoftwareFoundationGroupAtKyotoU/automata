@@ -69,6 +69,10 @@
           (ocamlc -i eval.ml等で確認できる)
           <ul>
             <li><code>Parsing.toplevel : (Lexing.lexbuf -> token) -> Lexing.lexbuf -> Syntax.program</code></li>
+            <li><code>Eval.eval_decl : dnval Environment.t -> Syntax.program -> ... * dnval Environment.t * ...</code>
+            <br />
+            (ただし, 返り値型のdnval Environment.tは2番目)
+            </li>
             <li><code>Eval.eval_exp : dnval Environment.t -> Syntax.exp -> dnval</code></li>
             <li><code>Eval.exval = IntV of int | BoolV of bool | ProcV of ... <span class="option">| ListV of exval list</span></code>
             <br />
