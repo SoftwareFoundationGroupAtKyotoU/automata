@@ -134,6 +134,7 @@ var init = function(id) {
 
                     var tr = $new('tr');
                     var record = student.report[sc.id]||{};
+                    var autoUpdate;
                     sc.record.forEach(function(col) {
                         var td = $new('td', { klass: col.field });
                         tr.appendChild(td);
@@ -173,16 +174,9 @@ var init = function(id) {
                                     setLog();
                                 }
                             });
-                        } else if (col.field == 'status' && fld == 'check') {
-                            var updateRecord = function() {
-                                GNN.JSONP.retrieve({
-                                    user: apiUser
-                                }, function(json2) {
-                                    json2.scheme = json.scheme;
-                                    showRecord(json2);
-                                });
-                            };
-                            setTimeout(updateRecord, 2000);
+                        }
+                        if (col.field == 'status' && fld == 'check') {
+                            autoUpdate = true;
                             td.appendChild($new('img', {
                                 klass: 'loading',
                                 attr: { src: 'loading.gif' }
@@ -192,6 +186,17 @@ var init = function(id) {
                         td.appendChild($node(text));
 
                     });
+                    if (autoUpdate) {
+                        var updateRecord = function() {
+                            GNN.JSONP.retrieve({
+                                user: apiUser
+                            }, function(json2) {
+                                json2.scheme = json.scheme;
+                                showRecord(json2);
+                            });
+                        };
+                        setTimeout(updateRecord, 2000);
+                    }
                     table.appendChild(tr);
 
                     if (json.user.length == 1) setLog()
