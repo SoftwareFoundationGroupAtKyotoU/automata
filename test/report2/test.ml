@@ -27,7 +27,11 @@ let eval_test (testcase : (string * string)) : string * string =
               with _ -> ""
             end
           | _ ->
-              let (id, env, v) = eval_decl env program in eval_loop buf env
+              let something = eval_decl env program in
+              let (_, (env : Eval.exval Environment.t)) =
+                Marshal.from_string (Marshal.to_string something []) 0
+              in
+                eval_loop buf env
       end in
     ( (eval_loop buf initial_env) ^ ";;", snd testcase )
 
