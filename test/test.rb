@@ -64,7 +64,8 @@ begin
   end
 
   raise RuntimeError, cmd unless result
-  summary = result.to_a.reject{|l| l =~ /^(?:Case|\s+)/}.join
+  ra = result.to_a
+  summary = ra.last(ra.reverse.find_index{|x| /^\s+/ =~ x} || ra.length).join
 
   log = (summary.strip.empty? ?
          { 'error' => err[:fail] } : { 'test case' => summary })
