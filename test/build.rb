@@ -35,6 +35,7 @@ files.each do |name, file|
   yml[name] = YAML.load_file(file)||{} rescue {}
 end
 yml[:build] = yml[:config]['build']
+yml[:test] = yml[:config]['test']
 
 build_commands = yml[:build]['command']
 status_code = {
@@ -74,7 +75,7 @@ Dir.each_leaf(dir[:target].to_s, File::FNM_DOTMATCH) do |f|
 end
 
 # make input file
-input = dir[:test][App::FILES[:in]]
+input = dir[:test][yml[:test]['input']]
 FileUtils.rm(input) if File.exist?(input)
 open(input, 'w') do |io|
   exercises.map(&:to_ex).sort.map{|x| x.to_a.last}.each(&io.method(:puts))

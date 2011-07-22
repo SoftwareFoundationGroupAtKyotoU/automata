@@ -39,4 +39,9 @@ build:
       - location: report3-1
 
 test:
+  files:
+    - test.byte
+    - solved.in
+  run: test.byte
+  input: solved.in
   sandbox: "http://sandbox.sato.kuis.kyoto-u.ac.jp/isle4fp/tester.cgi"

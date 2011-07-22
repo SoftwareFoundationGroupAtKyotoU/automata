@@ -42,18 +42,21 @@ begin
     raise RuntimeError, "'#{dir[:test]}' not found"
   end
 
+  run = yml[:test]['run']
+  fs = yml[:test]['files']
+
   cmd =
     [ 'curl',
       "-F 'file=@#{ZIP}'",
-      "-F 'cmd=#{App::FILES[:test]}'",
+      "-F 'cmd=#{run}'",
       yml[:test]['sandbox'],
     ].join(' ')
 
   result = Dir.chdir(dir[:test].to_s) do
     check =
       [ proc{ File.exist?(ZIP) && FileUtils.rm(ZIP); true },
-        proc{ File.exist?(App::FILES[:test]) && File.exist?(App::FILES[:in]) },
-        "zip #{ZIP} #{App::FILES[:test]} #{App::FILES[:in]}",
+        proc{ fs.all?{|x| File.exist?(x)} },
+        ([ "zip #{ZIP}" ] + fs.map{|x|'"'+x+'"'}).join(' '),
       ].all?(&proc{|x| (x.is_a?(String)&&system(x))||(x.is_a?(Proc)&&x.call)})
 
     result = nil

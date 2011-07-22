@@ -41,8 +41,6 @@ class App
     :log     => 'log.yml',
     :build   => BUILD['build.rb'],
     :sandbox => BUILD['test.rb'],
-    :in      => 'solved.in',
-    :test    => 'test.byte',
     :test_script => SCRIPT['test'],
   }
 
