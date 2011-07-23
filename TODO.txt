@@ -1,4 +1,5 @@
 o 提出要件の内容をテキストに反映してもらう
+o ty_declのテストケース
 o- api/t
 --- test_exercise.rb
 o-- test_counter.rb
