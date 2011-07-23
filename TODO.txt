@@ -1,5 +1,13 @@
 o 提出要件の内容をテキストに反映してもらう
 o ty_declのテストケース
+o solved.inの書式を, 数字ではなく問題名のリストにする
+  o build.rbのsolved.inを作るところでx.to_a.lastしない
+  o test.mlとtestdataをalist構造にする
+o 課題1も自動でテストしたい
+  o post.cgiでもテストをしない課題を定義可能にする
+    (ビルド・テストコマンドも課題ごとにする?)
+  o post.cgiで投稿できるようにする
+  o コンパイルテストのみ自動でやる?
 o- api/t
 --- test_exercise.rb
 o-- test_counter.rb
@@ -11,7 +19,6 @@ o-- test_api_user.rb
 o-- test_api_scheme.rb
 o-- test_api_master.rb
 o-- テストをすべて実行するスクリプト
-o 課題1も自動でテストしたい
 o ドキュメント
 o セットアップツール?
   o 初期化
