@@ -33,9 +33,9 @@
     <ul>
       <li>提出するファイルはインタプリタ, 型推論でそれぞれ1つずつ(<em>必修・オプション課題毎に提出するのではない</em>)</li>
       <li>不備に自分で気づいた場合はこのフォームを使って再度提出すること</li>
-      <li>ソースコードはmakeできるようにすること</li>
+      <li>ソースコードはmakeするのに必要なファイルをすべて含むこと</li>
       <li>
-        <em>ファイル投稿欄に記載されたインタフェース仕様を満たすこと</em>
+        <em>ファイル投稿欄に記載された<a href="#requirements">インタフェース仕様</a>を満たすこと</em>
       </li>
       <li>不明な点はTAに問い合わせること</li>
     </ul>
@@ -64,8 +64,9 @@
 
         <h4>ファイルを選択して下さい</h4>
 
+        <h5 id="requirements">ソースファイルは以下のインタフェース仕様を満たすこと</h5>
+
         <div id="notice_report2">
-          <h5>ソースファイルは以下のインタフェース仕様を満たすこと</h5>
           (ocamlc -i eval.ml等で確認できる)
           <ul>
             <li><code>Parsing.toplevel : (Lexing.lexbuf -> token) -> Lexing.lexbuf -> Syntax.program</code></li>
@@ -81,18 +82,22 @@
         </div>
 
         <div id="notice_report3">
-          <h5>ソースファイルは以下のインタフェース仕様を満たすこと</h5>
           (ocamlc -i typing.ml等で確認できる)
           <ul>
+            <li><code>Parsing.toplevel : (Lexing.lexbuf -> token) -> Lexing.lexbuf ->  Syntax.program</code></li>
+            <li><code>Typing.ty_decl : Syntax.ty Environment.t -> Syntax.program -> ... </code>
+            <br />
+            ただし, Ex.4.9を解いた場合は<br />
+            <code>Typing.ty_decl : Syntax.tysc Environment.t -> Syntax.program -> Syntax.tysc Environment.t * ...</code>
+            </li>
+            <li><code>Typing.ty_exp : Syntax.ty Environment.t -> Syntax.exp -> ... * Syntax.ty</code>
+            <br />
+            ただし, Ex.4.9を解いた場合は<br />
+            <code>Typing.ty_exp : Syntax.tysc Environment.t -> Syntax.exp -> ... * Syntax.ty</code>
+            </li>
             <li><code>Syntax.ty = TyInt | TyBool | TyVar of tyvar | TyFun of ty * ty <span class="option">| TyList of ty</span></code>
             <br />
             (ただし<span class="option">TyList</span>はEx.4.8を解いた場合のみ)</li>
-            <li><code>Parsing.toplevel : (Lexing.lexbuf -> token) -> Lexing.lexbuf ->  Syntax.program</code></li>
-            <li><code>Typing.ty_decl : Syntax.ty Environment.t -> Syntax.program -> Syntax.ty Environment.t</code>
-            <br />
-            (ただし, Ex.4.9を解いた場合の返り値型は<code>Syntax.tysc Environment.t * ...</code>のみ)
-            </li>
-            <li><code>Typing.ty_exp : Syntax.ty Environment.t -> Syntax.exp -> (Syntax.tyvar * Syntax.ty) list * Syntax.ty</code></li>
           </ul>
         </div>
 

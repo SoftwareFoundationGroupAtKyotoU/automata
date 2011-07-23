@@ -10,9 +10,9 @@ body {
    border-style: solid none none none;
 }
 
-em
+em, em a
 {
-   color: #ee5577;
+   color: #ee5577 ! important;
 }
 
 h1, h2, h3, h4, h5, h6, h7
