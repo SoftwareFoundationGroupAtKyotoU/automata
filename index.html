@@ -87,7 +87,6 @@
             <li><code>Syntax.ty = TyInt | TyBool | TyVar of tyvar | TyFun of ty * ty <span class="option">| TyList of ty</span></code>
             <br />
             (ただし<span class="option">TyList</span>はEx.4.8を解いた場合のみ)</li>
-            <li><code>Syntax.pp_ty : Syntax.ty -> unit</code></li>
             <li><code>Parsing.toplevel : (Lexing.lexbuf -> token) -> Lexing.lexbuf ->  Syntax.program</code></li>
             <li><code>Typing.ty_decl : Syntax.ty Environment.t -> Syntax.program -> Syntax.ty Environment.t</code>
             <br />
