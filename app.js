@@ -44,8 +44,6 @@ var init = function() {
             self.unselect = function(id) {
                 var button = $('button_'+id);
                 button.className = '';
-                var notice = $('notice_'+id);
-                notice.style.display = 'none';
             };
 
             self.unselectAll = function() {
@@ -54,15 +52,71 @@ var init = function() {
 
             self.select = function(report) {
                 $('report_id').value = report.id;
+
+                // report selector
+                var button = $('button_'+report.id);
+                button.className = 'selected';
+
+                // show selected report
                 var selected = $('selected_report');
                 removeAllChildren(selected);
                 selected.appendChild($node(report.name));
 
-                var button = $('button_'+report.id);
-                button.className = 'selected';
-                var notice = $('notice_'+report.id);
-                notice.style.display = 'block';
+                // requirements depending on selected exercises
+                var nodeOfReq = function(r) {
+                    var li = $new('li');
+                    switch (r.type) {
+                    case 'code':
+                        li.appendChild($new('code', {
+                            child: $node(r.value)
+                        }));
+                        break;
+                    case 'html':
+                        li.innerHTML = r.value;
+                        break;
+                    case 'text':
+                        li.appendChild($node(r.value));
+                        break;
+                    default:
+                        return;
+                    }
+                    return li;
+                };
+                var updateReqs = function() {
+                    var reqs = report.requirements;
+                    if (reqs && reqs.dynamic) {
+                        reqs.dynamic.forEach(function(d) {
+                            var target = $(d.target);
+                            if (!target) return;
+                            removeAllChildren(target);
 
+                            var list = d['default'];
+                            for (var x in d) {
+                                var node = $(x);
+                                if (node && node.checked) {
+                                    d[x].forEach(function(r) {
+                                        list = list.map(function(s) {
+                                            return s.name == r.name ? r : s;
+                                        });
+                                    });
+                                    var rest = d[x].filter(function(r) {
+                                        return !list.some(function(s) {
+                                            return s.name == r.name;
+                                        });
+                                    });
+                                    list = list.concat(rest);
+                                }
+                            }
+
+                            list.forEach(function(r) {
+                                var node = nodeOfReq(r);
+                                if (node) target.appendChild(node);
+                            });
+                        });
+                    }
+                };
+
+                // exercise selector
                 var ul = $('ex');
                 removeAllChildren(ul);
 
@@ -79,6 +133,7 @@ var init = function() {
                             value: 'yes'
                         }
                     });
+                    new Observer(check, 'onchange', updateReqs);
                     if (lastSolved && lastSolved.indexOf(name) >= 0) {
                         check.checked = true;
                     }
@@ -100,6 +155,20 @@ var init = function() {
                     li.appendChild(label);
                     ul.appendChild(li);
                 });
+
+                // requirements
+                reqs = $('requirements')
+                removeAllChildren(reqs);
+                if (report.requirements) {
+                    sttc = report.requirements['static'];
+                    if (sttc) {
+                        sttc.forEach(function(r) {
+                            node = nodeOfReq(r);
+                            if (node) reqs.appendChild(node);
+                        });
+                    }
+                }
+                updateReqs();
             };
 
             self.unselectAll();
@@ -110,7 +179,8 @@ var init = function() {
 
         GNN.JSONP.retrieve({
             master: api('master', { year: true, user: true }),
-            scheme: api('scheme', { type: 'post', exercise: true })
+            scheme: api('scheme', { type: 'post', exercise: true,
+                                    requirements: true })
         }, function(json) {
             setYear(json.master.year);
 

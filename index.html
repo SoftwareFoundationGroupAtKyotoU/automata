@@ -25,17 +25,16 @@
 
     <h3>レポート作成手順</h3>
     <ol>
-      <li>レポート(テキストファイル)とプログラムのソースコードを(単一のディレクトリに)まとめたzipファイルを作成</li>
+      <li>レポート(テキストファイル)およびプログラムのソースコードを(単一のディレクトリに)まとめたzipファイルを作成</li>
       <li>下のフォームに従って提出</li>
     </ol>
 
     <h3>注意点</h3>
     <ul>
-      <li>提出するファイルはインタプリタ, 型推論でそれぞれ1つずつ(<em>必修・オプション課題毎に提出するのではない</em>)</li>
+      <li>提出するファイルは各課題それぞれ1つずつ(<em>必修・オプション課題毎に提出するのではない</em>)</li>
       <li>不備に自分で気づいた場合はこのフォームを使って再度提出すること</li>
-      <li>ソースコードはmakeするのに必要なファイルをすべて含むこと</li>
       <li>
-        <em>ファイル投稿欄に記載された<a href="#requirements">インタフェース仕様</a>を満たすこと</em>
+        <em>ファイル投稿欄に記載された<a href="#requirements">提出要件</a>を満たすこと</em>
       </li>
       <li>不明な点はTAに問い合わせること</li>
     </ul>
@@ -44,7 +43,7 @@
       <div>
         <input type="hidden" id="report_id" name="report_id" value="report2" />
 
-        <h4>課題を選択して下さい</h4>
+        <h4>課題の選択</h4>
         <ul id="selector"></ul>
 
         <h4>提出情報</h4>
@@ -62,44 +61,10 @@
         </ul>
         <ul id="ex"></ul>
 
-        <h4>ファイルを選択して下さい</h4>
+        <h4>ファイルの選択</h4>
 
-        <h5 id="requirements">ソースファイルは以下のインタフェース仕様を満たすこと</h5>
-
-        <div id="notice_report2">
-          (ocamlc -i eval.ml等で確認できる)
-          <ul>
-            <li><code>Parsing.toplevel : (Lexing.lexbuf -> token) -> Lexing.lexbuf -> Syntax.program</code></li>
-            <li><code>Eval.eval_decl : dnval Environment.t -> Syntax.program -> ... * dnval Environment.t * ...</code>
-            <br />
-            (ただし, 返り値型のdnval Environment.tは2番目)
-            </li>
-            <li><code>Eval.eval_exp : dnval Environment.t -> Syntax.exp -> dnval</code></li>
-            <li><code>Eval.exval = IntV of int | BoolV of bool | ProcV of ... <span class="option">| ListV of exval list</span></code>
-            <br />
-            (ただし<span class="option">ListV</span>はEx.3.16を解いた場合のみ)</li>
-          </ul>
-        </div>
-
-        <div id="notice_report3">
-          (ocamlc -i typing.ml等で確認できる)
-          <ul>
-            <li><code>Parsing.toplevel : (Lexing.lexbuf -> token) -> Lexing.lexbuf ->  Syntax.program</code></li>
-            <li><code>Typing.ty_decl : Syntax.ty Environment.t -> Syntax.program -> ... </code>
-            <br />
-            ただし, Ex.4.9を解いた場合は<br />
-            <code>Typing.ty_decl : Syntax.tysc Environment.t -> Syntax.program -> Syntax.tysc Environment.t * ...</code>
-            </li>
-            <li><code>Typing.ty_exp : Syntax.ty Environment.t -> Syntax.exp -> ... * Syntax.ty</code>
-            <br />
-            ただし, Ex.4.9を解いた場合は<br />
-            <code>Typing.ty_exp : Syntax.tysc Environment.t -> Syntax.exp -> ... * Syntax.ty</code>
-            </li>
-            <li><code>Syntax.ty = TyInt | TyBool | TyVar of tyvar | TyFun of ty * ty <span class="option">| TyList of ty</span></code>
-            <br />
-            (ただし<span class="option">TyList</span>はEx.4.8を解いた場合のみ)</li>
-          </ul>
-        </div>
+        <h5>提出要件</h5>
+        <ul id="requirements"></ul>
 
         <label for="file">zipファイル:</label>
         <input type="file" id="file" name="report_file" />
