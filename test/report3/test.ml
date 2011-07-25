@@ -58,8 +58,24 @@ let rec test oc i = function
     end;
     test oc (i+1) rest
 
-let testdata = Testaux3.testdata
-  @ !Testaux3.testdatalet @ !Testaux3.testdataletrec
+let testdata =
+  let file = "solved.in" in
+  let ic = open_in file in
+  let rec read (solved, data) =
+    begin try
+      let ex = input_line ic in
+      let solved = ex :: solved in
+        begin try
+          let testcase = List.assoc ex Testdata.table in
+            read (solved, data @ testcase)
+        with Not_found -> read (solved, data) end
+    with End_of_file -> close_in ic;
+      let a = List.filter (fun (x,_,_) -> List.mem x solved) Testdata.table2 in
+      let b = List.filter (fun (_,y,_) -> not (List.mem y solved)) a in
+        data @ (List.flatten (List.map (fun (_,_,l) -> l) b))
+    end
+  in
+    read ([], [])
 
 let () =
   if Array.length Sys.argv > 1

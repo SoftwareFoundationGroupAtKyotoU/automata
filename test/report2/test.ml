@@ -74,36 +74,18 @@ let rec test oc i = function
       end;
       test oc (i+1) rest
 
-let testdata = Testdata.testdata1
-
 let testdata =
   let file = "solved.in" in
   let ic = open_in file in
-  let rec f data =
-    (try
-      let str = input_line ic in
-      let num =  int_of_string str in
-      (match num with
-      | 1 -> f (data @ Testdata.testdata1)
-      | 3 -> f (data @ Testdata.testdata3)
-      | 4 -> f (data @ Testdata.testdata4)
-      | 5 -> f (data @ Testdata.testdata5)
-      | 7 -> f (data @ Testdata.testdata7)
-      | 8 -> f (data @ Testdata.testdata8)
-      | 9 -> f (data @ Testdata.testdata9)
-      | 10 -> f (data @ Testdata.testdata10)
-      | 12 -> f (data @ Testdata.testdata12)
-      | 14 -> f (data @ Testdata.testdata14)
-      | 15 -> f (data @ Testdata.testdata15)
-      | 16 -> f (data @ Testdata.testdata16)
-      | 17 -> f (data @ Testdata.testdata17)
-      | 18 -> f (data @ Testdata.testdata18)
-      | 19 -> f (data @ Testdata.testdata19)
-      | 20 -> f (data @ Testdata.testdata20)
-      | _ -> f data)
-    with
-      End_of_file -> close_in ic; data)
-  in f []
+  let rec read data =
+    begin try
+      let ex = input_line ic in
+        begin try
+          let testcase = List.assoc ex Testdata.table in
+            read (data @ testcase)
+        with Not_found -> read data end
+    with End_of_file -> close_in ic; data end
+  in read []
 
 let () =
   if Array.length Sys.argv > 1

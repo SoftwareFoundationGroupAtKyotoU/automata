@@ -77,9 +77,9 @@ end
 # make input file
 input = dir[:test][yml[:test]['input']]
 FileUtils.rm(input) if File.exist?(input)
-open(input, 'w') do |io|
-  exercises.map(&:to_ex).sort.map{|x| x.to_a.last}.each(&io.method(:puts))
-end
+open(input, 'w'){|io| exercises.each{|x| io.puts(x)}}
+#   exercises.map(&:to_ex).sort.map{|x| x.to_a.last}.each(&io.method(:puts))
+# end
 
 # build
 info = Dir.chdir(dir[:test].to_s) do

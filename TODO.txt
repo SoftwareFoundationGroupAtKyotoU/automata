@@ -1,8 +1,5 @@
 o 提出要件の内容をテキストに反映してもらう
 o ty_declのテストケース
-o solved.inの書式を, 数字ではなく問題名のリストにする
-  o build.rbのsolved.inを作るところでx.to_a.lastしない
-  o test.mlとtestdataをalist構造にする
 o 課題1も自動でテストしたい
   o post.cgiでもテストをしない課題を定義可能にする
     (ビルド・テストコマンドも課題ごとにする?)
