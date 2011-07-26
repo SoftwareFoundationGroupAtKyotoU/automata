@@ -1,3 +1,4 @@
+o config/config.yml -> config/master.yml
 o 提出要件の内容をテキストに反映してもらう
 o ty_declのテストケース
 o 課題1も自動でテストしたい
@@ -6,6 +7,32 @@ o 課題1も自動でテストしたい
   o post.cgiで投稿できるようにする
   o コンパイルテストのみ自動でやる?
 o デフォルトで選択される課題を期限に応じて決定する
+o jsdefferedへの依存を解消
+o Firefox以外のブラウザでも動作するようにする
+  o compatibility.js
+  o html + mod_rewrite
+o index.htmlをisle4fp特有ではないものにする
+  o タイトル, リンク等をconfig.ymlで設定する
+o isle4fp特有の部分と, 共通部分にリポジトリを分割
+  o isle4fpのリポジトリが共通部分のリポジトリをサブモジュールとして持つ
+  o 共通部分
+    o lib
+    o api
+    o script
+    o test/*.rb
+    o test/lib
+    o record
+    o db?
+    o *.js
+    o *.xhtml
+  o isle4fp特有
+    o config
+o sandbox用のファイルを専用のディレクトリに移動
+  o 共通部分側
+    o tester.cgi
+  o isle4fp側
+    o iptablesの設定?
+    o KVMの起動スクリプト?
 o- api/t
 --- test_exercise.rb
 o-- test_counter.rb
@@ -20,14 +47,23 @@ o-- テストをすべて実行するスクリプト
 o ドキュメント
 o セットアップツール?
   o 初期化
-    o db/kadaiを 775 user:www-data で作成
+    o 775 user:www-dataで作成
+      o ./db/kadai
+      o ./db/data.yml
+      o ./config/local.yml
+      o ./.htaccess
+    o 770 user:www-dataで作成
+      o ./.htdigest
+    o 最初の特権アカウントを設定
   o 特権アカウントを変更/追加
-    o 最初はデフォルトのlocal.ymlにsuを設定しておく??
     o config/local.ymlを更新
-    o .htdigest等を更新
+    o .htdigestを更新
   o ユーザを追加
     o db/data.ymlを更新
-    o .htdigest等を更新
+    o パスワードを生成
+      o db/passwdにパスワードを保存
+      o .htdigestを更新
   o セットアップが成功しているかどうかのステータスページ
-  o ドキュメントもここでいいか?
-  o アクセス権限どうする?
+  o ドキュメント
+    o 初期化前は誰でも見える
+    o 初期化後は特権アカウントからしか見えない
