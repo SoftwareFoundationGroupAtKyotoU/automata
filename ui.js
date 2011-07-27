@@ -27,7 +27,7 @@ if (typeof GNN.UI == 'undefined') GNN.UI = {};
         }
         return elm;
     };
-    ns.$text = function(str){ return ns.doc().createTextNode(str); };
+    ns.$text = function(str){ return ns.doc().createTextNode(str||''); };
     ns.$node = function(x){ return ns.isNode(x) ? x : ns.$text(x); };
     ns.$select = function(args) {
         if (!args.klass) args.klass = [];

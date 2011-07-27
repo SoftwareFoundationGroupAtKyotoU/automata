@@ -1,6 +1,6 @@
 #! /usr/bin/env ruby
 
-# Usage: scheme [type=<type>] [id=<id>] [record] [exercise] [requirements]
+# Usage: scheme [type=<type>] [id=<id>] [record] [exercise]
 #   scheme.ymlのデータを取得
 # Options:
 #   type          typeプロパティが<type>のものだけ取得
@@ -10,7 +10,7 @@
 #   exercise      個別の問題の定義を取得
 
 KEY = [ :id, :type, :name, ]
-OPTIONAL = [ :record, :exercise, :requirements, ]
+OPTIONAL = [ :record, :exercise ]
 FILTER = [ :id, :type, ]
 
 $KCODE='UTF8'
@@ -24,8 +24,6 @@ app = App.new
 result = []
 scheme = app.file(:scheme)
 scheme['scheme'].each do |report|
-  reqs = scheme['requirements'][report['id']]
-  report['requirements'] = reqs
   exes = scheme['report'][report['id']].sort{|a,b| a[0].to_ex <=> b[0].to_ex}
   report['exercise'] = exes
   if FILTER.all?{|k| app.optional(k).include?(report[k.to_s])}

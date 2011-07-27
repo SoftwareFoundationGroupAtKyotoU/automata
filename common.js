@@ -1,18 +1,37 @@
-var setYear = function(year) {
+var setTitle = function(template) {
     with (GNN.UI) {
-        // set year
-        var special;
-        if (!/^\d+$/.test(year)) special = year;
+        [ 'title', 'subtitle', 'institute' ].forEach(function(x) {
+            var node = $(x);
+            if (node) {
+                removeAllChildren(node);
+                node.appendChild($text(template[x]));
+            }
+        });
 
         document.title = [
-            document.title,
-            ' (', special || ('Winter Semester ' + year), ')'
-        ].join('');
-        var spans = document.getElementsByTagName('span');
-        for (var i=0; i < spans.length; i++) {
-            if (spans[i].className == 'year') {
-                spans[i].appendChild($text(special || (year+'年度')));
+            template.subtitle,
+            template.title
+        ].join(' - ');
+    }
+};
+
+var addLinks = function(links) {
+    with (GNN.UI) {
+        links = links || [];
+
+        var footer = $('footer');
+        if (!footer) return;
+
+        links.reverse().forEach(function(l) {
+            var node = $new('a', {
+                attr: { href: l.uri },
+                child: l.label
+            });
+            if (footer.firstChild) {
+                footer.insertBefore(node, footer.firstChild);
+            } else {
+                footer.appendChild(node);
             }
-        }
+        });
     }
 };

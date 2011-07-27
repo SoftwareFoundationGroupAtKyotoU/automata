@@ -4,8 +4,6 @@ su:
   - ina
   - t-sekiym
 
-year:   2010
-
 record:
   show_login: false
   open: false

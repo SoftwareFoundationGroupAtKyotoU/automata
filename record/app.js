@@ -18,6 +18,7 @@ var init = function(id) {
     var apiMaster = api('master', { year: true, token: true });
     var apiUser   = api('user', { type: 'status', status: 'record', log: 1 });
     var apiScheme = api('scheme', { record: true });
+    var apiTempl  = api('template', { type: 'record', links: true });
 
     var persistent = {};
 
@@ -261,11 +262,16 @@ var init = function(id) {
         };
 
         GNN.JSONP.retrieve({
-            master: apiMaster,
-            user:   apiUser,
-            scheme: apiScheme
+            master:   apiMaster,
+            user:     apiUser,
+            scheme:   apiScheme,
+            template: apiTempl
         }, function(json) {
-            setYear(json.master.year);
+            // fill page template
+            setTitle(json.template);
+            addLinks(json.template.links);
+
+            // show records
             showRecord(json);
         });
     }

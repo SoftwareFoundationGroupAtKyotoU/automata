@@ -34,13 +34,14 @@ class App
   SCRIPT = BASE + 'script'
 
   FILES = {
-    :master  => CONFIG['master.yml'],
-    :local   => CONFIG['local.yml'],
-    :scheme  => CONFIG['scheme.yml'],
-    :data    => DB['data.yml'],
-    :log     => 'log.yml',
-    :build   => BUILD['build.rb'],
-    :sandbox => BUILD['test.rb'],
+    :master      => CONFIG['master.yml'],
+    :local       => CONFIG['local.yml'],
+    :scheme      => CONFIG['scheme.yml'],
+    :template    => CONFIG['template.yml'],
+    :data        => DB['data.yml'],
+    :log         => 'log.yml',
+    :build       => BUILD['build.rb'],
+    :sandbox     => BUILD['test.rb'],
     :test_script => SCRIPT['test'],
   }
 
@@ -87,6 +88,14 @@ class App
       @conf = Conf.new(file(:master), (file(:local) rescue nil))
     end
     return @conf
+  end
+
+  def template()
+    unless @template
+      require 'conf'
+      @template = Conf.new(file(:template), (file(:local) rescue nil))
+    end
+    return @template
   end
 
   def user(u=nil)

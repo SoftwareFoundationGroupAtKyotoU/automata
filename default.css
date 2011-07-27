@@ -10,6 +10,11 @@ body {
    border-style: solid none none none;
 }
 
+#footer a
+{
+   margin-right: 1em;
+}
+
 em, em a
 {
    color: #ee5577 ! important;
@@ -18,6 +23,22 @@ em, em a
 h1, h2, h3, h4, h5, h6, h7
 {
    margin-bottom: .5em;
+}
+
+h1#title
+{
+   font-size: 200%;
+   margin-bottom: 0;
+}
+
+h2#subtitle
+{
+   font-size: 200%;
+   margin-top: 0;
+}
+
+h2#institute
+{
 }
 
 h5

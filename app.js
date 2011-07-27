@@ -180,10 +180,13 @@ var init = function() {
 
         GNN.JSONP.retrieve({
             master: api('master', { year: true, user: true, token: true }),
-            scheme: api('scheme', { type: 'post', exercise: true,
-                                    requirements: true })
+            scheme: api('scheme', { type: 'post', exercise: true }),
+            template: api('template', { type: 'post', links: true,
+                                        requirements: true })
         }, function(json) {
-            setYear(json.master.year);
+            // fill page template
+            setTitle(json.template);
+            addLinks(json.template.links);
 
             // set login name
             var login = $('login');
@@ -195,6 +198,10 @@ var init = function() {
                 status: 'solved'
             }), function(user) {
                 // setup uploader
+                json.scheme.forEach(function(rep) {
+                    var req = json.template.requirements[rep.id];
+                    if (req) rep.requirements = req;
+                });
                 user = user[0]||{};
                 var report = user.token==json.master.token ? user.report:null;
                 new Uploader(json.scheme, report||{});
