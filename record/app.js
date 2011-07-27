@@ -15,9 +15,11 @@ var init = function(id) {
         };
         return uri;
     };
-    var apiMaster = api('master', { year: true });
-    var apiUser = api('user', { type: 'status', status: 'record', log: 1 });
+    var apiMaster = api('master', { year: true, user: true });
+    var apiUser   = api('user', { type: 'status', status: 'record', log: 1 });
     var apiScheme = api('scheme', { record: true });
+
+    var persistent = {};
 
     with (GNN.UI) {
 
@@ -112,6 +114,9 @@ var init = function(id) {
 
             // records
             json.scheme.forEach(function(sc) { // for each report
+                var pers = persistent[sc.id] || {};
+                persistent[sc.id] = pers;
+
                 var table = $new('table', {
                     id: sc.id,
                     attr: { summary: sc.id },
@@ -122,6 +127,7 @@ var init = function(id) {
                         });
                     }) })
                 });
+
                 var log = $new('div', {
                     id: [ sc.id, 'log' ].join('_'),
                     klass: 'log'
@@ -129,16 +135,82 @@ var init = function(id) {
                 var closeLog = function() {
                     removeAllChildren(log);
                 };
-                json.user.forEach(function(student) { // for each student
-                    var setLog = function() {
-                        closeLog();
-                        var msg = makeLogMsg(record);
-                        if (msg) log.appendChild(msg);
+                var setLog = function(id) {
+                    closeLog();
+                    var student = json.user.reduce(function(r, u) {
+                        return id == u.login ? u : r;
+                    }, { report: {} });
+                    var record = student.report[sc.id]||{};
+                    var msg = makeLogMsg(record);
+                    if (msg) log.appendChild(msg);
+                };
+
+                var makeStatusId = function(x) {
+                    return [ x, sc.id, 'status' ].filter(function(x) {
+                        return !!x;
+                    }).join('-');
+                };
+
+                var updateSelectedRow = function() {
+                    var getParent = function(e) {
+                        return e.parentNode.parentNode;
                     };
 
+                    $select({
+                        tag: 'a', klass: makeStatusId()
+                    }).forEach(function(e) {
+                        removeClass(getParent(e), 'selected');
+                    });
+                    closeLog();
+
+                    var id = pers.selected;
+                    if (!id) return;
+
+                    if (json.user.length > 1) { // highlight
+                        var elem = $(makeStatusId(pers.selected));
+                        if (elem) {
+                            var parent = getParent(elem);
+                            appendClass(parent, 'selected');
+                        }
+                    }
+
+                    setLog(id);
+                };
+
+                json.user.forEach(function(student) { // for each student
                     var tr = $new('tr');
+                    var id = student.login;
                     var record = student.report[sc.id]||{};
                     var autoUpdate;
+
+                    var makeStatusNode = function(text) {
+                        if (json.user.length == 1) {
+                            pers.selected = student.login;
+                        } else if (json.user.length > 1) {
+                            if (typeof pers.selected == 'undefined') {
+                                pers.selected = json.master.user;
+                            }
+
+                            var klass = makeStatusId();
+                            text = $new('a', {
+                                id: makeStatusId(id),
+                                klass: klass,
+                                attr: { href: '.' },
+                                child: text
+                            });
+                            new Observer(text, 'onclick', function(e) {
+                                e.stop();
+                                if (pers.selected == id) {
+                                    pers.selected = null;
+                                } else {
+                                    pers.selected = id;
+                                }
+                                updateSelectedRow();
+                            });
+                        }
+                        return text;
+                    };
+
                     sc.record.forEach(function(col) {
                         var td = $new('td', { klass: col.field });
                         tr.appendChild(td);
@@ -147,54 +219,32 @@ var init = function(id) {
                         fld = fld || record[col.field];
                         var text = toText(fld, col.field);
 
-                        if (col.field == 'status' && (fld||'').length > 0) {
-                            appendClass(td, fld.replace(/[^0-9a-zA-Z]/g, '-'));
-                        }
-                        if (col.field == 'status' && json.user.length > 1) {
-                            var klass = sc.id+'-status';
-                            text = $new('a', {
-                                klass: klass,
-                                attr: { href: '.' },
-                                child: text
-                            });
-                            new Observer(text, 'onclick', function(e) {
-                                var getParent = function(e) {
-                                    return e.parentNode.parentNode;
-                                };
-                                e.stop();
-                                var elem = e.target();
-                                var parent = getParent(elem);
-
-                                closeLog();
-                                if (hasClass(parent, 'selected')) {
-                                    removeClass(parent, 'selected');
-                                } else {
-                                    $select({
-                                        tag: 'a', klass: klass
-                                    }).forEach(function(e) {
-                                        removeClass(getParent(e), 'selected');
-                                    });
-                                    appendClass(parent, 'selected');
-                                    setLog();
-                                }
-                            });
-                        }
-                        if (col.field == 'status' && fld == 'check') {
-                            autoUpdate = true;
-                            td.appendChild($new('img', {
-                                klass: 'loading',
-                                attr: { src: 'loading.gif' }
-                            }));
+                        if (col.field == 'status') {
+                            if (text.length > 0) {
+                                text = makeStatusNode(text);
+                            }
+                            if (fld == 'check') {
+                                autoUpdate = true;
+                                td.appendChild($new('img', {
+                                    klass: 'loading',
+                                    attr: { src: 'loading.gif' }
+                                }));
+                            }
+                            if ((fld||'').length > 0) {
+                                fld = fld.replace(/[^0-9a-zA-Z]/g, '-');
+                                appendClass(td, fld);
+                            }
                         }
 
                         td.appendChild($node(text));
-
                     });
+
                     if (autoUpdate) {
                         var updateRecord = function() {
                             GNN.JSONP.retrieve({
                                 user: apiUser.refresh()
                             }, function(json2) {
+                                json2.master = json.master;
                                 json2.scheme = json.scheme;
                                 showRecord(json2);
                             });
@@ -202,17 +252,17 @@ var init = function(id) {
                         setTimeout(updateRecord, 2000);
                     }
                     table.appendChild(tr);
-
-                    if (json.user.length == 1) setLog()
                 });
                 div.appendChild(table);
                 div.appendChild(log);
+
+                updateSelectedRow();
             });
         };
 
         GNN.JSONP.retrieve({
             master: apiMaster,
-            user: apiUser,
+            user:   apiUser,
             scheme: apiScheme
         }, function(json) {
             setYear(json.master.year);
