@@ -103,6 +103,10 @@ class App
       require 'user'
       @users = file(:data)['data'].map{|u| User.new(u)}
       @users.reject!{|u| u.login != user} unless conf[:record, :open] || su?
+      unless conf[:record, :show_login]
+        # override User#login to hide user login name
+        @users.each{|u| def u.login() return token end}
+      end
     end
     return @users
   end

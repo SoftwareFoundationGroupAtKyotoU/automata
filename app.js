@@ -179,7 +179,7 @@ var init = function() {
         };
 
         GNN.JSONP.retrieve({
-            master: api('master', { year: true, user: true }),
+            master: api('master', { year: true, user: true, token: true }),
             scheme: api('scheme', { type: 'post', exercise: true,
                                     requirements: true })
         }, function(json) {
@@ -196,7 +196,7 @@ var init = function() {
             }), function(user) {
                 // setup uploader
                 user = user[0]||{};
-                var report = user.login==json.master.user ? user.report : null;
+                var report = user.token==json.master.token ? user.report:null;
                 new Uploader(json.scheme, report||{});
             });
         });

@@ -15,7 +15,7 @@ var init = function(id) {
         };
         return uri;
     };
-    var apiMaster = api('master', { year: true, user: true });
+    var apiMaster = api('master', { year: true, token: true });
     var apiUser   = api('user', { type: 'status', status: 'record', log: 1 });
     var apiScheme = api('scheme', { record: true });
 
@@ -138,7 +138,7 @@ var init = function(id) {
                 var setLog = function(id) {
                     closeLog();
                     var student = json.user.reduce(function(r, u) {
-                        return id == u.login ? u : r;
+                        return id == u.token ? u : r;
                     }, { report: {} });
                     var record = student.report[sc.id]||{};
                     var msg = makeLogMsg(record);
@@ -179,16 +179,16 @@ var init = function(id) {
 
                 json.user.forEach(function(student) { // for each student
                     var tr = $new('tr');
-                    var id = student.login;
+                    var id = student.token;
                     var record = student.report[sc.id]||{};
                     var autoUpdate;
 
                     var makeStatusNode = function(text) {
                         if (json.user.length == 1) {
-                            pers.selected = student.login;
+                            pers.selected = student.token;
                         } else if (json.user.length > 1) {
                             if (typeof pers.selected == 'undefined') {
-                                pers.selected = json.master.user;
+                                pers.selected = json.master.token;
                             }
 
                             var klass = makeStatusId();

@@ -1,4 +1,10 @@
+require 'digest/md5'
+
 class User
+  def self.make_token(str)
+    return 'id' + Digest::MD5.hexdigest(str)
+  end
+
   attr_reader :report
   def initialize(user)
     @user = user
@@ -6,7 +12,9 @@ class User
   end
 
   def number() return @user['number'] end
-  def login() return @user['login'] end
+  def real_login() return @user['login'] end
+  def token() return self.class.make_token(real_login) end
+  def login() return real_login end
   def name() return @user['name'] end
   def ruby() return @user['ruby'] end
   def []=(k, rep) @report[k] = rep if rep end
@@ -15,6 +23,7 @@ class User
     hash = {
       'number'   => number,
       'login'    => login,
+      'token'    => token,
       'name'     => name,
       'ruby'     => ruby,
     }

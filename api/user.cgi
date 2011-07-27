@@ -25,7 +25,7 @@ app = App.new
 
 users = app.users
 unless app.params['user'].empty?
-  users.reject!{|u| !app.params['user'].include?(u.login)}
+  users.reject!{|u| !app.params['user'].include?(u.real_login)}
 end
 
 if app.params['type'][0] == 'status'
@@ -39,7 +39,7 @@ if app.params['type'][0] == 'status'
         :status => app.params['status'][0],
         :log    => !app.params['log'].empty?,
       }
-      u[s['id']] = app.report(option, s['id'], u.login)
+      u[s['id']] = app.report(option, s['id'], u.real_login)
     end
   end
 end
