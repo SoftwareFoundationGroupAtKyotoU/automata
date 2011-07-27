@@ -6,7 +6,6 @@ o 課題1も自動でテストしたい
   o post.cgiで投稿できるようにする
   o コンパイルテストのみ自動でやる?
 o デフォルトで選択される課題を期限に応じて決定する
-o jsdefferedへの依存を解消
 o Firefox以外のブラウザでも動作するようにする
   o compatibility.js
   o html + mod_rewrite

@@ -43,25 +43,23 @@
             var q = JSONP.queue.shift();
             JSONP.add(q.uri, q.obj, q.method);
         },
-        deferred: function(uri) {
-            var deferred = new Deferred();
-            new JSONP(uri, function(obj) {
-                deferred.call(obj);
-            });
-            return deferred;
-        },
         retrieve: function(hash, callback) {
             var keys = [];
             var result = {};
             for (var k in hash) keys.push(k);
-            Deferred.loop(keys.length, function(i) {
-                var k = keys[i];
-                return JSONP.deferred(hash[k]).next(function(obj) {
-                    result[k] = obj;
-                });
-            }).next(function() {
-                callback(result);
-            });
+
+            var loop = function() {
+                if (keys.length > 0) {
+                    var k = keys.shift();
+                    new JSONP(hash[k], function(obj) {
+                        result[k] = obj;
+                        setTimeout(loop, 0);
+                    });
+                } else {
+                    callback(result);
+                }
+            };
+            loop();
         },
         callbacks: [],
         queue: []
