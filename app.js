@@ -134,6 +134,7 @@ var init = function() {
                         }
                     });
                     new Observer(check, 'onchange', updateReqs);
+                    new Observer(check, 'onclick', updateReqs);  // for IE
                     if (lastSolved && lastSolved.indexOf(name) >= 0) {
                         check.checked = true;
                     }

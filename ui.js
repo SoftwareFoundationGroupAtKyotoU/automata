@@ -132,6 +132,9 @@ if (typeof GNN.UI == 'undefined') GNN.UI = {};
                 self.event.returnValue = false;
             }
         };
+        self.target = function() {
+            return self.event.target || self.event.srcElement;
+        };
         return self;
     };
     ns.Observer = function(node, event, obj, m) {

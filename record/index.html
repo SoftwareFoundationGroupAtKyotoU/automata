@@ -3,7 +3,7 @@
                       "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja">
 <head>
-  <script type="text/javascript" src="./jsdeferred.js"></script>
+  <script type="text/javascript" src="./compatibility.js"></script>
   <script type="text/javascript" src="./util.js"></script>
   <script type="text/javascript" src="./uri.js"></script>
   <script type="text/javascript" src="./jsonp.js"></script>
@@ -19,12 +19,15 @@
   <div id="article">
     <h2>工学部情報学科計算機科学コース</h2>
     <h1>計算機科学実験及演習4(プログラム検証)<br />レポート提出状況(<span class="year"></span>)</h1>
+
+    <noscript>
+      <em>JavaScriptが有効でないと正しく表示されません</em>
+    </noscript>
+
     <ul>
-      <li>JavaScriptが有効でないと表示されません</li>
-      <li>Firefox以外のブラウザでは正しく表示されないかもしれません</li>
       <li>提出の確認・受理が済んだ場合は, 「提出済」と記載されます</li>
       <li>提出内容に不備がある場合は, 「要再提出」と記載されます</li>
-      <li>提出しても, チェック(課題1はTA / 課題2,3は自動)が完了するまでは「確認中」と記載されます</li>
+      <li>提出しても, チェックが完了するまでは「確認中」と記載されます</li>
       <li>まだ何も提出されていない場合は, 何も記載されません</li>
     </ul>
     <div id="record"></div>

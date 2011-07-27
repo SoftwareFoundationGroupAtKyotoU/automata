@@ -9,6 +9,10 @@ var init = function(id) {
         uri.local.push('api');
         uri.local.push(name+'.cgi');
         uri.params = args || {};
+        uri.refresh = function() {
+            delete uri.params.timestamp;
+            return uri;
+        };
         return uri;
     };
     var apiMaster = api('master', { year: true });
@@ -158,7 +162,7 @@ var init = function(id) {
                                     return e.parentNode.parentNode;
                                 };
                                 e.stop();
-                                var elem = e.event.target;
+                                var elem = e.target();
                                 var parent = getParent(elem);
 
                                 closeLog();
@@ -189,7 +193,7 @@ var init = function(id) {
                     if (autoUpdate) {
                         var updateRecord = function() {
                             GNN.JSONP.retrieve({
-                                user: apiUser
+                                user: apiUser.refresh()
                             }, function(json2) {
                                 json2.scheme = json.scheme;
                                 showRecord(json2);
