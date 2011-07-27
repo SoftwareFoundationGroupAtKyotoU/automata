@@ -1,4 +1,3 @@
-o config/config.yml -> config/master.yml
 o 提出要件の内容をテキストに反映してもらう
 o ty_declのテストケース
 o 課題1も自動でテストしたい

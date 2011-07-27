@@ -34,7 +34,7 @@ class App
   SCRIPT = BASE + 'script'
 
   FILES = {
-    :master  => CONFIG['config.yml'],
+    :master  => CONFIG['master.yml'],
     :local   => CONFIG['local.yml'],
     :scheme  => CONFIG['scheme.yml'],
     :data    => DB['data.yml'],
