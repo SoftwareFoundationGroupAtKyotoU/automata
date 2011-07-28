@@ -8,7 +8,6 @@ require 'tempfile'
 require 'tmpdir'
 require 'time'
 
-$base_dir = '.'
 require 'app'
 require 'log'
 
@@ -102,5 +101,5 @@ begin
     end
   end
 ensure
-  print app.cgi.header('status' => '302 Found', 'Location' => './record/')
+  print app.cgi.header('status' => '302 Found', 'Location' => '../record/')
 end

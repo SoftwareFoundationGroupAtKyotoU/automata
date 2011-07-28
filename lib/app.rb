@@ -1,37 +1,31 @@
 require 'cgi'
 require 'yaml'
 require 'time'
+require 'pathname'
 require 'clone'
 
 require 'rubygems'
 require 'json'
 
+class Pathname
+  def [](*paths)
+    loc = self
+    loc = loc + paths.shift() while paths.length > 0
+    return loc.to_s
+  end
+end
+
 class App
-  class Location
-    def initialize(*dirs)
-      @dirs = dirs
-    end
-
-    def to_s() return File.join(*@dirs) end
-
-    def +(x)
-      path = @dirs+[x]
-      return Location.new(*path)
-    end
-
-    def [](*path)
-      loc = self
-      loc = loc + path.shift() while path.length > 0
-      return loc.to_s
-    end
+  def self.find_base(dir)
+    e = Pathname($0).expand_path.parent.to_enum(:ascend)
+    return e.map{|x| x+dir.to_s }.find{|x| x.directory?}
   end
 
-  BASE   = Location.new($base_dir || '..')
-  CONFIG = BASE + 'config'
-  DB     = BASE + 'db'
+  CONFIG = find_base(:config)
+  DB     = find_base(:db)
   KADAI  = DB + 'kadai'
-  BUILD  = BASE + 'test'
-  SCRIPT = BASE + 'script'
+  BUILD  = find_base(:test)
+  SCRIPT = find_base(:script)
 
   FILES = {
     :master      => CONFIG['master.yml'],

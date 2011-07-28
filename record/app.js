@@ -1,20 +1,4 @@
 var init = function(id) {
-    var base = function() {
-        var uri = GNN.URI.location();
-        uri.local.pop(); uri.local.pop();
-        return uri;
-    };
-    var api = function(name, args) {
-        var uri = base();
-        uri.local.push('api');
-        uri.local.push(name+'.cgi');
-        uri.params = args || {};
-        uri.refresh = function() {
-            delete uri.params.timestamp;
-            return uri;
-        };
-        return uri;
-    };
     var apiMaster = api('master', { year: true, token: true });
     var apiUser   = api('user', { type: 'status', status: 'record', log: 1 });
     var apiScheme = api('scheme', { record: true });

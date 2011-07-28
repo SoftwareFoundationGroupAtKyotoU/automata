@@ -1,17 +1,4 @@
 var init = function() {
-    var base = function() {
-        var uri = GNN.URI.location();
-        uri.local.pop();
-        return uri;
-    };
-    var api = function(name, args) {
-        var uri = base();
-        uri.local.push('api');
-        uri.local.push(name+'.cgi');
-        uri.params = args || {};
-        return uri;
-    };
-
     with (GNN.UI) {
         var Uploader = function(scheme, solved) {
             var self = {};
