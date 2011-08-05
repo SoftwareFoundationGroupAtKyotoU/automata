@@ -103,7 +103,7 @@ tr:nth-child(2n+1) td {
 }
 
 tr.selected td {
-   background-color: #eeddee;
+   background-color: #ddeeee;
 }
 
 td.name, td.status {
@@ -122,7 +122,7 @@ td.status .loading {
 }
 
 td.NG, td.build-NG {
-   background-color: #ddccdd ! important;
+   background-color: #eeddee ! important;
 }
 
 .log {
