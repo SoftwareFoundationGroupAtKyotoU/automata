@@ -52,3 +52,48 @@ var addLinks = function(links) {
         });
     }
 };
+
+var reportFatalErrors = function(errors) {
+    with (GNN.UI) {
+        var toNode = function(v) {
+            if (v instanceof Array) {
+                var ul = $new('ul');
+                v.forEach(function(x) {
+                    ul.appendChild($new('li', { child: toNode(x) }));
+                });
+                return ul;
+            } else if (typeof v == 'object') {
+                var dl = $new('dl');
+                for (var k in v) {
+                    dl.appendChild($new('dt', { child: k }));
+                    dl.appendChild($new('dd', { child: toNode(v[k]) }));
+                }
+                return dl;
+            } else {
+                return $text(v+'');
+            }
+        };
+
+        div = $('fatalerror');
+        div.appendChild($new('h3', { child: 'Error' }));
+
+        var ul = $new('ul');
+        errors.forEach(function(e) {
+            var li = $new('li', { child: e.message });
+            if (e.detail) li.appendChild(toNode(e.detail));
+            ul.appendChild(li);
+        });
+        div.appendChild(ul);
+    }
+};
+
+var jsonpFailure = function(jsonp, failed) {
+    failedURIs = {};
+    var none = { uri: 'waiting for request' };
+    failed.forEach(function(k){ failedURIs[k]=(jsonp[k]||none).uri; });
+
+    reportFatalErrors([
+        { message: 'JSONP request timed out:',
+          detail:  failedURIs }
+    ]);
+};

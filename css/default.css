@@ -213,3 +213,7 @@ ul#ex li
 {
    color: blue;
 }
+
+#fatalerror ul {
+   margin-bottom: 3em;
+}

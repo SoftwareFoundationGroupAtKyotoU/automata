@@ -257,6 +257,7 @@ var init = function(id) {
 
             // show records
             showRecord(json);
-        });
+
+        }, jsonpFailure);
     }
 };

@@ -193,6 +193,6 @@ var init = function() {
                 var report = user.token==json.master.token ? user.report:null;
                 new Uploader(json.scheme, report||{});
             });
-        });
+        }, jsonpFailure);
     }
 };
