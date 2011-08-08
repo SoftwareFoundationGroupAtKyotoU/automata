@@ -190,7 +190,7 @@ ul#selector li
    -webkit-border-radius: 4px;
 }
 
-ul#ex
+ul#ex, ul#ex ul
 {
    display: inline;
    list-style-type: none;
@@ -201,6 +201,11 @@ ul#ex
 ul#ex li
 {
    margin: 0 3em;
+}
+
+ul#ex li ul li
+{
+   margin: 0 1em;
 }
 
 #selected_report

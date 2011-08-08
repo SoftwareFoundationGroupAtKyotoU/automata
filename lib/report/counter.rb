@@ -11,9 +11,20 @@ module Report
     end
 
     def vote(ex)
+      # parent node
+      return if @report.find{|k,v| ex != k && ex.to_ex.match(k.to_ex)}
+
       ex = ex.to_ex
+
       r = @report[ex.to_s]
-      r = (@report.find{|k,v| k.to_ex.match(ex)}||[]).last unless r
+      unless r # vode on parent node
+        r = @report.sort do |a,b|
+          a[0].to_ex <=> b[0].to_ex
+        end.find do |k,v|
+          k.to_ex.match(ex)
+        end.last
+      end
+
       if r
         if (r['required']||0) > 0
           r['required'] = r['required'] - 1
@@ -28,7 +39,10 @@ module Report
     def insufficient()
       insuf = []
       @report.each do |ex, val|
-        insuf << [ex, val['required']] if (val['required']||0) > 0
+        val = {} unless val
+        if (val['required']||0) > 0
+          insuf << [ex, val['required']]
+        end
       end
       return insuf.sort{|a,b| a[0].to_ex <=> b[0].to_ex}
     end
