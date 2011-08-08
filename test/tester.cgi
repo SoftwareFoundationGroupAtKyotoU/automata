@@ -22,10 +22,14 @@ class String
   end
 end
 
+def random_fname()
+  return String.random(8) + Time.now.usec.to_s
+end
+
 cgi = CGI.new
 
 # working directory
-dir = File.join(Dir.tmpdir, 'tester-'+String.random(8))
+dir = File.join(Dir.tmpdir, 'tester-'+random_fname)
 FileUtils.mkdir_p(dir)
 
 begin
@@ -52,7 +56,7 @@ begin
     output = output.read
     if output == ':argument'
       # supply random file name to the command line argument
-      output = String.random(8)
+      output = random_fname
       args << output
     end
   end
