@@ -165,7 +165,7 @@ var init = function(id) {
                 json.user.forEach(function(student) { // for each student
                     var tr = $new('tr');
                     var id = student.token;
-                    var record = student.report[sc.id]||{};
+                    var record = (student.report||{})[sc.id]||{};
                     var autoUpdate;
 
                     var makeStatusNode = function(text) {

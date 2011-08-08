@@ -8,6 +8,7 @@ require 'yaml'
 require 'time'
 
 require 'app'
+require 'conf'
 require 'log'
 
 report_id = $*.shift
@@ -26,14 +27,26 @@ dir[:test]   = dir[:user] + 'test'
 
 files = {
   :log    => dir[:user][App::FILES[:log]],
-  :config => App::FILES[:master],
+  :master => App::FILES[:master],
+  :local  => App::FILES[:local],
 }
 
 yml = {}
 files.each do |name, file|
   yml[name] = YAML.load_file(file)||{} rescue {}
 end
-yml[:test] = yml[:config]['test']
+
+master = App::Conf.new(yml[:master])
+local = App::Conf.new(yml[:local])
+
+conf = {}
+[ :test ].each do |k|
+  conf[k] = {}
+  [ :default, report_id ].each do |l|
+    ks = [ :check, l, k ]
+    conf[k].merge!((master[*ks]||{}).to_hash.merge((local[*ks]||{}).to_hash))
+  end
+end
 
 info = nil
 
@@ -42,9 +55,11 @@ begin
     raise RuntimeError, "'#{dir[:test]}' not found"
   end
 
-  run = yml[:test]['run']
-  fs = yml[:test]['files']
-  output = yml[:test]['output']
+  run = conf[:test]['run']
+  exit unless run
+
+  fs = conf[:test]['files']
+  output = conf[:test]['output']
   output = output.is_a?(Symbol) ? ':'+output.to_s : output
 
   cmd =
@@ -52,7 +67,7 @@ begin
       "-F 'file=@#{ZIP}'",
       "-F 'cmd=#{run}'",
       output && "-F 'output=#{output}'",
-      yml[:test]['sandbox'],
+      conf[:test]['sandbox'],
     ].compact.join(' ')
 
   result = Dir.chdir(dir[:test].to_s) do

@@ -1,0 +1,39 @@
+#! /usr/bin/env ruby
+require 'pathname'
+require 'shellwords'
+
+$flag
+
+def compile(file)
+  $flag = true
+
+  cmd = "ocamlc -c #{file.shellescape}"
+  puts(cmd)
+
+  output = `#{cmd} 2>&1`
+  res = $?.to_i
+
+  if res != 0
+    puts(output)
+    return
+  end
+
+  return true
+end
+
+def rec(e)
+  if e.directory?
+    mrec = proc{|y| rec(e+y)}
+    results = e.to_enum(:each_entry).reject{|x| x.to_s=~/^\.+$/}.map(&mrec)
+    return results.inject(true){|r,x| r && x}
+  elsif e.to_s =~ /.*\.ml$/
+    return compile(e.to_s)
+  end
+
+  return true
+end
+
+puts('no input') unless $flag
+
+r = rec(Pathname.new('.'))
+exit(r && $flag ? 0 : -1)

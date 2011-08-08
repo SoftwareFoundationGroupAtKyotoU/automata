@@ -5,6 +5,7 @@ $:.unshift('./lib')
 
 require 'time'
 require 'etc'
+require 'shellwords'
 
 require 'app'
 require 'log'
@@ -54,7 +55,7 @@ cmd = {}
 
 # ../test/build.rb report_id user post ex...
 cmd[:build] = "#{App::FILES[:build]} '#{report_id}' '#{user}' '#{time}'"
-cmd[:build] = "#{cmd[:build]} #{log['report'].join(' ')}"
+cmd[:build] = "#{cmd[:build]} #{log['report'].join(' ').shellescape}"
 cmd[:build] = "#{cmd[:build]} > /dev/null 2>#{dir[:user]['build_fatal.log']}"
 
 # ../test/test.rb report_id user post

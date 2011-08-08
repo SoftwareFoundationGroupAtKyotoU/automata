@@ -9,6 +9,7 @@ require 'time'
 require 'dir/each_leaf'
 
 require 'app'
+require 'conf'
 require 'log'
 require 'report/exercise'
 
@@ -27,24 +28,39 @@ dir[:target] = dir[:test] + 'src'
 
 files = {
   :log    => dir[:user][App::FILES[:log]],
-  :config => App::FILES[:master],
+  :master => App::FILES[:master],
+  :local  => App::FILES[:local],
 }
 
 yml = {}
-files.each do |name, file|
-  yml[name] = YAML.load_file(file)||{} rescue {}
-end
-yml[:build] = yml[:config]['build']
-yml[:test] = yml[:config]['test']
+files.each{|name, file| yml[name] = YAML.load_file(file)||{} rescue {} }
 
-build_commands = yml[:build]['command']
+master = App::Conf.new(yml[:master])
+local = App::Conf.new(yml[:local])
+
+conf = { :test => {} }
+[ :default, report_id ].each do |k|
+  ks = [ :check, k, :test ]
+  conf[:test].merge!((master[*ks]||{}).to_hash.merge((local[*ks]||{}).to_hash))
+end
+
+conf = {}
+[ :build, :test ].each do |k|
+  conf[k] = {}
+  [ :default, report_id ].each do |l|
+    ks = [ :check, l, k ]
+    conf[k].merge!((master[*ks]||{}).to_hash.merge((local[*ks]||{}).to_hash))
+  end
+end
+
+build_commands = conf[:build]['command']
 status_code = {
   :failure  => 'NG',
   :complete => 'OK',
 }
 
 file_loc = nil
-(yml[:build]['file_location'][report_id] || []).each do |loc|
+(conf[:build]['file_location'] || []).each do |loc|
   ex = loc['exercise']
   if !ex || (ex & exercises).length == ex.length
     file_loc = loc
@@ -75,11 +91,9 @@ Dir.each_leaf(dir[:target].to_s, File::FNM_DOTMATCH) do |f|
 end
 
 # make input file
-input = dir[:test][yml[:test]['input']]
+input = dir[:test][conf[:test]['input']]
 FileUtils.rm(input) if File.exist?(input)
 open(input, 'w'){|io| exercises.each{|x| io.puts(x)}}
-#   exercises.map(&:to_ex).sort.map{|x| x.to_a.last}.each(&io.method(:puts))
-# end
 
 # build
 info = Dir.chdir(dir[:test].to_s) do

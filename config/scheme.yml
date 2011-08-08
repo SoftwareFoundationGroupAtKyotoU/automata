@@ -1,6 +1,7 @@
 scheme:
   - id: report1
-    type: manual
+    type: post
+    name: "課題1: Objective Caml演習"
     record:
       - field: name
         label: "名前"
@@ -48,82 +49,11 @@ scheme:
         label: "★★問題の解答数"
       - field: optional3
         label: "★★★問題の解答数"
-  - id: report4
-    type: post
-    name: "課題1: Objective Caml演習(の開発テスト中)"
-    record:
-      - field: name
-        label: "名前"
-      - field: status
-        label: "課題1"
-        class: status
-      - field: unsolved
-        label: "未解答の必修問題"
-        class: unsolved
-      - field: optional
-        label: "オプション問題の解答数"
 
 regex: "^Ex((?:\\.\\d+)+)"
 
 report:
   report1:
-    Ex.2.6(2):  { required: 1 }
-    Ex.2.6(4):  { required: 1 }
-    Ex.3.7(1):  { required: 1 }
-    Ex.3.7(2):  { required: 1 }
-    Ex.3.11(1): { required: 1 }
-    Ex.3.11(2): { required: 1 }
-    Ex.3.11(3): { required: 1 }
-    Ex.3.11(4): { required: 1 }
-    Ex.4.1:     { required: 1 }
-    Ex.4.4:     { required: 1 }
-    Ex.4.5:     { required: 1 }
-    Ex.4.7:     { required: 1 }
-    Ex.5.3:     { required: 4 }
-    Ex.5.6:     { required: 1 }
-    Ex.6.2:     { required: 1 }
-    Ex.6.6:     { required: 1 }
-    Ex.6.9:     { required: 1 }
-    Ex.6.10:    { required: 2 }
-    Ex.7.2:     { required: 1 }
-    Ex.7.4:     { required: 1 }
-    Ex.7.6:     { required: 1 }
-    Ex.7.8:     { required: 1 }
-  report2:
-    Ex.3.1:     { required: 1 }
-    Ex.3.2:     { level: 2 }
-    Ex.3.3:     { level: 1 }
-    Ex.3.4:     { required: 1 }
-    Ex.3.5:     { level: 2 }
-    Ex.3.6:     { level: 2 }
-    Ex.3.7:     { level: 2 }
-    Ex.3.8:     { required: 1 }
-    Ex.3.9:     { level: 2 }
-    Ex.3.10:    { level: 1 }
-    Ex.3.11:    { level: 1 }
-    Ex.3.12:    { level: 1 }
-    Ex.3.13:    { level: 1 }
-    Ex.3.14:    { required: 1 }
-    Ex.3.15:    { level: 2 }
-    Ex.3.16:    { level: 2 }
-    Ex.3.17:    { level: 1 }
-    Ex.3.18:    { level: 1 }
-    Ex.3.19:    { level: 3 }
-    Ex.3.20:    { level: 2 }
-  report3:
-    Ex.4.1:     { required: 1 }
-    Ex.4.2:     { required: 1 }
-    Ex.4.3:     { required: 1 }
-    Ex.4.4:     { required: 1 }
-    Ex.4.5:     { required: 1 }
-    Ex.4.6:     { required: 1 }
-    Ex.4.7:     { level: 2 }
-    Ex.4.8:     { level: 2 }
-    Ex.4.9:     { level: 2 }
-    Ex.4.10:    { level: 1 }
-    Ex.4.11:    { level: 3 }
-    Ex.4.12:    { level: 3 }
-  report4:
     Ex.2.1:
     Ex.2.1(1):
     Ex.2.1(2):
@@ -216,3 +146,37 @@ report:
     Ex.7.8:     { required: 1 }
     Ex.7.9:
     Ex.7.10:
+  report2:
+    Ex.3.1:     { required: 1 }
+    Ex.3.2:     { level: 2 }
+    Ex.3.3:     { level: 1 }
+    Ex.3.4:     { required: 1 }
+    Ex.3.5:     { level: 2 }
+    Ex.3.6:     { level: 2 }
+    Ex.3.7:     { level: 2 }
+    Ex.3.8:     { required: 1 }
+    Ex.3.9:     { level: 2 }
+    Ex.3.10:    { level: 1 }
+    Ex.3.11:    { level: 1 }
+    Ex.3.12:    { level: 1 }
+    Ex.3.13:    { level: 1 }
+    Ex.3.14:    { required: 1 }
+    Ex.3.15:    { level: 2 }
+    Ex.3.16:    { level: 2 }
+    Ex.3.17:    { level: 1 }
+    Ex.3.18:    { level: 1 }
+    Ex.3.19:    { level: 3 }
+    Ex.3.20:    { level: 2 }
+  report3:
+    Ex.4.1:     { required: 1 }
+    Ex.4.2:     { required: 1 }
+    Ex.4.3:     { required: 1 }
+    Ex.4.4:     { required: 1 }
+    Ex.4.5:     { required: 1 }
+    Ex.4.6:     { required: 1 }
+    Ex.4.7:     { level: 2 }
+    Ex.4.8:     { level: 2 }
+    Ex.4.9:     { level: 2 }
+    Ex.4.10:    { level: 1 }
+    Ex.4.11:    { level: 3 }
+    Ex.4.12:    { level: 3 }
