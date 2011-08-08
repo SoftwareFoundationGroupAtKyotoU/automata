@@ -9,6 +9,7 @@ require 'tmpdir'
 require 'time'
 
 require 'app'
+require 'report/exercise'
 require 'log'
 
 err = {
@@ -85,6 +86,7 @@ begin
     app.cgi.params.each do |k,v|
       report << k if k =~ /#{app.file(:scheme)['regex']}/
     end
+    report = report.sort{|a,b| a.to_ex <=> b.to_ex}
     Log.new(log_file, time) do |log|
       log.write_data('status' => 'build', 'report' => report)
     end
