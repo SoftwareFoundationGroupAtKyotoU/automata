@@ -190,6 +190,13 @@ ul#selector li
    -webkit-border-radius: 4px;
 }
 
+div#list_view
+{
+   column-count: 3;
+   -moz-column-count: 3;
+   -webkit-column-count: 3;
+}
+
 ul#ex, ul#ex ul
 {
    display: inline;
