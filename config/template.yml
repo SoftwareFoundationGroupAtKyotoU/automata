@@ -12,6 +12,14 @@ links:
     uri: "http://www.sato.kuis.kyoto-u.ac.jp/~igarashi/class/isle4/"
 
 requirements:
+  report1:
+    static:
+      - name: comments
+        type: text
+        value: "ソースコードは.mlファイルとし, コードの説明およびレポート内容をコメントとして書き込むこと"
+      - name: build
+        type: text
+        value: ".mlファイルは#useでそのまま読み込めるようにすること"
   report2:
     static:
       - name: completeness
