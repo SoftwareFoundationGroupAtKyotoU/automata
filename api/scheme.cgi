@@ -22,18 +22,22 @@ app = App.new
 
 result = []
 scheme = app.file(:scheme)
-scheme['scheme'].each do |report|
+scheme['scheme'].reject do |report|
+  !app.optional(:id).include?(report['id'])
+end.each do |report|
   exes = []
-  scheme['report'][report['id']].sort do |a,b|
-    a[0].to_ex <=> b[0].to_ex
-  end.each do |k, v|
-    parent = exes.find{|ex,opt| ex.to_ex.match(k.to_ex)}
-    if parent
-      parent[1] = {} unless parent[1]
-      parent[1]['sub'] = [] unless parent[1]['sub']
-      parent[1]['sub'] << [ k, v ]
-    else
-      exes << [ k, v ]
+  unless app.params['exercise'].empty?
+    scheme['report'][report['id']].sort do |a,b|
+      a[0].to_ex <=> b[0].to_ex
+    end.each do |k, v|
+      parent = exes.find{|ex,opt| ex.to_ex.match(k.to_ex)}
+      if parent
+        parent[1] = {} unless parent[1]
+        parent[1]['sub'] = [] unless parent[1]['sub']
+        parent[1]['sub'] << [ k, v ]
+      else
+        exes << [ k, v ]
+      end
     end
   end
 

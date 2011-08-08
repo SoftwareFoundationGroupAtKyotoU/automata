@@ -98,7 +98,7 @@ var init = function(id) {
             };
 
             // records
-            json.scheme.forEach(function(sc) { // for each report
+            (json.scheme||[]).forEach(function(sc) { // for each report
                 var pers = persistent[sc.id] || {};
                 persistent[sc.id] = pers;
 
@@ -162,7 +162,7 @@ var init = function(id) {
                     setLog(id);
                 };
 
-                json.user.forEach(function(student) { // for each student
+                (json.user||[]).forEach(function(student) { // for each student
                     var tr = $new('tr');
                     var id = student.token;
                     var record = (student.report||{})[sc.id]||{};
@@ -245,19 +245,26 @@ var init = function(id) {
             });
         };
 
+        async = {
+            template: function(json) {
+                // fill page template
+                setTitle(json.template);
+                addLinks(json.template.links);
+            },
+            master: showRecord,
+            user: showRecord,
+            scheme: showRecord
+        };
+
         GNN.JSONP.retrieve({
             master:   apiMaster,
             user:     apiUser,
             scheme:   apiScheme,
-            template: apiTempl
+            template: apiTempl,
+            async: async
         }, function(json) {
-            // fill page template
-            setTitle(json.template);
-            addLinks(json.template.links);
-
             // show records
             showRecord(json);
-
         }, jsonpFailure);
     }
 };

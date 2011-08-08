@@ -52,12 +52,33 @@
                 delete hash.timeout;
             }
 
+            var asyncCallback = function(){};
+            if (typeof hash.async == 'object' ) {
+                var async = hash.async;
+                delete hash.async;
+                for (var x in async) async[x].done = false;
+
+                asyncCallback = function(w, r) {
+                    for (var x in async) {
+                        var ks = async[x].keys || [ x ];
+                        if (!async[x].done &&
+                            ks.every(function(k){ return w.indexOf(k)<0; })) {
+                            async[x].done = true;
+                            var callback = async[x].callback || async[x];
+                            if (typeof callback == 'function') callback(r);
+                        }
+                    }
+                };
+            }
+            callback = callback || function(){};
+
             var keys = [];
             var result = {};
-            for (var k in hash) keys.push(k);
-            var wait = keys.concat([]);
             var timedout = false;
             var jsonp = {};
+
+            for (var k in hash) keys.push(k);
+            var wait = keys.concat([]);
 
             var run = function() {
                 if (keys.length > 0) {
@@ -65,6 +86,7 @@
                     jsonp[k] = new JSONP(hash[k], function(obj) {
                         result[k] = obj;
                         wait = wait.filter(function(v){return v!=k;});
+                        asyncCallback(wait, result);
                         if (!wait.length && !timedout) callback(result);
                     });
                     setTimeout(run, 0);

@@ -1,6 +1,6 @@
 var init = function() {
     with (GNN.UI) {
-        var Uploader = function(scheme, solved) {
+        var Uploader = function() {
             var self = {};
 
             var form = $('form');
@@ -11,22 +11,36 @@ var init = function() {
                 }
             });
 
-            scheme.forEach(function(report) {
-                var selector = $('selector');
-                var li = $new('li', { id: 'button_'+report.id });
-                selector.appendChild(li);
+            self.reset = function() {
+                self.unselectAll();
+                self.select(self.selected || (self.scheme||[])[0]);
+            };
 
-                var button = $new('a', {
-                    attr: { href: '.' },
-                    child: $text(report.name)
+            self.setScheme = function(scheme) {
+                scheme.forEach(function(report) {
+                    var selector = $('selector');
+                    var li = $new('li', { id: 'button_'+report.id });
+                    selector.appendChild(li);
+
+                    var button = $new('a', {
+                        attr: { href: '.' },
+                        child: $text(report.name)
+                    });
+                    new Observer(button, 'click', function(e) {
+                        e.stop();
+                        self.unselectAll();
+                        self.select(report);
+                    });
+                    li.appendChild(button);
                 });
-                new Observer(button, 'click', function(e) {
-                    e.stop();
-                    self.unselectAll();
-                    self.select(report);
-                });
-                li.appendChild(button);
-            });
+                self.scheme = scheme;
+                return self;
+            };
+
+            self.setSolved = function(solved) {
+                self.solved = solved;
+                return self;
+            };
 
             self.unselect = function(id) {
                 var button = $('button_'+id);
@@ -34,10 +48,15 @@ var init = function() {
             };
 
             self.unselectAll = function() {
-                scheme.forEach(function(report){ self.unselect(report.id); });
+                if (!self.scheme) return;
+                self.scheme.forEach(function(report){
+                    self.unselect(report.id);
+                });
             };
 
             self.select = function(report) {
+                if (!report) return;
+                self.selected = report;
                 $('report_id').value = report.id;
 
                 // report selector
@@ -143,8 +162,9 @@ var init = function() {
                 var ul = $('ex');
                 removeAllChildren(ul);
 
+                var solved = self.solved || {};
                 var lastSolved = (solved[report.id]||{}).solved || [];
-                report.exercise.forEach(function(ex) {
+                (report.exercise||[]).forEach(function(ex) {
                     var name = ex[0];
                     var option = ex[1] || {};
                     var li = $new('li');
@@ -218,40 +238,70 @@ var init = function() {
                 updateReqs();
             };
 
-            self.unselectAll();
-            self.select(scheme[0]);
-
             return self;
+        };
+
+        var uploader = new Uploader();
+
+        var async = {
+            template: function(json) {
+                // fill page template
+                setTitle(json.template);
+                addLinks(json.template.links);
+            },
+            master: function(json) {
+                // set login name
+                var login = $('login');
+                login.appendChild($node(json.master.user));
+
+                // load solved data
+                new GNN.JSONP(api('user', {
+                    user: json.master.user,
+                    type: 'status',
+                    status: 'solved'
+                }), function(user) {
+                    user = user[0]||{};
+                    var report;
+                    if (user.token==json.master.token) report=user.report;
+                    uploader.setSolved(report||{});
+                    uploader.reset();
+                });
+            },
+            scheme: function(json) {
+                uploader.setScheme(json.scheme);
+                uploader.reset();
+
+                // get exercise list
+                var apis = { async: {} };
+                json.scheme.forEach(function(report, i) {
+                    apis[report.id] = api('scheme', {
+                        id: report.id, type: 'post', exercise: true
+                    });
+                    apis.async[report.id] = function(r) {
+                        report.exercise = r[report.id][0].exercise;
+                        uploader.reset();
+                    };
+                });
+                GNN.JSONP.retrieve(apis, null, jsonpFailure);
+            },
+            reqs: {
+                keys: 'scheme reqs'.split(' '),
+                callback: function(json) {
+                    json.scheme.forEach(function(rep) {
+                        var req = json.reqs.requirements[rep.id];
+                        if (req) rep.requirements = req;
+                    });
+                    uploader.reset();
+                }
+            }
         };
 
         GNN.JSONP.retrieve({
             master: api('master', { year: true, user: true, token: true }),
-            scheme: api('scheme', { type: 'post', exercise: true }),
-            template: api('template', { type: 'post', links: true,
-                                        requirements: true })
-        }, function(json) {
-            // fill page template
-            setTitle(json.template);
-            addLinks(json.template.links);
-
-            // set login name
-            var login = $('login');
-            login.appendChild($node(json.master.user));
-
-            new GNN.JSONP(api('user', {
-                user: json.master.user,
-                type: 'status',
-                status: 'solved'
-            }), function(user) {
-                // setup uploader
-                json.scheme.forEach(function(rep) {
-                    var req = json.template.requirements[rep.id];
-                    if (req) rep.requirements = req;
-                });
-                user = user[0]||{};
-                var report = user.token==json.master.token ? user.report:null;
-                new Uploader(json.scheme, report||{});
-            });
-        }, jsonpFailure);
+            template: api('template', { type: 'none', links: true }),
+            scheme: api('scheme', { type: 'post' }),
+            reqs: api('template', { type: 'post', requirements: true }),
+            async: async
+        }, null, jsonpFailure);
     }
 };
