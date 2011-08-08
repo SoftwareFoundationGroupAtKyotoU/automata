@@ -4,9 +4,8 @@
 #   scheme.ymlのデータを取得
 # Options:
 #   type          typeプロパティが<type>のものだけ取得
-#   report        idプロパティが<id>のものだけ取得
+#   id            idプロパティが<id>のものだけ取得
 #   record        レコード表示用のフィールド情報を取得
-#   requirements  課題提出の要件情報を取得
 #   exercise      個別の問題の定義を取得
 
 KEY = [ :id, :type, :name, ]
