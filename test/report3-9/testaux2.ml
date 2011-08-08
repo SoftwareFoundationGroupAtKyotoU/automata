@@ -1,6 +1,7 @@
 (* initial_tyenv for let polymorphism *)
 
 open Syntax
+open Buffer
 
 let initial_tyenv =
   Environment.extend "true" (tysc_of_ty TyBool)
@@ -9,6 +10,6 @@ let initial_tyenv =
 	    (Environment.extend "v" (tysc_of_ty TyInt)
 		(Environment.extend "x" (tysc_of_ty TyInt) Environment.empty))))
 
-let output_ty oc typ =
+let add_ty ob typ =
   let TyScheme (_, t) = typ in
-    output_string oc (Testaux.ty_name t)
+    add_string ob (Testaux.ty_name t)

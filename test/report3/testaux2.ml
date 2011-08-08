@@ -1,6 +1,7 @@
 (* initial_tyenv for let mono *)
 
 open Syntax
+open Buffer
 
 let initial_tyenv =
   Environment.extend "true" TyBool
@@ -9,6 +10,6 @@ let initial_tyenv =
 	    (Environment.extend "v" TyInt
 		(Environment.extend "x" TyInt Environment.empty))))
 
-let output_ty oc typ =
+let add_ty ob typ =
   let t = typ in
-    output_string oc (Testaux.ty_name t)
+    add_string ob (Testaux.ty_name t)

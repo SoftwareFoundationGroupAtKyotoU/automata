@@ -1,3 +1,5 @@
+open Buffer
+
 type test_exval = 
     TestIntV of int
   | TestBoolV of bool
@@ -6,16 +8,16 @@ type test_exval =
   | TestNilV
 
 (* this implementation must be completed *)
-let rec output_test_exval oc = function
-    TestIntV i -> output_string oc (string_of_int i)
-  | TestBoolV b -> output_string oc (string_of_bool b)
-  | TestProcV -> output_string oc "<fun>"
-  | TestNilV -> output_string oc "[]"
-  | TestConsV (v1, v2) -> 
-      output_test_exval oc v1;
-      output_string oc " :: (";
-      output_test_exval oc v2;
-      output_string oc ")"
+let rec add_test_exval ob = function
+    TestIntV i -> add_string ob (string_of_int i)
+  | TestBoolV b -> add_string ob (string_of_bool b)
+  | TestProcV -> add_string ob "<fun>"
+  | TestNilV -> add_string ob "[]"
+  | TestConsV (v1, v2) ->
+      add_test_exval ob v1;
+      add_string ob " :: (";
+      add_test_exval ob v2;
+      add_string ob ")"
 
 (* value equality *)
 let rec test_exval_eq v1 v2 = 
