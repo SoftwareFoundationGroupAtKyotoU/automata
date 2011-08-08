@@ -13,6 +13,14 @@ var init = function() {
 
             self.reset = function() {
                 self.unselectAll();
+                if (!self.selected) {
+                    var selected = $('report_id').value;
+                    if (selected && selected.length) {
+                        self.selected = self.scheme.reduce(function(r, x) {
+                            return x.id == selected ? x : r;
+                        }, null);
+                    }
+                }
                 self.select(self.selected || (self.scheme||[])[0]);
             };
 
