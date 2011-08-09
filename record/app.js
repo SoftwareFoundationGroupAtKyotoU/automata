@@ -208,7 +208,7 @@ var init = function(id) {
                             if (text.length > 0) {
                                 text = makeStatusNode(text);
                             }
-                            if (fld == 'check') {
+                            if (fld == 'check' && sc.update == 'auto') {
                                 autoUpdate = true;
                                 td.appendChild($new('img', {
                                     klass: 'loading',

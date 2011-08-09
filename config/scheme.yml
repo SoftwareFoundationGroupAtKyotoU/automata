@@ -15,6 +15,7 @@ scheme:
         label: "オプション問題の解答数"
   - id: report2
     type: post
+    update: auto
     name: "課題2: インタプリタ作成実験"
     record:
       - field: name
@@ -33,6 +34,7 @@ scheme:
         label: "★★★問題の解答数"
   - id: report3
     type: post
+    update: auto
     name: "課題3: 型検査・推論器作成実験"
     record:
       - field: name

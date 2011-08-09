@@ -8,7 +8,7 @@
 #   record        レコード表示用のフィールド情報を取得
 #   exercise      個別の問題の定義を取得
 
-KEY = [ :id, :type, :name, ]
+KEY = [ :id, :type, :name, :update ]
 OPTIONAL = [ :record, :exercise ]
 FILTER = [ :id, :type, ]
 
