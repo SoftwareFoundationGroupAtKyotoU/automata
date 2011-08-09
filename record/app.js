@@ -252,7 +252,10 @@ var init = function(id) {
                 addLinks(json.template.links);
             },
             master: showRecord,
-            user: showRecord,
+            user: {
+                keys: 'user scheme'.split(' '),
+                callback: showRecord
+            },
             scheme: showRecord
         };
 
@@ -262,9 +265,6 @@ var init = function(id) {
             scheme:   apiScheme,
             template: apiTempl,
             async: async
-        }, function(json) {
-            // show records
-            showRecord(json);
-        }, jsonpFailure);
+        }, null, jsonpFailure);
     }
 };
