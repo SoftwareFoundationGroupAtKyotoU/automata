@@ -16,7 +16,8 @@ require 'report/exercise'
 report_id = $*.shift
 user      = $*.shift
 post_tz   = $*.shift
-exercises = $*
+exes = $*
+exes = ARGF.file.readlines.map(&:strip).reject(&:empty?) if exes.empty?
 
 ignore = [ 'cm[iox]', 'o', 'output', 'depend' ]
 
@@ -62,7 +63,7 @@ status_code = {
 file_loc = nil
 (conf[:build]['file_location'] || []).each do |loc|
   ex = loc['exercise']
-  if !ex || (ex & exercises).length == ex.length
+  if !ex || (ex & exes).length == ex.length
     file_loc = loc
     break
   end
@@ -93,7 +94,7 @@ end
 # make input file
 input = dir[:test][conf[:test]['input']]
 FileUtils.rm(input) if File.exist?(input)
-open(input, 'w'){|io| exercises.each{|x| io.puts(x)}}
+open(input, 'w'){|io| exes.each{|x| io.puts(x)}}
 
 # build
 info = Dir.chdir(dir[:test].to_s) do

@@ -53,9 +53,8 @@ time = log['id'] || log['timestamp']
 
 cmd = {}
 
-# ../test/build.rb report_id user post ex...
+# ../test/build.rb report_id user post
 cmd[:build] = "#{App::FILES[:build]} '#{report_id}' '#{user}' '#{time}'"
-cmd[:build] = "#{cmd[:build]} #{log['report'].join(' ').shellescape}"
 cmd[:build] = "#{cmd[:build]} > /dev/null 2>#{dir[:user]['build_fatal.log']}"
 
 # ../test/test.rb report_id user post
@@ -64,7 +63,8 @@ cmd[:test] = "#{cmd[:test]} > /dev/null 2>&1 &" # do not wait
 
 begin
   build = nil
-  if system("#{cmd[:build]}")
+  IO.popen(cmd[:build], 'w'){|io| log['report'].each{|l| io.puts(l)}}
+  if $?.to_i == 0
     Log.new(log_file, Time.parse(time)) do |log|
       hash = {
         'status' => 'build:NG',
