@@ -173,7 +173,7 @@ var init = function(id) {
                             pers.selected = student.token;
                         } else if (json.user.length > 1) {
                             if (typeof pers.selected == 'undefined') {
-                                pers.selected = json.master.token;
+                                pers.selected = (json.master||{}).token;
                             }
 
                             var klass = makeStatusId();
