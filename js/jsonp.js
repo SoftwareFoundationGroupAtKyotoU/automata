@@ -55,15 +55,16 @@
             var asyncCallback = function(){};
             if (typeof hash.async == 'object' ) {
                 var async = hash.async;
+                var done = {};
                 delete hash.async;
                 for (var x in async) async[x].done = false;
 
                 asyncCallback = function(w, r) {
                     for (var x in async) {
                         var ks = async[x].keys || [ x ];
-                        if (!async[x].done &&
+                        if (!done[x] &&
                             ks.every(function(k){ return w.indexOf(k)<0; })) {
-                            async[x].done = true;
+                            done[x] = true;
                             var callback = async[x].callback || async[x];
                             if (typeof callback == 'function') callback(r);
                         }
