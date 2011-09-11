@@ -26,6 +26,7 @@ dir[:user]   = App::KADAI + report_id + user
 dir[:test]   = dir[:user] + 'test'
 dir[:src]    = dir[:user] + post_tz + 'src'
 dir[:target] = dir[:test] + 'src'
+dir[:build]  = App::BUILD
 
 files = {
   :log    => dir[:user][App::FILES[:log]],
@@ -78,7 +79,7 @@ FileUtils.rm_r(dir[:test].to_s) if File.exist?(dir[:test].to_s)
 FileUtils.mkdir_p(dir[:test].to_s)
 FileUtils.mkdir_p(dir[:target].to_s)
 
-test_files = Dir.glob("#{test_files_dir}/*")
+test_files = Dir.glob("#{dir[:build]}/#{test_files_dir}/*")
 FileUtils.cp_r(test_files, dir[:test].to_s)
 
 src_files = Dir.glob("#{dir[:src]}/*", File::FNM_DOTMATCH)

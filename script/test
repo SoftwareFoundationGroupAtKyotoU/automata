@@ -1,13 +1,13 @@
 #! /usr/bin/env ruby
 
+oldwd = Dir.pwd
 Dir.chdir(File.dirname(File.expand_path($0)))
 $:.unshift('./lib')
 
 require 'time'
-require 'etc'
-require 'shellwords'
 
 require 'app'
+require 'permission'
 require 'log'
 
 err = {
@@ -17,11 +17,11 @@ err = {
 
 args = $*.dup
 $argv = {}; arg=nil
-$argv[:help] = %w'-h --help'.any?{|x| $*.delete(x)}
-$argv[:id] = $*.reject!{|x|x=~/^--id=(.*)$/&&arg=$1} && arg || $argv[:id]
+$argv[:help] = %w'-h --help'.any?{|x| args.delete(x)}
+$argv[:id] = args.reject!{|x|x=~/^--id=(.*)$/&&arg=$1} && arg || $argv[:id]
 
-report_id = $*.shift
-user = $*.shift
+report_id = args.shift
+user = args.shift
 
 if $argv[:help] || !report_id || !user
   print <<"EOM"
@@ -35,13 +35,7 @@ dir[:user]   = App::KADAI + report_id + user
 dir[:test]   = dir[:user] + 'test'
 
 # sudo su www-data -c "command args..."
-owner = File.stat(dir[:user].to_s).uid
-if owner != Process.uid
-  args = args.map{|x| "'"+x+"'"}
-  cmd = "./#{File.basename($0)} #{args.join(' ')}"
-  ret = system(%Q!sudo su #{Etc.getpwuid(owner).name} -c "#{cmd}"!)
-  exit(ret ? 0 : 1)
-end
+Dir.chdir(oldwd){ Permission.ensure_writable(dir[:user].to_s) }
 
 log_file = dir[:user][App::FILES[:log]]
 log = if $argv[:id]

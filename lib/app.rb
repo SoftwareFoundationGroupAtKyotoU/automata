@@ -24,7 +24,8 @@ class App
   CONFIG = find_base(:config)
   DB     = find_base(:db)
   KADAI  = DB + 'kadai'
-  BUILD  = find_base(:test)
+  BUILD  = find_base(:build)
+  TESTER = find_base(:test)
   SCRIPT = find_base(:script)
 
   FILES = {
@@ -34,8 +35,8 @@ class App
     :template    => CONFIG['template.yml'],
     :data        => DB['data.yml'],
     :log         => 'log.yml',
-    :build       => BUILD['build.rb'],
-    :sandbox     => BUILD['test.rb'],
+    :build       => TESTER['build.rb'],
+    :sandbox     => TESTER['test.rb'],
     :test_script => SCRIPT['test'],
   }
 

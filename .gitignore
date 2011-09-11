@@ -1,4 +1,5 @@
-config/local.yml
+build
+config
 db/data.yml
 .htaccess
 .htdigest

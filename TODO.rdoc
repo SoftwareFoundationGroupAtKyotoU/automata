@@ -1,0 +1,51 @@
+= ./post
+
+- デフォルトで選択される課題を期限に応じて決定する
+
+= ./record
+
+- アップロードされたファイルを閲覧する機能
+- 管理権限用操作
+  - テストを再実行
+  - ステータス(およびメッセージ)を変更
+  - 解答済みの問題を変更
+
+= ./script
+
+- 初期化スクリプト
+  - 755 www-data:www-data
+    - ./db/kadai
+  - 664 user:www-data
+    - ./db/data.yml
+    - ./db/passwd
+    - ./config/local.yml
+    - ./.htaccess
+  - 660 user:www-data
+    - ./.htdigest
+  - 最初の特権アカウントを設定
+
+= ./admin
+
+- 設定用ツールのWebインタフェース
+  - ユーザを追加
+    - ./db/data.ymlを更新
+    - パスワードを生成
+      - ./db/passwdにパスワードを保存
+      - ./.htdigestを更新
+  - ./config/local.ymlの設定項目変更機能
+  - セットアップが成功しているかどうかのステータスページ
+  - ドキュメント
+    - 初期化前は誰でも見える
+    - 初期化後は特権アカウントからしか見えない
+
+= ./api/t
+
+- test_counter.rb
+- test_report.rb
+- test_user.rb
+- test_log.rb
+- test_app.rb
+- test_api_user.rb
+- test_api_scheme.rb
+- test_api_master.rb
+- テストをすべて実行するスクリプト
