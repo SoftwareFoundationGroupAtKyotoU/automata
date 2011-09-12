@@ -48,7 +48,7 @@ user = app.params['user'][0]
 
 # resolve real login name in case user id is a token
 user = app.users.inject(nil) do |r, u|
-  u.login == user ? u.real_login : r
+  (u.login == user || u.real_login == user) ? u.real_login : r
 end
 app.error_exit(STATUS[404]) unless user
 
@@ -85,9 +85,17 @@ if path.directory?
     puts(app.json(files))
   end
 elsif path.mime.type == 'text' && 'highlight' == app.params['type'][0]
-  # TODO
-  print(app.cgi.header('status' => '503 Service Unavailable'))
-  puts('503 Service Unavailable')
+  dir = File.join(File.dirname(File.expand_path($0)), 'vim')
+  vimcmd =
+    [ 'vim -e -s',
+      "--cmd 'set runtimepath+=.'",
+      "--cmd 'source vimrc'",
+      "-S src2html.vim",
+    ].join(' ');
+  Dir.chdir(dir) do
+    print(app.cgi.header('type' => 'text/xml'))
+    print(`#{vimcmd} #{path.to_s}`)
+  end
 else
   print(app.cgi.header('type' => path.mime.to_s, 'length' => path.size))
   print(IO.read(path.to_s))

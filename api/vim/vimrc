@@ -1,0 +1,11 @@
+syntax on
+set nocompatible
+set tabstop=4
+set expandtab
+set autoindent
+set lcs=tab:>\ ,trail:_,precedes:<,extends:\
+set foldlevelstart=99
+set encoding=utf-8
+set fileencodings=ucs-bom,euc-jp,sjis,cp932,utf-8
+set t_Co=256
+colorscheme railscasts

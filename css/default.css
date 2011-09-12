@@ -85,7 +85,7 @@ table {
 }
 th, td {
    padding: .5em;
-   vertical-align: top;
+   vertical-align: bottom;
 }
 
 th {
@@ -204,6 +204,9 @@ table.file_browser th {
    color: inherit;
    text-align: left;
 }
+table.file_browser .icon {
+   width: 20px;
+}
 table.file_browser .size {
    text-align: right;
    width: 4em;
@@ -212,12 +215,37 @@ table.file_browser .time {
    text-align: right;
    width: 4em;
 }
-ul.status_toolbar li.breadcrum:after {
-   margin-left: 1em;
+ul.status_toolbar ul.breadcrums li {
+   margin-right: 0.5em;
+}
+ul.status_toolbar ul.breadcrums li:after {
+   margin-left: 0.5em;
    content: "/"
 }
-ul.status_toolbar li.breadcrum:last-child:after {
+ul.status_toolbar ul.breadcrums li:last-child:after {
    content: none
+}
+.file_browser.file {
+   background-color: #000000;
+   color: white;
+   padding: 0.5em;
+}
+.file_browser.file pre {
+   margin: 0;
+}
+.file_browser.file .linenumber {
+   text-align: right;
+   margin: 0;
+   padding: 0 0.4em 0 0;
+   width: 1.5em;
+}
+.file_browser.file .linenumber pre {
+   width: 1.5em;
+   color: gray;
+}
+.file_browser.file .content {
+   margin: 0;
+   padding: 0;
 }
 
 ul

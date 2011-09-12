@@ -128,6 +128,9 @@ var FileBrowserView = function(id) {
     var $text = GNN.UI.$text;
 
     var Breadcrum = function(browser, parent) {
+        var ul = $new('ul', { klass: 'breadcrums' });
+        parent.appendChild($new('li', { child: ul}));
+
         var descend = function(path) {
             return path.split('/').reduce(function(r, p) {
                 r[1].push(p);
@@ -137,9 +140,9 @@ var FileBrowserView = function(id) {
         };
         return {
             set: function(location) {
-                GNN.UI.removeAllChildren(parent);
+                GNN.UI.removeAllChildren(ul);
 
-                parent.appendChild($new('li', { child: '場所:' }));
+                ul.appendChild($new('li', { child: '場所:' }));
 
                 var list = descend(location.path).map(function(p) {
                     p.type = 'dir';
@@ -159,9 +162,7 @@ var FileBrowserView = function(id) {
                         browser.move(loc);
                     });
 
-                    parent.appendChild($new('li', {
-                        child: a, klass: 'breadcrum'
-                    }));
+                    ul.appendChild($new('li', { child: a }));
                 });
             }
         };
@@ -190,6 +191,7 @@ var FileBrowserView = function(id) {
             },
             show: function(toolbar, view) {
                 this.breadcrum = new Breadcrum(this, toolbar);
+                this.toolbar = toolbar;
                 view.appendChild(this.view);
                 this.move(this.location);
             }
@@ -242,8 +244,13 @@ var FileBrowserView = function(id) {
                         var size = humanReadableSize(f.size);
                         table.appendChild($new('tr', {
                             child: [
-                                $new('td', { child: a,
-                                             klass: 'file' }),
+                                $new('td', {
+                                    child: [
+                                        $new('img', {
+                                            attr: { src: './'+f.type+'.png',
+                                                    width: '20px' }
+                                        }), a ],
+                                    klass: 'file' }),
                                 $new('td', { child: $text(size),
                                              klass: 'size' }),
                                 $new('td', { child: $text(f.time),
@@ -257,7 +264,87 @@ var FileBrowserView = function(id) {
                     replaceView($text('読み込み失敗'));
                 });
             } else  {
-                // TODO
+                var applyStyle = function(text) {
+                    text = text.replace(/[\r\n]/g, '');
+                    var regex = '<style[^>]*>(?:<!--)?(.*?)(?:-->)?</style>';
+                    if (new RegExp(regex).test(text)) {
+                        var style = $new('style', {
+                            attr: { type: 'text/css' }
+                        });
+
+                        var css = '';
+                        var rawcss = RegExp.$1;
+                        var arr;
+                        var re = new RegExp('\\s*([^\{]+?\\s*{[^\}]*})', 'g');
+                        while ((arr = re.exec(rawcss)) != null) {
+                            if (arr[1].charAt(0) == '.') css += arr[1]+"\n";
+                        }
+                        style.innerHTML = css;
+
+                        var head = document.getElementsByTagName('head')[0];
+                        head.appendChild(style);
+                    }
+                };
+                var showContent = function(node) {
+                    node.innerHTML = node.innerHTML.replace(/^\n/,'');
+
+                    var row = $new('tr');
+                    var view = $new('table', {
+                        klass: 'file_browser file',
+                        child: row
+                    });
+
+                    // line number
+                    var content = node.innerHTML+'';
+                    var ln = $new('pre');
+                    var i = 1, arr;
+                    var re = new RegExp("\n", 'g');
+                    while ((arr = re.exec(content)) != null) {
+                        ln.appendChild($text(i++ + "\n"));
+                    }
+
+                    row.appendChild($new('td', {
+                        klass: 'linenumber',
+                        child: ln
+                    }));
+                    row.appendChild($new('td', {
+                        klass: 'content',
+                        child: node
+                    }));
+                    replaceView(view);
+                };
+
+                this.toolbar.appendChild($new('li', {
+                    klass: 'toolbutton',
+                    child: $new('a', {
+                        child: 'ファイルを直接開く',
+                        attr: { href: browse(target, id, location.path) }
+                    })
+                }));
+
+                var req = new XMLHttpRequest();
+                var uri = api('browse', {
+                    user: target, report: id, type: 'highlight',
+                    path: location.path
+                });
+                uri.params['timestamp'] = encodeURI(new Date());
+                req.open('GET', uri+ '');
+                req.onreadystatechange = function(e) {
+                    if (req.readyState == 4) {
+                        if (200 <= req.status && req.status < 300 &&
+                            req.responseXML) {
+                            res = req.responseXML;
+
+                            var pre = res.getElementsByTagName('pre')[0];
+                            if (pre) showContent(pre);
+
+                            applyStyle(req.responseText);
+                        } else {
+                            replaceView($text('読み込み失敗'));
+                        }
+                    }
+                }
+                req.send(null);
             }
         };
 
