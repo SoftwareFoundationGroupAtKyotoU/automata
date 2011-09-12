@@ -128,8 +128,10 @@ var FileBrowserView = function(id) {
     var $text = GNN.UI.$text;
 
     var Breadcrum = function(browser, parent) {
-        var ul = $new('ul', { klass: 'breadcrums' });
-        parent.appendChild($new('li', { child: ul}));
+        var ul = $new('ul', {
+            id: [ id, 'breadcrum' ].join('_'),
+            klass: 'breadcrums'
+        });
 
         var descend = function(path) {
             return path.split('/').reduce(function(r, p) {
@@ -140,6 +142,9 @@ var FileBrowserView = function(id) {
         };
         return {
             set: function(location) {
+                if (!GNN.UI.$([ id, 'breadcrum' ].join('_'))) {
+                    parent.appendChild($new('li', { child: ul}));
+                }
                 GNN.UI.removeAllChildren(ul);
 
                 ul.appendChild($new('li', { child: '場所:' }));
@@ -205,6 +210,8 @@ var FileBrowserView = function(id) {
         };
 
         self.move = function(location) {
+            GNN.UI.removeAllChildren(this.toolbar);
+
             replaceView(loadingIcon());
             this.location = location;
             this.breadcrum.set(location);
