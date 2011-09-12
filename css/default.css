@@ -222,6 +222,7 @@ ul.status_toolbar ul.breadcrums li:after {
    margin-left: 0.5em;
    content: "/"
 }
+ul.status_toolbar ul.breadcrums li:first-child:after,
 ul.status_toolbar ul.breadcrums li:last-child:after {
    content: none
 }
