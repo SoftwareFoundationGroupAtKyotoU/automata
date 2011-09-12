@@ -148,6 +148,8 @@ var FileBrowserView = function(id) {
                 list[list.length-1].type = location.type;
 
                 list.forEach(function(loc) {
+                    if (loc.name == '.') loc.name = id;
+
                     var a = $new('a', {
                         child: loc.name,
                         attr: { href: browser.rawURI(loc.path) }
