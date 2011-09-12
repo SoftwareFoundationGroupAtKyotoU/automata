@@ -110,6 +110,8 @@ var init = function(id) {
                             appendClass(parent, 'selected');
                             status.show(id, 'log');
                         }
+                    } else {
+                        status.show(id, 'log');
                     }
                 };
 
