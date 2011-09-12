@@ -14,6 +14,11 @@ var api = function(name, args) {
     };
     return uri;
 };
+var browse = function(user, report, path) {
+    var uri = base();
+    uri.local.push('browse', user, report, path);
+    return uri;
+};
 
 var setTitle = function(template) {
     with (GNN.UI) {
@@ -96,4 +101,11 @@ var jsonpFailure = function(jsonp, failed) {
         { message: 'JSONP request timed out:',
           detail:  failedURIs }
     ]);
+};
+
+var loadingIcon = function() {
+    return GNN.UI.$new('img', {
+        klass: 'loading',
+        attr: { src: 'loading.gif' }
+    });
 };

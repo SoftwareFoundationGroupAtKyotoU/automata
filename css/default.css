@@ -69,7 +69,7 @@ a:visited
 a:link:hover,
 a:visited:hover
 {
-   background-color: #e0e0ff;
+   background-color: #d0e0ff;
    outline-color: blue;
 }
 a:active
@@ -125,18 +125,99 @@ td.NG, td.build-NG {
    background-color: #eeddee ! important;
 }
 
-.log {
+.status_window {
+   margin-top: 0.5em;
    margin-bottom: 2em;
-}
-
-.log-msg {
-   padding: 0.5em;
    border: solid #99aa99 4px;
    background-color: #ddeedd;
 }
 
-.log-msg pre {
+.status_header {
+   font-size: 80%;
+}
+
+.status_header ul {
+   display: inline;
+   list-style-type: none;
    margin: 0;
+   padding: .5em;
+}
+
+.status_header ul li {
+   display: inline;
+   margin-right: 1em;
+}
+
+.status_toolbar {
+   float: left;
+}
+
+.status_tabbar {
+   float: right;
+}
+
+.status_tabbar_button {
+   padding: 0.5em;
+   color: blue;
+   text-decoration: underline;
+}
+
+.status_tabbar_button.selected {
+   background-color: #eefff5;
+}
+
+.status_tabbar_button:hover,
+.status_tabbar_button.selected:hover {
+   cursor: pointer;
+   text-decoration: none;
+   background-color: #d0e0ff;
+   outline-color: blue;
+   outline-style: solid;
+   outline-width: 1px;
+}
+
+.status_view {
+   clear: both;
+   padding: 0.5em 1em;
+   background-color: #eefff5;
+}
+
+.log_msg pre {
+   margin: 0;
+}
+
+table.file_browser {
+   margin: 0;
+}
+table.file_browser th,
+table.file_browser td {
+   border-bottom: solid #99aa99 1px;
+}
+table.file_browser tr:last-child td {
+   border-bottom-style: none;
+}
+table.file_browser th,
+table.file_browser td {
+   background-color: inherit;
+}
+table.file_browser th {
+   color: inherit;
+   text-align: left;
+}
+table.file_browser .size {
+   text-align: right;
+   width: 4em;
+}
+table.file_browser .time {
+   text-align: right;
+   width: 4em;
+}
+ul.status_toolbar li.breadcrum:after {
+   margin-left: 1em;
+   content: "/"
+}
+ul.status_toolbar li.breadcrum:last-child:after {
+   content: none
 }
 
 ul

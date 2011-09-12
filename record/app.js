@@ -62,41 +62,6 @@ var init = function(id) {
                 }
             };
 
-            var ppLog = function(k, msg) {
-                switch (k) {
-                case 'error':
-                case 'test case':
-                case 'detail': return $new('pre', { child: $node(msg) });
-                default: return $node(msg);
-                }
-            };
-
-            var makeLogMsg = function(record) {
-                if (!record.timestamp && !record.log) return null;
-
-                var dl = $new('dl', { klass: 'log-msg' });
-                if (record.timestamp) {
-                    dl.appendChild($new('dt', {
-                        child: $node('last update')
-                    }));
-                    dl.appendChild($new('dd', {
-                        child: $node(record.timestamp)
-                    }));
-                }
-
-                if (record.log) {
-                    if (record.detail) record.log.detail = record.detail;
-                    var log = record.log;
-                    for (var k in log) {
-                        var msg = log[k];
-                        dl.appendChild($new('dt', { child: $node(k) }));
-                        dl.appendChild($new('dd', { child: ppLog(k, msg) }));
-                    }
-                }
-
-                return dl;
-            };
-
             // records
             (json.scheme||[]).forEach(function(sc) { // for each report
                 var pers = persistent[sc.id] || {};
@@ -113,22 +78,9 @@ var init = function(id) {
                     }) })
                 });
 
-                var log = $new('div', {
-                    id: [ sc.id, 'log' ].join('_'),
-                    klass: 'log'
-                });
-                var closeLog = function() {
-                    removeAllChildren(log);
-                };
-                var setLog = function(id) {
-                    closeLog();
-                    var student = json.user.reduce(function(r, u) {
-                        return id == u.token ? u : r;
-                    }, { report: {} });
-                    var record = student.report[sc.id]||{};
-                    var msg = makeLogMsg(record);
-                    if (msg) log.appendChild(msg);
-                };
+                var logView = new LogView(sc.id, json.user);
+                var fileBrowser = new FileBrowserView(sc.id);
+                var status = new StatusWindow(sc.id, [logView, fileBrowser]);
 
                 var makeStatusId = function(x) {
                     return [ x, sc.id, 'status' ].filter(function(x) {
@@ -146,7 +98,7 @@ var init = function(id) {
                     }).forEach(function(e) {
                         removeClass(getParent(e), 'selected');
                     });
-                    closeLog();
+                    status.hide();
 
                     var id = pers.selected;
                     if (!id) return;
@@ -156,10 +108,9 @@ var init = function(id) {
                         if (elem) {
                             var parent = getParent(elem);
                             appendClass(parent, 'selected');
+                            status.show(id, 'log');
                         }
                     }
-
-                    setLog(id);
                 };
 
                 (json.user||[]).forEach(function(student) { // for each student
@@ -210,10 +161,7 @@ var init = function(id) {
                             }
                             if (fld == 'check' && sc.update == 'auto') {
                                 autoUpdate = true;
-                                td.appendChild($new('img', {
-                                    klass: 'loading',
-                                    attr: { src: 'loading.gif' }
-                                }));
+                                td.appendChild(loadingIcon());
                             }
                             if ((fld||'').length > 0) {
                                 fld = fld.replace(/[^0-9a-zA-Z]/g, '-');
@@ -239,7 +187,7 @@ var init = function(id) {
                     table.appendChild(tr);
                 });
                 div.appendChild(table);
-                div.appendChild(log);
+                div.appendChild(status.window);
 
                 updateSelectedRow();
             });
