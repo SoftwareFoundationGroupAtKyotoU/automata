@@ -79,8 +79,11 @@ var init = function(id) {
                 });
 
                 var logView = new LogView(sc.id, json.user);
+                var solvedList = new SolvedView(sc.id, json.user);
                 var fileBrowser = new FileBrowserView(sc.id);
-                var status = new StatusWindow(sc.id, [logView, fileBrowser]);
+                var status = new StatusWindow(sc.id, [
+                    logView, solvedList, fileBrowser
+                ]);
 
                 var makeStatusId = function(x) {
                     return [ x, sc.id, 'status' ].filter(function(x) {

@@ -56,7 +56,7 @@ module Report
 
     def to_hash()
       hash = @src.to_hash
-      hash['solved'] = @src.solved
+      hash['solved'] = @src.solved.sort{|a,b| a.to_ex <=> b.to_ex}
       return hash
     end
   end
@@ -74,7 +74,8 @@ module Report
       counter = Counter.new(@scheme)
       @src.solved.each{|ex| counter.vote(ex)}
 
-      hash['unsolved'] = counter.insufficient
+      insuf = counter.insufficient
+      hash['unsolved'] = insuf.sort{|a,b| a[0].to_ex <=> b[0].to_ex}
       counter.overflow.each do |level, solved|
         hash['optional'+level] = solved.sort{|a,b| a.to_ex <=> b.to_ex}
       end

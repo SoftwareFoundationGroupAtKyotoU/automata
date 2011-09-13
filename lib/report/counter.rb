@@ -44,7 +44,7 @@ module Report
           insuf << [ex, val['required']]
         end
       end
-      return insuf.sort{|a,b| a[0].to_ex <=> b[0].to_ex}
+      return insuf
     end
 
     private

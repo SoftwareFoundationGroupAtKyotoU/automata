@@ -25,7 +25,10 @@ app = App.new
 
 users = app.users
 unless app.params['user'].empty?
-  users.reject!{|u| !app.params['user'].include?(u.real_login)}
+  users.reject! do |u|
+    !(app.params['user'].include?(u.real_login) ||
+      app.params['user'].include?(u.login))
+  end
 end
 
 if app.params['type'][0] == 'status'
