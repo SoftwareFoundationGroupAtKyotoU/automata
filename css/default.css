@@ -243,9 +243,9 @@ ul.status_toolbar ul.breadcrums li:last-child:after {
    background-color: #000000;
    color: white;
    padding: 0.5em;
-   -moz-border-radius: 8px;
+   -moz-border-radius:    8px;
    -webkit-border-radius: 8px;
-   border-radius: 8px;
+   border-radius:         8px;
 }
 .file_browser.file td {
    border-bottom-style: none;
@@ -316,8 +316,9 @@ ul#selector li
    background-color: gray;
    text-decoration: none;
    outline: none;
-   -moz-border-radius: 4px;
+   -moz-border-radius:    4px;
    -webkit-border-radius: 4px;
+   border-radius:         4px;
 }
 
 div#list_view
