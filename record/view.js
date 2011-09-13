@@ -211,11 +211,11 @@ var FileBrowserView = function(id) {
         return {
             set: function(location) {
                 if (!GNN.UI.$([ id, 'breadcrum' ].join('_'))) {
-                    parent.appendChild($new('li', { child: ul}));
+                    parent.appendChild($new('li', { child: [
+                        '場所:', ul
+                    ]}));
                 }
                 GNN.UI.removeAllChildren(ul);
-
-                ul.appendChild($new('li', { child: '場所:' }));
 
                 var list = descend(location.path).map(function(p) {
                     p.type = 'dir';
