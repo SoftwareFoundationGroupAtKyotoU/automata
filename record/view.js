@@ -324,7 +324,7 @@ var FileBrowserView = function(id) {
                 this.toolbar.appendChild($new('li', {
                     klass: 'toolbutton',
                     child: $new('a', {
-                        child: 'ファイルを直接開く',
+                        child: '直接開く',
                         attr: { href: browse(target, id, location.path) }
                     })
                 }));
