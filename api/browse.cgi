@@ -55,8 +55,6 @@ app.error_exit(STATUS[404]) unless user
 app.error_exit(STATUS[400]) if app.params['report'].empty?
 report_id = app.params['report'][0]
 
-app.error_exit(STATUS[403]) unless app.su? || user == app.user # permission
-
 path = app.params['path'][0] || '.'
 dir_user = App::KADAI + report_id + user
 log_file = dir_user + App::FILES[:log]
