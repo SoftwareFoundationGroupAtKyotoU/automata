@@ -254,8 +254,8 @@ var FileBrowserView = function(id) {
                                 $new('td', {
                                     child: [
                                         $new('img', {
-                                            attr: { src: './'+f.type+'.png',
-                                                    width: '20px' }
+                                            attr: { src: './'+f.type+'.png' },
+                                            klass: 'icon'
                                         }), a ],
                                     klass: 'file' }),
                                 $new('td', { child: $text(size),

@@ -205,7 +205,7 @@ table.file_browser th {
    text-align: left;
 }
 table.file_browser .icon {
-   width: 20px;
+   width: 1.5em;
 }
 table.file_browser .size {
    text-align: right;
