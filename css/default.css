@@ -157,6 +157,7 @@ td.NG, td.build-NG {
 }
 
 .status_tabbar_button {
+   line-height: 100%;
    padding: 0.5em;
    color: darkblue;
    text-decoration: underline;
