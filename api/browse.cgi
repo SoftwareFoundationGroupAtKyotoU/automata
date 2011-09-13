@@ -48,7 +48,7 @@ user = app.params['user'][0]
 
 # resolve real login name in case user id is a token
 user = app.users.inject(nil) do |r, u|
-  (u.login == user || u.real_login == user) ? u.real_login : r
+  (u.token == user || u.real_login == user) ? u.real_login : r
 end
 app.error_exit(STATUS[404]) unless user
 
