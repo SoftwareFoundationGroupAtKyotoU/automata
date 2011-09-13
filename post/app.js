@@ -34,7 +34,7 @@ var init = function() {
                         attr: { href: '.' },
                         child: $text(report.name)
                     });
-                    new Observer(button, 'click', function(e) {
+                    new Observer(button, 'onclick', function(e) {
                         e.stop();
                         self.unselectAll();
                         self.select(report);

@@ -33,7 +33,7 @@ var StatusWindow = function(id, tabs) {
             });
             button.appendChild(GNN.UI.$text(tab.label));
             tabbar.appendChild(button);
-            new GNN.UI.Observer(button, 'click', function() {
+            new GNN.UI.Observer(button, 'onclick', function() {
                 if (self.target) self.show(self.target, tab.name, true);
             });
         },
@@ -230,7 +230,7 @@ var FileBrowserView = function(id) {
                         child: loc.name,
                         attr: { href: browser.rawURI(loc.path) }
                     });
-                    new GNN.UI.Observer(a, 'click', function(e) {
+                    new GNN.UI.Observer(a, 'onclick', function(e) {
                         e.stop();
                         browser.move(loc);
                     });
@@ -260,7 +260,7 @@ var FileBrowserView = function(id) {
             view: table,
             location: location || { path: '.', type: 'dir' },
             rawURI: function(path) {
-                return browse(target, id, path);
+                return browse(target, id, path)+'';
             },
             show: function(toolbar, view) {
                 this.breadcrum = new Breadcrum(this, toolbar);
@@ -310,7 +310,7 @@ var FileBrowserView = function(id) {
                             child: $text(f.name + (f.type=='dir' ? '/' : ''))
                         });
                         if (f.type != 'bin') {
-                            new GNN.UI.Observer(a, 'click', function(e) {
+                            new GNN.UI.Observer(a, 'onclick', function(e) {
                                 e.stop();
                                 self.move({ path: path, type: f.type });
                             });
@@ -327,9 +327,11 @@ var FileBrowserView = function(id) {
                                         }), a ],
                                     klass: 'file' }),
                                 $new('td', { child: $text(size),
-                                             klass: 'size' }),
+                                             klass: 'size',
+                                             attr: { nowrap: true } }),
                                 $new('td', { child: $text(f.time),
-                                             klass: 'time' })
+                                             klass: 'time',
+                                             attr: { nowrap: true } })
                             ]
                         }));
                     });
@@ -350,19 +352,29 @@ var FileBrowserView = function(id) {
                         var css = '';
                         var rawcss = RegExp.$1;
                         var arr;
-                        var re = new RegExp('\\s*([^\{]+?\\s*{[^\}]*})', 'g');
+                        var re = new RegExp('\\s*([^\{]+?)\\s*{([^\}]*)}','g');
+                        var rules = [];
                         while ((arr = re.exec(rawcss)) != null) {
-                            if (arr[1].charAt(0) == '.') css += arr[1]+"\n";
+                            if (arr[1].charAt(0) == '.') {
+                                rules.push({selector: arr[1], style: arr[2]});
+                            }
                         }
-                        style.innerHTML = css;
 
-                        var head = document.getElementsByTagName('head')[0];
-                        head.appendChild(style);
+                        var d = document;
+                        if (d.styleSheets[0].addRule) { // IE
+                            rules.forEach(function(s) {
+                                d.styleSheets[0].addRule(s.selector, s.style);
+                            });
+                        } else {
+                            var head = d.getElementsByTagName('head')[0];
+                            style.appendChild($text(rules.map(function(s) {
+                                return s.selector+'{'+s.style+'}';
+                            }).join("\n")));
+                            head.appendChild(style);
+                        }
                     }
                 };
                 var showContent = function(node) {
-                    node.innerHTML = node.innerHTML.replace(/^\n/,'');
-
                     var row = $new('tr');
                     var view = $new('table', {
                         klass: 'file_browser file',
@@ -371,6 +383,9 @@ var FileBrowserView = function(id) {
 
                     // line number
                     var content = node.innerHTML+'';
+                    if (content.charAt(content.length-1) != "\n") {
+                        content += "\n";
+                    }
                     var ln = $new('pre');
                     var i = 1, arr;
                     var re = new RegExp("\n", 'g');
@@ -393,7 +408,7 @@ var FileBrowserView = function(id) {
                     klass: 'toolbutton',
                     child: $new('a', {
                         child: '直接開く',
-                        attr: { href: browse(target, id, location.path) }
+                        attr: { href: browse(target, id, location.path)+'' }
                     })
                 }));
 
@@ -411,7 +426,19 @@ var FileBrowserView = function(id) {
                             res = req.responseXML;
 
                             var pre = res.getElementsByTagName('pre')[0];
-                            if (pre) showContent(pre);
+                            if (!pre) return;
+
+                            if (!pre.innerHTML) { // IE
+                                var div = $new('div');
+                                var text = req.responseText;
+                                text = text.replace(/<pre>\n/, '<pre>');
+                                div.innerHTML = text;
+                                pre = div.getElementsByTagName('pre')[0];
+                            } else {
+                                var text = pre.innerHTML;
+                                pre.innerHTML = text.replace(/^\n/,'');
+                            }
+                            showContent(pre);
 
                             applyStyle(req.responseText);
                         } else {

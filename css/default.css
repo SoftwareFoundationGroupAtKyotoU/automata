@@ -219,6 +219,7 @@ table.file_browser th {
 }
 table.file_browser .icon {
    width: 1.5em;
+   height: 1.5em;
 }
 table.file_browser .size {
    text-align: right;
@@ -246,6 +247,10 @@ ul.status_toolbar ul.breadcrums li:last-child:after {
    -moz-border-radius: 8px;
    -webkit-border-radius: 8px;
    border-radius: 8px;
+}
+.file_browser.file td {
+   border-bottom-style: none;
+   vertical-align: top;
 }
 .file_browser.file pre {
    margin: 0;
