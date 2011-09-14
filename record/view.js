@@ -27,13 +27,16 @@ var StatusWindow = function(id, tabs) {
         add: function(tab) {
             this.tabs[tab.name] = tab;
             var self = this;
+            var a = GNN.UI.$new('a', { attr: { href: '.' } });
             var button = GNN.UI.$new('li', {
                 id: [ makeTabId(tab.name), 'button' ].join('_'),
+                child: a,
                 klass: 'status_tabbar_button'
             });
-            button.appendChild(GNN.UI.$text(tab.label));
+            a.appendChild(GNN.UI.$text(tab.label));
             tabbar.appendChild(button);
-            new GNN.UI.Observer(button, 'onclick', function() {
+            new GNN.UI.Observer(a, 'onclick', function(e) {
+                e.stop();
                 if (self.target) self.show(self.target, tab.name, true);
             });
         },

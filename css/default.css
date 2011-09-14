@@ -162,8 +162,6 @@ td.NG, td.build-NG {
 .status_tabbar_button {
    line-height: 100%;
    padding: 0.5em;
-   color: darkblue;
-   text-decoration: underline;
 }
 
 .status_tabbar_button.selected {
@@ -174,16 +172,6 @@ td.NG, td.build-NG {
    -webkit-border-top-right-radius: 6px;
    border-top-left-radius:          6px;
    border-top-right-radius:         6px;
-}
-
-.status_tabbar_button:hover,
-.status_tabbar_button.selected:hover {
-   cursor: pointer;
-   text-decoration: none;
-   background-color: #d0e0ff;
-   outline-color: blue;
-   outline-style: solid;
-   outline-width: 1px;
 }
 
 .status_view {
