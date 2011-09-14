@@ -327,11 +327,9 @@ var FileBrowserView = function(id) {
                                         }), a ],
                                     klass: 'file' }),
                                 $new('td', { child: $text(size),
-                                             klass: 'size',
-                                             attr: { nowrap: true } }),
+                                             klass: 'size' }),
                                 $new('td', { child: $text(f.time),
-                                             klass: 'time',
-                                             attr: { nowrap: true } })
+                                             klass: 'time' })
                             ]
                         }));
                     });

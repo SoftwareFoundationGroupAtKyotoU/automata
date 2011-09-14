@@ -137,15 +137,18 @@ td.NG, td.build-NG {
 }
 
 .status_header ul {
-   display: inline;
+   display: inline-block;
    list-style-type: none;
    margin: 0;
-   padding: .5em;
+}
+
+.status_header > ul {
+   padding: 0.5em 0.5em 0 0.5em;
 }
 
 .status_header ul li {
-   display: inline;
-   margin-right: 1em;
+   display: inline-block;
+   margin: 0 1em 0 0;
 }
 
 .status_toolbar {
@@ -222,12 +225,17 @@ table.file_browser .icon {
    height: 1.5em;
 }
 table.file_browser .size {
+   white-space: nowrap;
    text-align: right;
    width: 4em;
 }
 table.file_browser .time {
+   white-space: nowrap;
    text-align: right;
    width: 4em;
+}
+ul.status_toolbar ul.breadcrums {
+   padding: 0.5em 0.5em 0 0.5em;
 }
 ul.status_toolbar ul.breadcrums li {
    margin-right: 0.5em;
