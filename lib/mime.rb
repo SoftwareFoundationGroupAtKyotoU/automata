@@ -22,7 +22,7 @@ class Pathname
   def mime()
     type = `file --mime -b #{Shellwords.escape(self.to_s)}`
     type = type.split(/\s+/)
-    type = [ '', '' ] unless type.size == 2
+    type = [ '', '' ] unless type.size <= 2
     return MIME::Type.new(*type)
   end
 end
