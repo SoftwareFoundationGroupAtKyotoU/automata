@@ -66,7 +66,7 @@ time = log['id'] || log['timestamp']
 src = dir_user + time + 'src'
 path = (src+path).expand_path
 app.error_exit(STATUS[404]) unless [src, path].all?(&:exist?)
-app.error_exit(STATUS[403]) unless path.to_s.index(src.to_s)==0 # dir traversal
+app.error_exit(STATUS[404]) unless path.to_s.index(src.to_s)==0 # dir traversal
 
 if path.directory?
   Dir.chdir(path.to_s) do
