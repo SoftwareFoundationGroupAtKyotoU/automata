@@ -261,6 +261,7 @@ var FileBrowserView = function(id) {
             var uri = base();
             path = encodePath(path);
             uri.local.push('browse', user, report, path);
+            uri.params.path = path;
             return uri+'';
         };
         var humanReadableSize = function(size) {
