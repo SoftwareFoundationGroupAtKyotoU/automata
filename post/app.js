@@ -15,7 +15,7 @@ var init = function() {
                 self.unselectAll();
                 if (!self.selected) {
                     var selected = $('report_id').value;
-                    if (selected && selected.length) {
+                    if (selected && selected.length && self.scheme) {
                         self.selected = self.scheme.reduce(function(r, x) {
                             return x.id == selected ? x : r;
                         }, null);
