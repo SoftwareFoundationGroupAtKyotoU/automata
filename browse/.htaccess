@@ -1,4 +1,7 @@
 RewriteEngine on
 RewriteRule ^.*$ %{REQUEST_URI}&dummy= [C]
-RewriteRule ^(.*?)/browse/([^/]+)/([^/]+)/(.+)&dummy=.*$ $1/api/browse.cgi?user=$2&report=$3&path=$4 [L,QSA]
+RewriteCond %{QUERY_STRING} (?:^|&)path=
+RewriteRule ^(.*?)/browse/([^/]+)/([^/]+)/.+&dummy=.*$ $1/api/browse.cgi?user=$2&report=$3 [L,QSA]
+RewriteCond %{QUERY_STRING} !(?:^|&)path=
+RewriteRule ^(.*?)/browse/([^/]+)/([^/]+)/(.+)&dummy=.*$ $1/api/browse.cgi?user=$2&report=$3&path=$4 [L]
 RewriteRule ^(.*)&dummy=$ $1 [R=404]

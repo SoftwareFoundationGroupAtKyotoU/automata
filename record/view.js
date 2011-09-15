@@ -259,9 +259,9 @@ var FileBrowserView = function(id) {
         };
         var rawPath = function(user, report, path) {
             var uri = base();
-            path = encodePath(path);
-            uri.local.push('browse', user, report, path);
-            uri.params.path = path;
+            var epath = encodePath(path);
+            uri.local.push('browse', user, report, epath);
+            if (path != epath) uri.params.path = path;
             return uri+'';
         };
         var humanReadableSize = function(size) {
