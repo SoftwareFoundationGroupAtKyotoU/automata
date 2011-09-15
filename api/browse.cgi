@@ -31,7 +31,9 @@ STATUS = {
   404 => '404 Not Found',
 }
 
+require 'shellwords'
 require 'time'
+require 'uri'
 require 'app'
 require 'log'
 require 'mime'
@@ -55,7 +57,7 @@ app.error_exit(STATUS[404]) unless user
 app.error_exit(STATUS[400]) if app.params['report'].empty?
 report_id = app.params['report'][0]
 
-path = app.params['path'][0] || '.'
+path = URI.decode(app.params['path'][0] || '.')
 dir_user = App::KADAI + report_id + user
 log_file = dir_user + App::FILES[:log]
 app.error_exit(STATUS[404]) unless [dir_user, log_file].all?(&:exist?)
@@ -91,8 +93,8 @@ elsif path.mime.type == 'text' && 'highlight' == app.params['type'][0]
       "-S src2html.vim",
     ].join(' ');
   Dir.chdir(dir) do
-    print(app.cgi.header('type' => 'text/xml'))
-    print(`#{vimcmd} #{path.to_s}`)
+    print(app.cgi.header('type' => 'text/html'))
+    print(`#{vimcmd} #{Shellwords.escape(path.to_s)}`)
   end
 else
   print(app.cgi.header('type' => path.mime.to_s, 'length' => path.size))

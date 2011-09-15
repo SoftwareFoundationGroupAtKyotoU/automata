@@ -14,11 +14,6 @@ var api = function(name, args) {
     };
     return uri;
 };
-var browse = function(user, report, path) {
-    var uri = base();
-    uri.local.push('browse', user, report, path);
-    return uri;
-};
 
 var setTitle = function(template) {
     with (GNN.UI) {

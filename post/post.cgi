@@ -7,10 +7,26 @@ require 'fileutils'
 require 'tempfile'
 require 'tmpdir'
 require 'time'
+require 'kconv'
 
 require 'app'
 require 'report/exercise'
 require 'log'
+
+class Pathname
+  def toutf8() return to_s.toutf8 end
+  def entries2utf8()
+    each_entry do |e|
+      unless e.to_s =~ /^\.+$/
+        Dir.chdir(to_s) do
+          e.entries2utf8 if e.directory?
+          utf8 = e.toutf8
+          e.rename(utf8) if utf8 != e.to_s
+        end
+      end
+    end
+  end
+end
 
 err = {
   :require  => '必須なパラメータ "%s" が指定されませんでした',
@@ -80,6 +96,9 @@ begin
         FileUtils.mv(Dir.glob("#{tmpdir}/*"), src_dir.to_s)
       end
     end
+
+    # convert file names to utf8
+    src_dir.entries2utf8
 
     # solved exercises
     report = []

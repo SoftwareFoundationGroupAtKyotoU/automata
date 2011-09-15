@@ -245,10 +245,24 @@ var FileBrowserView = function(id) {
     };
 
     var Browser = function(target, location) {
-        var table = $new('table', {
-            klass: 'file_browser'
-        });
-
+        var encodePath = function(path) {
+            return [
+                [ '&', '%26' ],
+                [ '\\?', '%3F' ]
+            ].reduce(function(r, x) {
+                return r.replace(new RegExp(x[0], 'g'), x[1]);
+            }, encodeURI(path));
+        };
+        var apiBrowse = function(params) {
+            params.path = encodePath(params.path);
+            return api('browse', params);
+        };
+        var rawPath = function(user, report, path) {
+            var uri = base();
+            path = encodePath(path);
+            uri.local.push('browse', user, report, path);
+            return uri+'';
+        };
         var humanReadableSize = function(size) {
             var prefix = [ '', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y' ];
             var i;
@@ -259,11 +273,15 @@ var FileBrowserView = function(id) {
             return size + prefix[i];
         };
 
+        var table = $new('table', {
+            klass: 'file_browser'
+        });
+
         var self = {
             view: table,
             location: location || { path: '.', type: 'dir' },
             rawURI: function(path) {
-                return browse(target, id, path)+'';
+                return rawPath(target, id, path);
             },
             show: function(toolbar, view) {
                 this.breadcrum = new Breadcrum(this, toolbar);
@@ -289,7 +307,7 @@ var FileBrowserView = function(id) {
 
             if (location.type == 'dir') {
                 GNN.JSONP.retrieve({
-                    entries: api('browse', {
+                    entries: apiBrowse({
                         user: target,
                         report: id,
                         path: location.path
@@ -409,12 +427,12 @@ var FileBrowserView = function(id) {
                     klass: 'toolbutton',
                     child: $new('a', {
                         child: '直接開く',
-                        attr: { href: browse(target, id, location.path)+'' }
+                        attr: { href: rawPath(target, id, location.path) }
                     })
                 }));
 
                 var req = new XMLHttpRequest();
-                var uri = api('browse', {
+                var uri = apiBrowse({
                     user: target, report: id, type: 'highlight',
                     path: location.path
                 });
@@ -423,22 +441,13 @@ var FileBrowserView = function(id) {
                 req.onreadystatechange = function(e) {
                     if (req.readyState == 4) {
                         if (200 <= req.status && req.status < 300 &&
-                            req.responseXML) {
-                            res = req.responseXML;
+                            req.responseText) {
+                            var div = $new('div');
+                            var text = req.responseText;
+                            text = text.replace(/<pre>\n/, '<pre>');
+                            div.innerHTML = text;
 
-                            var pre = res.getElementsByTagName('pre')[0];
-                            if (!pre) return;
-
-                            if (!pre.innerHTML) { // IE
-                                var div = $new('div');
-                                var text = req.responseText;
-                                text = text.replace(/<pre>\n/, '<pre>');
-                                div.innerHTML = text;
-                                pre = div.getElementsByTagName('pre')[0];
-                            } else {
-                                var text = pre.innerHTML;
-                                pre.innerHTML = text.replace(/^\n/,'');
-                            }
+                            pre = div.getElementsByTagName('pre')[0];
                             showContent(pre);
 
                             applyStyle(req.responseText);
