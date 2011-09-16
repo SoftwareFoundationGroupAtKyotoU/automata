@@ -33,7 +33,6 @@ STATUS = {
 
 require 'shellwords'
 require 'time'
-require 'uri'
 require 'app'
 require 'log'
 require 'mime'
@@ -57,7 +56,7 @@ app.error_exit(STATUS[404]) unless user
 app.error_exit(STATUS[400]) if app.params['report'].empty?
 report_id = app.params['report'][0]
 
-path = URI.decode(app.params['path'].first || '.')
+path = CGI.unescape(app.params['path'].first || '.')
 dir_user = App::KADAI + report_id + user
 log_file = dir_user + App::FILES[:log]
 app.error_exit(STATUS[404]) unless [dir_user, log_file].all?(&:exist?)
