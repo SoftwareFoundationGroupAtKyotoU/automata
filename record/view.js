@@ -138,6 +138,7 @@ var LogView = function(id, records) {
         if (!record.timestamp && !record.log) return null;
 
         var dl = GNN.UI.$new('dl', { klass: 'log_msg' });
+        ppLog(dl, record);
         if (record.log) {
             var list = ppLog(dl, record.log);
             for (var prop in record.log) {
