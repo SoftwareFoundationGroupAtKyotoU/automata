@@ -235,7 +235,8 @@ table.file_browser .time {
    width: 4em;
 }
 ul.status_toolbar ul.breadcrums {
-   padding: 0.5em 0.5em 0 0.5em;
+   padding: 0;
+   margin-left: 0.5em;
 }
 ul.status_toolbar ul.breadcrums li {
    margin-right: 0.5em;
