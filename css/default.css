@@ -125,6 +125,10 @@ td.NG, td.build-NG {
    background-color: #eeddee ! important;
 }
 
+td.test {
+   text-align: right;
+}
+
 .status_window {
    margin-top: 0.5em;
    margin-bottom: 2em;
@@ -186,8 +190,16 @@ td.NG, td.build-NG {
    border-top-right-radius:         6px;
 }
 
+.log_msg dd.message {
+   color: #ee5577;
+}
+
 .log_msg pre {
    margin: 0;
+}
+
+.testcase .failed {
+   color: #ee5577;
 }
 
 table.file_browser {

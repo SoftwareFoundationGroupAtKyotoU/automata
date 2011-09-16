@@ -14,9 +14,9 @@ var init = function(id) {
             removeAllChildren(div);
 
             // textify function specific to the field
-            var toText = function(obj, klass) {
-                if (obj == null) return '';
+            var toText = function(obj, klass, record) {
                 if (/^optional/.test(klass)) {
+                    if (obj == null) return '';
                     if (obj.length == 0) return '0';
                     var a = $new('a', {
                         attr: { href: '.' },
@@ -39,6 +39,7 @@ var init = function(id) {
 
                 switch (klass) {
                 case 'status':
+                    if (obj == null) return '';
                     if (typeof obj == 'boolean' && obj) obj = 'OK';
                     switch (obj) {
                     case 'OK': return '提出済';
@@ -50,6 +51,7 @@ var init = function(id) {
                     }
                     return '';
                 case 'unsolved':
+                    if (obj == null) return '';
                     return obj.map(function(x) {
                         if (x[1] == 1) {
                             return x[0];
@@ -57,6 +59,19 @@ var init = function(id) {
                             return x[0] + 'のうち残り' + x[1] + '問';
                         }
                     }).join(', ');
+                case 'test':
+                    if (record.log && record.log.test) {
+                        var t = record.log.test;
+                        if (t.passed == t.number) {
+                            return t.passed+'/'+t.number;
+                        } else {
+                            return $new('span', { child: [
+                                $new('em', { child: t.passed }),
+                                '/'+t.number
+                            ] });
+                        }
+                    }
+                    return '';
                 default:
                     return obj;
                 }
@@ -80,10 +95,14 @@ var init = function(id) {
 
                 var logView = new LogView(sc.id, json.user);
                 var solvedList = new SolvedView(sc.id, json.user);
+                var testResult = new TestResultView(sc.id);
                 var fileBrowser = new FileBrowserView(sc.id);
-                var status = new StatusWindow(sc.id, [
-                    logView, solvedList, fileBrowser
-                ]);
+                var tabs = [ logView, solvedList ];
+                if (sc.record.some(function(col){return col.field=='test';})) {
+                    tabs.push(testResult);
+                }
+                tabs.push(fileBrowser);
+                var status = new StatusWindow(sc.id, tabs);
 
                 var makeStatusId = function(x) {
                     return [ x, sc.id, 'status' ].filter(function(x) {
@@ -158,7 +177,7 @@ var init = function(id) {
 
                         var fld = student[col.field];
                         fld = fld || record[col.field];
-                        var text = toText(fld, col.field);
+                        var text = toText(fld, col.field, record);
 
                         if (col.field == 'status') {
                             if (text.length > 0) {

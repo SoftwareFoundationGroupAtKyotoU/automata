@@ -40,6 +40,13 @@ var StatusWindow = function(id, tabs) {
                 if (self.target) self.show(self.target, tab.name, true);
             });
         },
+        set: function(node) {
+            GNN.UI.removeAllChildren(view);
+            if (!(node instanceof Array)) node = [ node ];
+            node.forEach(function(e){
+                view.appendChild(GNN.UI.$node(e));
+            });
+        },
         show: function(target, tabName, force) {
             this.target = target;
             tabName = (!force && lastTab) || tabName;
@@ -54,7 +61,7 @@ var StatusWindow = function(id, tabs) {
                     GNN.UI.appendClass(e, 'selected');
                     GNN.UI.removeAllChildren(toolbar);
                     GNN.UI.removeAllChildren(view);
-                    tab.show(target, toolbar, view);
+                    tab.show(target, toolbar, self);
                 } else {
                     GNN.UI.removeClass(e, 'selected');
                 }
@@ -75,35 +82,71 @@ var StatusWindow = function(id, tabs) {
 };
 
 var LogView = function(id, records) {
-    var ppLog = function(k, msg) {
-        switch (k) {
-        case 'error':
-        case 'test case':
-        case 'detail': return GNN.UI.$new('pre', { child: GNN.UI.$node(msg) });
-        default: return GNN.UI.$node(msg);
+    var pre = function(x) {
+        return GNN.UI.$new('pre', { child: GNN.UI.$node(x) });
+    };
+
+    var defs = [
+        { prop: 'timestamp',
+          label: '最終更新日時',
+          node: GNN.UI.$node
+        },
+        { prop: 'submit',
+          label: '提出日時',
+          node: GNN.UI.$node
+        },
+        { prop: 'message',
+          label: 'メッセージ',
+          node: GNN.UI.$node
+        },
+        { prop: 'error',
+          label: 'エラー',
+          node: pre
+        },
+        { prop: 'reason',
+          label: 'エラーの詳細',
+          node: pre
+        },
+        { prop: 'test',
+          label: 'テスト通過率',
+          node: function(test) {
+              return GNN.UI.$node(test.passed+'/'+test.number);
+          }
         }
+    ]
+
+    var ppLog = function(parent, log) {
+        var r = [];
+        defs.forEach(function(def) {
+            if (log[def.prop]) {
+                var l = log[def.prop];
+                parent.appendChild(GNN.UI.$new('dt', {
+                    klass: def.prop,
+                    child: def.label
+                }));
+                parent.appendChild(GNN.UI.$new('dd', {
+                    klass: def.prop,
+                    child: def.node(l)
+                }));
+                r.push(def.prop);
+            }
+        });
+        return r;
     };
 
     var makeLogMsg = function(record) {
         if (!record.timestamp && !record.log) return null;
 
         var dl = GNN.UI.$new('dl', { klass: 'log_msg' });
-        if (record.timestamp) {
-            dl.appendChild(GNN.UI.$new('dt', {
-                child: GNN.UI.$node('last update')
-            }));
-            dl.appendChild(GNN.UI.$new('dd', {
-                child: GNN.UI.$node(record.timestamp)
-            }));
-        }
-
         if (record.log) {
-            if (record.detail) record.log.detail = record.detail;
-            var log = record.log;
-            for (var k in log) {
-                var msg = log[k];
-                dl.appendChild(GNN.UI.$new('dt', { child: GNN.UI.$node(k) }));
-                dl.appendChild(GNN.UI.$new('dd', { child: ppLog(k, msg) }));
+            var list = ppLog(dl, record.log);
+            for (var prop in record.log) {
+                if (list.indexOf(prop) < 0) {
+                    dl.appendChild(GNN.UI.$new('dt', { child: prop }));
+                    dl.appendChild(GNN.UI.$new('dd', {
+                        child: GNN.UI.$new('pre', { child: record.log[prop] })
+                    }));
+                }
             }
         }
 
@@ -119,7 +162,7 @@ var LogView = function(id, records) {
             }, { report: {} });
             var record = student.report[id]||{};
             var msg = makeLogMsg(record);
-            if (msg) view.appendChild(msg);
+            if (msg) view.set(msg);
         }
     };
 
@@ -128,14 +171,6 @@ var LogView = function(id, records) {
 
 var SolvedView = function(id, records) {
     var List = function(target) {
-        var setView = function(view, node) {
-            GNN.UI.removeAllChildren(view);
-            if (!(node instanceof Array)) node = [ node ];
-            node.forEach(function(e){
-                view.appendChild(e);
-            });
-        };
-
         var getUserRecord = function(record, what) {
             record = record.reduce(function(r, u) {
                 return u.token == target ? u : r;
@@ -167,7 +202,7 @@ var SolvedView = function(id, records) {
 
         return {
             show: function(toolbar, view) {
-                setView(view, loadingIcon());
+                view.set(loadingIcon());
 
                 var uri = api('user', {
                     user: target, report: id, type: 'status', status: 'solved'
@@ -175,9 +210,9 @@ var SolvedView = function(id, records) {
                 GNN.JSONP.retrieve({ user: uri }, function(json) {
                     var list1 = makeList(json.user, 'solved', '解答済み');
                     var list2 = makeList(records, 'unsolved', '未解答');
-                    setView(view, list1.concat(list2));
+                    view.set(list1.concat(list2));
                 }, function() {
-                    setView(view, $text('読み込み失敗'))
+                    view.set('読み込み失敗')
                 });
             }
         };
@@ -187,6 +222,116 @@ var SolvedView = function(id, records) {
     return {
         name: 'solved',
         label: '解答状況',
+        show: function(target, toolbar, view) {
+            if (!lists[target]) lists[target] = new List(target);
+            lists[target].show(toolbar, view);
+        }
+    };
+};
+
+var TestResultView = function(id) {
+    var $new = GNN.UI.$new;
+
+    var List = function(target) {
+        var header = function(name) {
+            return $new('h3', { child: name });
+        };
+
+        var pre = function(x) {
+            return GNN.UI.$new('pre', { child: GNN.UI.$node(x) });
+        };
+
+        var isPassed = function(t) {
+            if (typeof t != 'string') t = t.result;
+            return new RegExp('^\\s*ok\\s*', 'i').test(t);
+        };
+
+        var defs = [
+            { prop: 'result',
+              name: 'result',
+              node: function(x){ return isPassed(x) ? 'pass' : 'fail'; }
+            },
+            { prop: 'description',
+              name: 'test',
+              node: pre
+            },
+            { prop: 'expected',
+              name: 'expected',
+              node: pre
+            },
+            { prop: 'returned',
+              name: 'returned',
+              node: pre
+            },
+            { prop: 'exception',
+              name: 'error',
+              node: pre
+            }
+        ];
+
+        return {
+            show: function(toolbar, view) {
+                view.set(loadingIcon());
+
+                var uri = api('test_result', { user: target, report: id });
+                GNN.JSONP.retrieve({ test: uri }, function(json) {
+                    var t = json.test;
+                    var list = [
+                        header('通過率'),
+                        $new('p', {
+                            child: t.passed == t.number ?
+                                    t.passed+'/'+t.number :
+                                    [ GNN.UI.$new('em', { child: t.passed }),
+                                      '/'+t.number ]
+                        }),
+                        header('詳細')
+                    ];
+
+                    if (t.detail) {
+                        var testcase = $new('dl', {
+                            klass: 'testcase',
+                            child: t.detail.reduce(function(list, c) {
+                                if (!c.result) c.result = 'fail';
+
+                                var dl = $new('dl', {
+                                    child: defs.reduce(function(r, d) {
+                                        var val = c[d.prop];
+                                        if (val) {
+                                            var node = d.node(val);
+                                            return r.concat([
+                                                $new('dt', { child: d.name }),
+                                                $new('dd', { child: node })
+                                            ]);
+                                        } else {
+                                            return r;
+                                        }
+                                    }, [])
+                                });
+
+                                var k = isPassed(c) ? 'passed' : 'failed';
+                                return list.concat([
+                                    $new('dt', { child: c.name, klass: k }),
+                                    $new('dd', { child: dl, klass: k })
+                                ]);
+                            }, [])
+                        });
+                        list.push(testcase);
+                    } else {
+                        list.push(GNN.UI.$new('p', { child: '非公開' }));
+                    }
+
+                    view.set(list);
+                }, function() {
+                    view.set('読み込み失敗')
+                });
+            }
+        };
+    };
+    var lists = {};
+
+    return {
+        name: 'test',
+        label: 'テスト結果',
         show: function(target, toolbar, view) {
             if (!lists[target]) lists[target] = new List(target);
             lists[target].show(toolbar, view);
@@ -261,7 +406,7 @@ var FileBrowserView = function(id) {
             var uri = base();
             var epath = encodePath(path);
             uri.local.push('browse', user, report, epath);
-            if (path != epath) uri.params.path = path;
+            if (path != epath) uri.params.path = epath;
             return uri+'';
         };
         var humanReadableSize = function(size) {
@@ -287,7 +432,7 @@ var FileBrowserView = function(id) {
             show: function(toolbar, view) {
                 this.breadcrum = new Breadcrum(this, toolbar);
                 this.toolbar = toolbar;
-                view.appendChild(this.view);
+                view.set(this.view);
                 this.move(this.location);
             }
         };

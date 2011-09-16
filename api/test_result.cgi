@@ -1,0 +1,62 @@
+#! /usr/bin/env ruby
+
+# Usage: test_result report=<report-id> user=<login>
+#   自動テストの結果を取得
+# Options:
+#   report            取得するファイルの属する課題ID
+#   user              ログイン名が<login>のユーザの情報のみ取得
+# Security:
+#   master.su に入っていないユーザに関しては user オプションによらず
+#   ログイン名が remote_user の情報のみ取得可能
+
+$KCODE='UTF8'
+
+$:.unshift('./lib')
+
+STATUS = {
+  400 => '400 Bad Request',
+  403 => '403 Forbidden',
+  404 => '404 Not Found',
+}
+
+require 'app'
+require 'log'
+app = App.new
+
+def app.error_exit(status)
+  print(cgi.header('type' => 'text/plain', 'status' => status))
+  puts(status)
+  exit
+end
+
+app.error_exit(STATUS[400]) if app.params['user'].empty?
+user = app.params['user'][0]
+
+# resolve real login name in case user id is a token
+user = app.users.inject(nil) do |r, u|
+  (u.token == user || u.real_login == user) ? u.real_login : r
+end
+app.error_exit(STATUS[404]) unless user
+
+app.error_exit(STATUS[400]) if app.params['report'].empty?
+report_id = app.params['report'][0]
+
+dir_user = App::KADAI + report_id + user
+log_file = dir_user + App::FILES[:log]
+app.error_exit(STATUS[404]) unless [dir_user, log_file].all?(&:exist?)
+
+log = Log.new(log_file).latest(:data)
+result = {}
+
+if log['log'] && log['log']['test']
+  t = log['log']['test']
+  result['passed'] = t['passed']
+  result['number'] = t['number']
+end
+
+if log['test'] && (app.conf[:record, :detail] || app.su?)
+  result['detail'] = log['test']
+end
+
+print(app.header)
+puts(app.json(result))

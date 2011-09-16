@@ -124,7 +124,6 @@ class App
     src = nil
     optional = []
     optional << :log if option[:log]
-    optional << :detail if option[:log] && (conf[:record, :detail] || su?)
 
     if (file(:scheme)['scheme'].find{|r| r['id']==id} || {})['type'] == 'post'
       fname = KADAI[id, u, FILES[:log]]

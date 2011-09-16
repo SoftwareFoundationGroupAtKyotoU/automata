@@ -85,16 +85,19 @@ begin
   end
 
   raise RuntimeError, cmd unless result
-  ra = result.to_a
-  summary = ra.last(ra.reverse.find_index{|x| /^\s+/ =~ x} || ra.length).join
+  begin
+    result = YAML.load(result)
+    passed = result.count{|r| /^\s*ok\s*$/i =~ (r['result']||'')}
+    log = { 'test' => { 'passed' => passed, 'number' => result.size } }
+  rescue => e
+    log = { 'error' => err[:fail], 'reason' => e.to_s }
+  end
 
-  log = (summary.strip.empty? ?
-         { 'error' => err[:fail] } : { 'test case' => summary })
   info = {
     'status'    => 'OK',
     'timestamp' => Time.now.iso8601,
     'log'       => log,
-    'detail'    => result,
+    'test'      => result
   }
 
 rescue => e

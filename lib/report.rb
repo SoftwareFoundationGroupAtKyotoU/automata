@@ -42,6 +42,7 @@ module Report
         hash = {
           'status'    => status?,
           'timestamp' => @data['timestamp'],
+          'submit'    => @data['id'],
         }
         @optional.each{|k| hash[k.to_s] = optional(k)}
         return hash

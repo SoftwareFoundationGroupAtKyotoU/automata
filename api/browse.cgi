@@ -1,6 +1,6 @@
 #! /usr/bin/env ruby
 
-# Usage: browse report=<report-id> [user=<login>]
+# Usage: browse report=<report-id> user=<login>
 #               [type={raw|highlight}] [path=.]
 #   アップロードされたファイルを取得
 # Options:
