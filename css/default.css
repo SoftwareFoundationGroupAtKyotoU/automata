@@ -85,7 +85,7 @@ table {
 }
 th, td {
    padding: .5em;
-   vertical-align: bottom;
+   vertical-align: top;
 }
 
 th {
@@ -201,6 +201,25 @@ td.test {
 .testcase .failed {
    color: #ee5577;
 }
+.testcase table {
+   margin: 0;
+}
+.testcase table th,
+.testcase table td {
+   background-color: inherit;
+   color: inherit;
+   text-align: left;
+   padding: 0;
+}
+.testcase table th {
+   white-space: nowrap;
+   width: 2em;
+   padding-right: 1em;
+}
+.testcase table td pre {
+   margin: 0;
+   padding: 0;
+}
 
 table.file_browser {
    margin: 0;
@@ -258,7 +277,6 @@ ul.status_toolbar ul.breadcrums li:last-child:after {
 }
 .file_browser.file td {
    border-bottom-style: none;
-   vertical-align: top;
 }
 .file_browser.file pre {
    margin: 0;

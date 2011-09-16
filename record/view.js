@@ -250,7 +250,7 @@ var TestResultView = function(id) {
         var defs = [
             { prop: 'result',
               name: 'result',
-              node: function(x){ return isPassed(x) ? 'pass' : 'fail'; }
+              node: function(x){ return isPassed(x) ? 'passed' : 'failed'; }
             },
             { prop: 'description',
               name: 'test',
@@ -294,15 +294,16 @@ var TestResultView = function(id) {
                             child: t.detail.reduce(function(list, c) {
                                 if (!c.result) c.result = 'fail';
 
-                                var dl = $new('dl', {
+                                var table = $new('table', {
                                     child: defs.reduce(function(r, d) {
                                         var val = c[d.prop];
                                         if (val) {
                                             var node = d.node(val);
-                                            return r.concat([
-                                                $new('dt', { child: d.name }),
-                                                $new('dd', { child: node })
-                                            ]);
+                                            var tr = $new('tr', { child: [
+                                                $new('th', { child: d.name }),
+                                                $new('td', { child: node })
+                                            ] });
+                                            return r.concat([ tr ]);
                                         } else {
                                             return r;
                                         }
@@ -312,7 +313,7 @@ var TestResultView = function(id) {
                                 var k = isPassed(c) ? 'passed' : 'failed';
                                 return list.concat([
                                     $new('dt', { child: c.name, klass: k }),
-                                    $new('dd', { child: dl, klass: k })
+                                    $new('dd', { child: table, klass: k })
                                 ]);
                             }, [])
                         });
