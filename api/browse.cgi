@@ -51,7 +51,7 @@ user = app.params['user'][0]
 user = app.users.inject(nil) do |r, u|
   (u.token == user || u.real_login == user) ? u.real_login : r
 end
-app.error_exit(STATUS[404]) unless user
+app.error_exit(STATUS[403]) unless user
 
 app.error_exit(STATUS[400]) if app.params['report'].empty?
 report_id = app.params['report'][0]
@@ -66,8 +66,14 @@ time = log['id'] || log['timestamp']
 
 src = dir_user + time + 'src'
 path = (src+path).expand_path
+app.error_exit(STATUS[403]) unless path.to_s.index(src.to_s)==0 # dir traversal
 app.error_exit(STATUS[404]) unless [src, path].all?(&:exist?)
-app.error_exit(STATUS[404]) unless path.to_s.index(src.to_s)==0 # dir traversal
+
+# follow symlink
+src = src.realpath rescue nil
+path = path.realpath rescue nil
+app.error_exit(STATUS[403]) unless src && path
+app.error_exit(STATUS[403]) unless path.to_s.index(src.to_s)==0 # dir traversal
 
 if path.directory?
   Dir.chdir(path.to_s) do
