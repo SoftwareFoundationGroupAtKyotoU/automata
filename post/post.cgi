@@ -4,6 +4,7 @@ $KCODE = 'UTF8'
 $:.unshift('./lib')
 
 require 'fileutils'
+require 'pathname'
 require 'tempfile'
 require 'tmpdir'
 require 'time'
@@ -89,9 +90,9 @@ begin
     if entries.length == 1 && File.directory?(entries[0]) then
       entries_dir = entries[0]
       Dir.mktmpdir do |tmpdir|
-        src_files = Dir.glob("#{entries_dir}/*", File::FNM_DOTMATCH)
-        src_files.reject!{|f| f =~ /\/\.+$/}
-        FileUtils.mv(src_files, tmpdir)
+        src_files = Pathname.new(entries_dir).entries
+        src_files.reject!{|f| f.to_s=~/^\.+$/}
+        Dir.chdir(entries_dir){ FileUtils.mv(src_files, tmpdir) }
         FileUtils.rmdir(entries_dir)
         FileUtils.mv(Dir.glob("#{tmpdir}/*"), src_dir.to_s)
       end
