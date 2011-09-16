@@ -88,7 +88,7 @@ var LogView = function(id, records) {
 
     var defs = [
         { prop: 'timestamp',
-          label: '最終更新日時',
+          label: 'ステータス更新日時',
           node: GNN.UI.$node
         },
         { prop: 'submit',
