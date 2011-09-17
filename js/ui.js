@@ -18,7 +18,7 @@ if (typeof GNN.UI == 'undefined') GNN.UI = {};
                 elm.setAttribute(attr, args.attr[attr]);
             }
         }
-        if (args.child) {
+        if (typeof args.child != 'undefined') {
             if (!(args.child instanceof Array)) args.child = [ args.child ];
             for (var i=0; i < args.child.length; i++) {
                 var child = ns.$node(args.child[i]);
@@ -27,7 +27,10 @@ if (typeof GNN.UI == 'undefined') GNN.UI = {};
         }
         return elm;
     };
-    ns.$text = function(str){ return ns.doc().createTextNode(str||''); };
+    ns.$text = function(str) {
+        if (typeof str == 'undefined' || str == null) str = '';
+        return ns.doc().createTextNode(str+'');
+    };
     ns.$node = function(x){ return ns.isNode(x) ? x : ns.$text(x); };
     ns.$select = function(args) {
         if (!args.klass) args.klass = [];
