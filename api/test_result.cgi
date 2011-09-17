@@ -13,37 +13,31 @@ $KCODE='UTF8'
 
 $:.unshift('./lib')
 
-STATUS = {
-  400 => '400 Bad Request',
-  403 => '403 Forbidden',
-  404 => '404 Not Found',
-}
-
 require 'app'
 require 'log'
 app = App.new
 
-def app.error_exit(status)
-  print(cgi.header('type' => 'text/plain', 'status' => status))
-  puts(status)
+def app.error_exit(obj)
+  print(ap.header)
+  puts(app.json(obj))
   exit
 end
 
-app.error_exit(STATUS[400]) if app.params['user'].empty?
+app.error_exit({}) if app.params['user'].empty?
 user = app.params['user'][0]
 
 # resolve real login name in case user id is a token
 user = app.users.inject(nil) do |r, u|
   (u.token == user || u.real_login == user) ? u.real_login : r
 end
-app.error_exit(STATUS[404]) unless user
+app.error_exit({}) unless user
 
-app.error_exit(STATUS[400]) if app.params['report'].empty?
+app.error_exit({}) if app.params['report'].empty?
 report_id = app.params['report'][0]
 
 dir_user = App::KADAI + report_id + user
 log_file = dir_user + App::FILES[:log]
-app.error_exit(STATUS[404]) unless [dir_user, log_file].all?(&:exist?)
+app.error_exit({}) unless [dir_user, log_file].all?(&:exist?)
 
 log = Log.new(log_file).latest(:data)
 result = {}
