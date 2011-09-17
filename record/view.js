@@ -277,6 +277,13 @@ var TestResultView = function(id) {
                 var uri = api('test_result', { user: target, report: id });
                 GNN.JSONP.retrieve({ test: uri }, function(json) {
                     var t = json.test;
+                    if (!t ||
+                        typeof t.passed == 'undefined' ||
+                        typeof t.number == 'undefined') {
+                        view.set('なし');
+                        return;
+                    }
+
                     var list = [
                         header('通過率'),
                         $new('p', {
