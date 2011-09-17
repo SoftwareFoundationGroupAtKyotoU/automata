@@ -129,6 +129,10 @@ td.test {
    text-align: right;
 }
 
+td.unsolved {
+   color: #ee5577;
+}
+
 .status_window {
    margin-top: 0.5em;
    margin-bottom: 2em;
