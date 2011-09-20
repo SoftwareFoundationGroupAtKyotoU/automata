@@ -385,7 +385,7 @@ var FileBrowserView = function(id) {
 
                     var a = $new('a', {
                         child: loc.name,
-                        attr: { href: browser.rawURI(loc.path) }
+                        attr: { href: browser.path2uri(loc.path) }
                     });
                     new GNN.UI.Observer(a, 'onclick', function(e) {
                         e.stop();
@@ -418,49 +418,32 @@ var FileBrowserView = function(id) {
             if (path != epath) uri.params.path = epath;
             return uri+'';
         };
-        var humanReadableSize = function(size) {
-            var prefix = [ '', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y' ];
-            var i;
-            for (i=0; size >= 1024 && i < prefix.length-1; i++) {
-                size /= 1024;
-            }
-            if (i > 0) size = size.toFixed(1);
-            return size + prefix[i];
-        };
-
-        var table = $new('table', {
-            klass: 'file_browser'
-        });
 
         var self = {
-            view: table,
-            location: location || { path: '.', type: 'dir' },
-            rawURI: function(path) {
+            location: { path: '.', type: 'dir' },
+            breadcrum: null,
+            toolbar: null,
+            view: null,
+            reset: function(location) {
+                this.view.set(loadingIcon());
+                this.location = location;
+
+                GNN.UI.removeAllChildren(this.toolbar);
+                this.breadcrum.set(location);
+            },
+            path2uri: function(path) {
                 return rawPath(target, id, path);
             },
-            show: function(toolbar, view) {
-                this.breadcrum = new Breadcrum(this, toolbar);
-                this.toolbar = toolbar;
-                view.set(this.view);
-                this.move(this.location);
-            }
-        };
+            path: function(location){ return this.path2uri(location.path); },
+            icon: function(location) {
+                return $new('img', {
+                    attr: { src: './'+location.type+'.png' },
+                    klass: 'icon'
+                });
+            },
+            dir: function(location, callback) {
+                this.reset(location);
 
-        var replaceView = function(node) {
-            var parent = self.view.parentNode;
-            GNN.UI.removeAllChildren(parent);
-            parent.appendChild(node);
-            self.view = node;
-        };
-
-        self.move = function(location) {
-            GNN.UI.removeAllChildren(this.toolbar);
-
-            replaceView(loadingIcon());
-            this.location = location;
-            this.breadcrum.set(location);
-
-            if (location.type == 'dir') {
                 GNN.JSONP.retrieve({
                     entries: apiBrowse({
                         user: target,
@@ -468,121 +451,19 @@ var FileBrowserView = function(id) {
                         path: location.path
                     })
                 }, function(json) {
-                    GNN.UI.removeAllChildren(table);
-                    table.appendChild($new('tr', {
-                        child: [
-                            [ 'ファイル', 'file' ],
-                            [ 'サイズ', 'size' ],
-                            [ '更新日時', 'time' ]
-                        ].map(function(t) {
-                            return $new('th',{ child: t[0], klass: t[1] });
-                        })
-                    }));
-
-                    json.entries.forEach(function(f) {
-                        var path = location.path+'/'+f.name;
-                        var a = $new('a', {
-                            attr: { href: self.rawURI(path) },
-                            child: $text(f.name + (f.type=='dir' ? '/' : ''))
-                        });
-                        if (f.type != 'bin') {
-                            new GNN.UI.Observer(a, 'onclick', function(e) {
-                                e.stop();
-                                self.move({ path: path, type: f.type });
-                            });
-                        }
-
-                        var size = humanReadableSize(f.size);
-                        table.appendChild($new('tr', {
-                            child: [
-                                $new('td', {
-                                    child: [
-                                        $new('img', {
-                                            attr: { src: './'+f.type+'.png' },
-                                            klass: 'icon'
-                                        }), a ],
-                                    klass: 'file' }),
-                                $new('td', { child: $text(size),
-                                             klass: 'size' }),
-                                $new('td', { child: $text(f.time),
-                                             klass: 'time' })
-                            ]
-                        }));
-                    });
-
-                    replaceView(table);
+                    callback(json.entries);
+                    self.view.set(callback(json.entries));
                 }, function() {
-                    replaceView($text('読み込み失敗'));
+                    self.view.set($text('読み込み失敗'));
                 });
-            } else  {
-                var applyStyle = function(text) {
-                    text = text.replace(/[\r\n]/g, '');
-                    var regex = '<style[^>]*>(?:<!--)?(.*?)(?:-->)?</style>';
-                    if (new RegExp(regex).test(text)) {
-                        var style = $new('style', {
-                            attr: { type: 'text/css' }
-                        });
-
-                        var css = '';
-                        var rawcss = RegExp.$1;
-                        var arr;
-                        var re = new RegExp('\\s*([^\{]+?)\\s*{([^\}]*)}','g');
-                        var rules = [];
-                        while ((arr = re.exec(rawcss)) != null) {
-                            if (arr[1].charAt(0) == '.') {
-                                rules.push({selector: arr[1], style: arr[2]});
-                            }
-                        }
-
-                        var d = document;
-                        if (d.styleSheets[0].addRule) { // IE
-                            rules.forEach(function(s) {
-                                d.styleSheets[0].addRule(s.selector, s.style);
-                            });
-                        } else {
-                            var head = d.getElementsByTagName('head')[0];
-                            style.appendChild($text(rules.map(function(s) {
-                                return s.selector+'{'+s.style+'}';
-                            }).join("\n")));
-                            head.appendChild(style);
-                        }
-                    }
-                };
-                var showContent = function(node) {
-                    var row = $new('tr');
-                    var view = $new('table', {
-                        klass: 'file_browser file',
-                        child: row
-                    });
-
-                    // line number
-                    var content = node.innerHTML+'';
-                    if (content.charAt(content.length-1) != "\n") {
-                        content += "\n";
-                    }
-                    var ln = $new('pre');
-                    var i = 1, arr;
-                    var re = new RegExp("\n", 'g');
-                    while ((arr = re.exec(content)) != null) {
-                        ln.appendChild($text(i++ + "\n"));
-                    }
-
-                    row.appendChild($new('td', {
-                        klass: 'linenumber',
-                        child: ln
-                    }));
-                    row.appendChild($new('td', {
-                        klass: 'content',
-                        child: node
-                    }));
-                    replaceView(view);
-                };
-
+            },
+            file: function(location) {
+                this.reset(location);
                 this.toolbar.appendChild($new('li', {
                     klass: 'toolbutton',
                     child: $new('a', {
                         child: '直接開く',
-                        attr: { href: rawPath(target, id, location.path) }
+                        attr: { href: this.path2uri(location.path) }
                     })
                 }));
 
@@ -603,16 +484,31 @@ var FileBrowserView = function(id) {
                             div.innerHTML = text;
 
                             pre = div.getElementsByTagName('pre')[0];
-                            showContent(pre);
+                            fileViewer.open(pre.innerHTML+'');
+                            fileViewer.applyStyleFromSource(req.responseText);
 
-                            applyStyle(req.responseText);
+                            self.view.set(fileViewer.view);
                         } else {
-                            replaceView($text('読み込み失敗'));
+                            self.view.set($text('読み込み失敗'));
                         }
                     }
                 }
                 req.send(null);
             }
+        };
+
+        var fileViewer = new FileBrowser.FileViewer();
+        var browser = new FileBrowser({ handler: self });
+
+        self.move = function(location) {
+            browser.move(location);
+        };
+
+        self.show = function(toolbar, view) {
+            this.breadcrum = new Breadcrum(this, toolbar);
+            this.toolbar = toolbar;
+            this.view = view;
+            this.move(this.location);
         };
 
         return self;
