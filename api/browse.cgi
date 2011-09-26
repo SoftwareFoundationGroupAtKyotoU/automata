@@ -48,9 +48,7 @@ app.error_exit(STATUS[400]) if app.params['user'].empty?
 user = app.params['user'][0]
 
 # resolve real login name in case user id is a token
-user = app.users.inject(nil) do |r, u|
-  (u.token == user || u.real_login == user) ? u.real_login : r
-end
+user = app.user_from_token(user)
 app.error_exit(STATUS[403]) unless user
 
 app.error_exit(STATUS[400]) if app.params['report'].empty?

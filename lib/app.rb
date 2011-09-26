@@ -115,6 +115,12 @@ class App
     return @users
   end
 
+  def user_from_token(token)
+    return users.inject(nil) do |r, u|
+      (u.token == token || u.real_login == token) ? u.real_login : r
+    end
+  end
+
   def report(option, id, u)
     require 'report'
 

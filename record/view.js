@@ -230,7 +230,7 @@ var SolvedView = function(id, records) {
     };
 };
 
-var TestResultView = function(id) {
+var TestResultView = function(id, admin) {
     var $new = GNN.UI.$new;
 
     var List = function(target) {
@@ -273,6 +273,20 @@ var TestResultView = function(id) {
         return {
             show: function(toolbar, view) {
                 view.set(loadingIcon());
+
+                if (admin) {
+                    var a = $new('a', {
+                        attr: { href: '.' }, child: 'テストを再実行'
+                    });
+                    toolbar.appendChild(a);
+
+                    new GNN.UI.Observer(a, 'onclick', function(e) {
+                        e.stop();
+                        admin.runTest(target, id, function() {
+                            admin.update();
+                        });
+                    });
+                }
 
                 var uri = api('test_result', { user: target, report: id });
                 GNN.JSONP.retrieve({ test: uri }, function(json) {

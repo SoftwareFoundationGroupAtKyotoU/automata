@@ -1,5 +1,5 @@
 var init = function(id) {
-    var apiMaster = api('master', { year: true, token: true });
+    var apiMaster = api('master', { year: true, token: true, admin: true });
     var apiUser   = api('user', { type: 'status', status: 'record', log: 1 });
     var apiScheme = api('scheme', { record: true });
     var apiTempl  = api('template', { type: 'record', links: true });
@@ -12,6 +12,20 @@ var init = function(id) {
 
         var showRecord = function(json) {
             removeAllChildren(div);
+
+            var updateRecord = function(wait) {
+                wait = wait || 0;
+                var func = function() {
+                    GNN.JSONP.retrieve({
+                        user: apiUser.refresh()
+                    }, function(json2) {
+                        json2.master = json.master;
+                        json2.scheme = json.scheme;
+                        showRecord(json2);
+                    });
+                };
+                setTimeout(func, wait);
+            }
 
             // textify function specific to the field
             var toText = function(obj, klass, record) {
@@ -93,9 +107,12 @@ var init = function(id) {
                     }) })
                 });
 
+                var admin;
+                if ((json.master||{}).admin) admin = new Admin(updateRecord);
+
                 var logView = new LogView(sc.id, json.user);
                 var solvedList = new SolvedView(sc.id, json.user);
-                var testResult = new TestResultView(sc.id);
+                var testResult = new TestResultView(sc.id, admin);
                 var fileBrowser = new FileBrowserView(sc.id);
                 var tabs = [ logView, solvedList ];
                 if (sc.record.some(function(col){return col.field=='test';})) {
@@ -196,18 +213,7 @@ var init = function(id) {
                         td.appendChild($node(text));
                     });
 
-                    if (autoUpdate) {
-                        var updateRecord = function() {
-                            GNN.JSONP.retrieve({
-                                user: apiUser.refresh()
-                            }, function(json2) {
-                                json2.master = json.master;
-                                json2.scheme = json.scheme;
-                                showRecord(json2);
-                            });
-                        };
-                        setTimeout(updateRecord, 2000);
-                    }
+                    if (autoUpdate) updateRecord(2000);
                     table.appendChild(tr);
                 });
                 div.appendChild(table);
