@@ -1,3 +1,28 @@
+var showDropdown = function(target, list, callback) {
+    var parent = target.parentNode;
+
+    var selector = GNN.UI.$new('select', {
+        child: list.map(function(x) {
+            var opt = GNN.UI.$new('option', {
+                attr: { value: x.value }, child: x.label
+            });
+            if (x.selected) opt.selected = 'selected';
+            return opt;
+        })
+    });
+    new GNN.UI.Observer(selector, 'onchange', function(e) {
+        e.target().blur();
+        callback(e.target().value);
+    });
+
+    parent.replaceChild(selector, target);
+    selector.focus();
+
+    new GNN.UI.Observer(selector, 'onblur', function(e) {
+        parent.replaceChild(target, e.target());
+    });
+};
+
 var StatusWindow = function(id, tabs) {
     var make = function(tag, what) {
         return GNN.UI.$new(tag, {

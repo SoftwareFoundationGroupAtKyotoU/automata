@@ -22,8 +22,13 @@ var Admin = function(update) {
     };
 
     return {
+        changeStatus: function(user, report, status, callback, error) {
+            var args = { user: user, report: report, status: status };
+            command('log', args, callback, error);
+        },
         runTest: function(user, report, callback, error) {
-            command('runtest', {user: user, report: report}, callback, error);
+            var args = { user: user, report: report };
+            command('runtest', args, callback, error);
         },
         update: update
     };

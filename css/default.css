@@ -121,6 +121,24 @@ td.status .loading {
    height: 16px;
 }
 
+td.status a.edit {
+   text-decoration: none;
+}
+
+td.status a.edit:hover,
+td.status a.edit:active {
+   text-decoration: none;
+   outline-style: none;
+   background-color: inherit ! important;
+}
+
+td.status a.edit img {
+   padding-left: 0.2em;
+   border: none;
+   width: 1em;
+   height: 1em;
+}
+
 td.NG, td.build-NG {
    background-color: #eeddee ! important;
 }

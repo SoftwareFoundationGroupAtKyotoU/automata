@@ -4,6 +4,17 @@ var init = function(id) {
     var apiScheme = api('scheme', { record: true });
     var apiTempl  = api('template', { type: 'record', links: true });
 
+    var defs = {
+        status: [
+            [ 'OK',       '提出済'   ],
+            [ 'NG',       '要再提出' ],
+            [ 'build',    '確認中'   ],
+            [ 'check',    '確認中'   ],
+            [ 'build:NG', '要再提出' ],
+            [ 'check:NG', '提出済'   ]
+        ]
+    };
+
     var persistent = {};
 
     with (GNN.UI) {
@@ -55,15 +66,9 @@ var init = function(id) {
                 case 'status':
                     if (obj == null) return '';
                     if (typeof obj == 'boolean' && obj) obj = 'OK';
-                    switch (obj) {
-                    case 'OK': return '提出済';
-                    case 'NG': return '要再提出';
-                    case 'build': /* pass through */
-                    case 'check': return '確認中';
-                    case 'build:NG': return '要再提出';
-                    case 'check:NG': return '提出済';
-                    }
-                    return '';
+                    return defs.status.reduce(function(r, x) {
+                        return r || (x[0] == obj && x[1])
+                    }, null) || '';
                 case 'unsolved':
                     if (obj == null) return '';
                     return obj.map(function(x) {
@@ -188,6 +193,28 @@ var init = function(id) {
                         return text;
                     };
 
+                    var makeEditButton = function(current, status) {
+                        var edit = $new('a', {
+                            child: $new('img', { attr: { src: 'edit.png' } }),
+                            klass: 'edit',
+                            attr: { href: '.', title: '変更する' }
+                        });
+                        new Observer(edit, 'onclick', function (e) {
+                            e.stop();
+
+                            showDropdown(status, defs.status.map(function(x) {
+                                return {
+                                    value: x[0],
+                                    label: x[0]+' ('+x[1]+')',
+                                    selected: x[0] == current
+                                };
+                            }), function(v) {
+                                admin.changeStatus(id, sc.id, v, updateRecord);
+                            });
+                        });
+                        return edit;
+                    };
+
                     sc.record.forEach(function(col) {
                         var td = $new('td', { klass: col.field });
                         tr.appendChild(td);
@@ -199,6 +226,11 @@ var init = function(id) {
                         if (col.field == 'status') {
                             if (text.length > 0) {
                                 text = makeStatusNode(text);
+
+                                if (admin) {
+                                    var edit = makeEditButton(fld, text);
+                                    text = [ text, edit ];
+                                }
                             }
                             if (fld == 'check' && sc.update == 'auto') {
                                 autoUpdate = true;
@@ -210,7 +242,8 @@ var init = function(id) {
                             }
                         }
 
-                        td.appendChild($node(text));
+                        if (!(text instanceof Array)) text = [text];
+                        text.forEach(function(t){ td.appendChild($node(t)); });
                     });
 
                     if (autoUpdate) updateRecord(2000);

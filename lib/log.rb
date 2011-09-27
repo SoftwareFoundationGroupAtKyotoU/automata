@@ -55,4 +55,8 @@ class Log
 
   def write_data(val) write(:data => val) end
   def write_build(val) write(:build => val) end
+  def update_data(val)
+    val['timestamp'] = Time.now.iso8601
+    write_data(val)
+  end
 end
