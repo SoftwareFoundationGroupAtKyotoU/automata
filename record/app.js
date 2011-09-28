@@ -245,7 +245,7 @@ var init = function(id) {
                         text.forEach(function(t){ td.appendChild($node(t)); });
                     });
 
-                    if (autoUpdate) updateRecord(2000);
+                    if (autoUpdate && !admin) updateRecord(2000);
                     table.appendChild(tr);
                 });
                 div.appendChild(table);
