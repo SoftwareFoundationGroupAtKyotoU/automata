@@ -30,12 +30,10 @@ var Admin = function(update) {
     };
 
     return {
-        editStatus: function(user, report, status, callback, error) {
-            var args = { user: user, report: report, status: status };
+        editStatus: function(args, callback, error) {
             command('log', args, callback, error);
         },
-        editLog: function(user, report, args, callback, error) {
-            args.user = user; args.report = report;
+        editLog: function(args, callback, error) {
             command('log', args, callback, error);
         },
         runTest: function(user, report, callback, error) {

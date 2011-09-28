@@ -301,9 +301,9 @@ var LogView = function(id, records, admin) {
                 var param = params[k];
                 if (param.value.length != 0) args[k] = param.value;
             }
-            admin.editLog(target, id, args, function() {
-                admin.update();
-            });
+            args.id = record.submit; args.user = target; args.report = id;
+            var update = function(){ admin.update(); };
+            admin.editLog(args, update, update);
         };
         var onCancel = function(e) {
             dummy.parentNode.replaceChild(button, dummy);

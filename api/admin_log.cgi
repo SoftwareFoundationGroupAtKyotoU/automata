@@ -1,6 +1,6 @@
 #! /usr/bin/env ruby
 
-# Usage: admin_log report=<report-id> user=<login>
+# Usage: admin_log report=<report-id> user=<login> id=<log-id>
 #   ログを変更
 # Options:
 #   status   ステータスを変更
@@ -50,10 +50,14 @@ app.error_exit(STATUS[400]) if app.params['report'].empty?
 report_id = app.params['report'][0]
 report_id = report_id.read if report_id.respond_to?(:read)
 
+# log ID must be specified
+app.error_exit(STATUS[400]) if app.params['id'].empty?
+log_id = app.params['id'][0]
+log_id = log_id.read if log_id.respond_to?(:read)
+
 begin
   log_file = (App::KADAI + report_id + user)[App::FILES[:log]]
-  log = Log.new(log_file).latest(:data)
-  time = log['id'] || log['timestamp']
+  latest = Log.new(log_file).latest(:data)
 
   hash = {}
   unless app.params['status'].empty?
@@ -73,7 +77,8 @@ begin
   hash['log'] = log unless log.empty?
 
   unless hash.empty?
-    Log.new(log_file, Time.parse(time)) do |log|
+    Log.new(log_file, Time.parse(log_id)).lock do |log|
+      app.error_exit(STATUS[400]) if latest['id'] != log_id
       log.update_data(hash)
     end
   end

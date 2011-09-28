@@ -43,14 +43,24 @@ class Log
   def build() return get(:build)||{} end
   def build!(entry) put(:build, entry) end
 
-  def write(args)
-    args.each{|k,v| self.send(k.to_s+'!', v)}
+  def lock(&block)
+    return block.call(self) if @io
 
     open(@file, 'w') do |io|
-      io.flock(File::LOCK_EX)
-      YAML.dump(@log, io)
-      io.flock(File::LOCK_UN)
+      begin
+        @io = io
+        io.flock(File::LOCK_EX)
+        return block.call(self)
+      ensure
+        lock{|log| YAML.dump(@log, io)}
+        io.flock(File::LOCK_UN)
+        @io = nil
+      end
     end
+  end
+
+  def write(args)
+    lock{|log| args.each{|k,v| self.send(k.to_s+'!', v)}}
   end
 
   def write_data(val) write(:data => val) end

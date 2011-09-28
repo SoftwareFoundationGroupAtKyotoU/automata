@@ -205,10 +205,13 @@ var init = function(id) {
                                 return {
                                     value: x[0],
                                     label: x[0]+' ('+x[1]+')',
-                                    selected: x[0] == current
+                                    selected: x[0] == current.status
                                 };
                             }), function(v) {
-                                admin.editStatus(id, sc.id, v, updateRecord);
+                                admin.editStatus({
+                                    id: current.id, user: id, report: sc.id,
+                                    status: v
+                                }, updateRecord, updateRecord);
                             });
                         });
                         return edit;
@@ -227,7 +230,9 @@ var init = function(id) {
                                 text = makeStatusNode(text);
 
                                 if (admin) {
-                                    var edit = makeEditButton(fld, text);
+                                    var edit = makeEditButton({
+                                        id: record.submit, status: fld
+                                    }, text);
                                     text = [ text, edit ];
                                 }
                             }
