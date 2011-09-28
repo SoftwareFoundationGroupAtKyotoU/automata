@@ -1,3 +1,73 @@
+var Persistent = function(node) {
+    if (typeof JSON == 'undefined') {
+        return {
+            del: function(){ return this; },
+            set: function(){ return this; },
+            get: function(){ return null; }
+        };
+    }
+
+    var serialize = function(hash) {
+        return JSON.stringify(hash);
+    };
+    var deserialize = function(text) {
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            // ignore
+        }
+    };
+
+    return {
+        hash: deserialize(node.value) || {},
+        del: function(keys) {
+            var dummy;
+            return this.set(keys, dummy);
+        },
+        set: function(keys, value) {
+            if (!(keys instanceof Array)) keys = [keys];
+            if (keys.length <= 0) keys.push('');
+            var key = keys.pop();
+
+            var entry =keys.reduce(function(r, x) {
+                if (typeof r[x] == 'undefined') r[x] = {};
+                return r[x];
+            }, this.hash);
+            entry[key] = value;
+
+            node.value = serialize(this.hash);
+            return this;
+        },
+        get: function(keys) {
+            if (!(keys instanceof Array)) keys = [keys];
+            if (keys.length <= 0) keys.push('');
+
+            return keys.reduce(function(r, x) {
+                return (r||{})[x];
+            }, this.hash);
+        }
+    };
+};
+Persistent.Entry = function(parent, keys) {
+    if (!(keys instanceof Array)) keys = [keys];
+    return {
+        parent: parent,
+        keys: keys,
+        del: function(keys) {
+            return this.parent.del(this.keys.concat(keys));
+        },
+        set: function(keys, value) {
+            if (!(keys instanceof Array)) keys = [keys];
+            this.parent.set(this.keys.concat(keys), value);
+            return this;
+        },
+        get: function(keys) {
+            if (!(keys instanceof Array)) keys = [keys];
+            return this.parent.get(this.keys.concat(keys));
+        }
+    };
+};
+
 var showDropdown = function(target, list, callback) {
     var parent = target.parentNode;
 
@@ -23,7 +93,7 @@ var showDropdown = function(target, list, callback) {
     });
 };
 
-var StatusWindow = function(id, tabs) {
+var StatusWindow = function(id, tabs, persistent) {
     var make = function(tag, what) {
         return GNN.UI.$new(tag, {
             id: [ id, 'status', what ].join('_'),
@@ -43,9 +113,9 @@ var StatusWindow = function(id, tabs) {
     var makeTabId = function(name) {
         return [ id, name, 'tab' ].join('_');
     };
-    var lastTab;
 
     var self = {
+        persistent: new Persistent.Entry(persistent, 'tabs'),
         window: window,
         target: null,
         tabs: {},
@@ -74,8 +144,9 @@ var StatusWindow = function(id, tabs) {
         },
         show: function(target, tabName, force) {
             this.target = target;
+            var lastTab = this.persistent.get('selected');
             tabName = (!force && lastTab) || tabName;
-            lastTab = tabName;
+            this.persistent.set('selected', tabName);
 
             for (var t in this.tabs) {
                 var tab = this.tabs[t];
@@ -463,9 +534,11 @@ var FileBrowserView = function(id) {
             breadcrum: null,
             toolbar: null,
             view: null,
+            persistent: null,
             reset: function(location) {
                 this.view.set(loadingIcon());
                 this.location = location;
+                this.persistent.set('location', location);
 
                 GNN.UI.removeAllChildren(this.toolbar);
                 this.breadcrum.set(location);
@@ -547,7 +620,11 @@ var FileBrowserView = function(id) {
             this.breadcrum = new Breadcrum(this, toolbar);
             this.toolbar = toolbar;
             this.view = view;
-            this.move(this.location);
+
+            var keys = [ target, 'browser' ];
+            this.persistent = new Persistent.Entry(this.view.persistent, keys);
+
+            this.move(this.persistent.get('location') || this.location);
         };
 
         return self;

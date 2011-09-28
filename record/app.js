@@ -15,7 +15,7 @@ var init = function(id) {
         ]
     };
 
-    var persistent = {};
+    var persistent = new Persistent(GNN.UI.$('persistent'));
 
     with (GNN.UI) {
 
@@ -98,8 +98,7 @@ var init = function(id) {
 
             // records
             (json.scheme||[]).forEach(function(sc) { // for each report
-                var pers = persistent[sc.id] || {};
-                persistent[sc.id] = pers;
+                var pers = new Persistent.Entry(persistent, sc.id);
 
                 var table = $new('table', {
                     id: sc.id,
@@ -124,7 +123,7 @@ var init = function(id) {
                     tabs.push(testResult);
                 }
                 tabs.push(fileBrowser);
-                var status = new StatusWindow(sc.id, tabs);
+                var status = new StatusWindow(sc.id, tabs, pers);
 
                 var makeStatusId = function(x) {
                     return [ x, sc.id, 'status' ].filter(function(x) {
@@ -144,11 +143,11 @@ var init = function(id) {
                     });
                     status.hide();
 
-                    var id = pers.selected;
+                    var id = pers.get('selected');
                     if (!id) return;
 
                     if (json.user.length > 1) { // highlight
-                        var elem = $(makeStatusId(pers.selected));
+                        var elem = $(makeStatusId(id));
                         if (elem) {
                             var parent = getParent(elem);
                             appendClass(parent, 'selected');
@@ -167,10 +166,10 @@ var init = function(id) {
 
                     var makeStatusNode = function(text) {
                         if (json.user.length == 1) {
-                            pers.selected = student.token;
+                            pers.set('selected', student.token);
                         } else if (json.user.length > 1) {
-                            if (typeof pers.selected == 'undefined') {
-                                pers.selected = (json.master||{}).token;
+                            if (typeof pers.get('selected') == 'undefined') {
+                                pers.set('selected', (json.master||{}).token);
                             }
 
                             var klass = makeStatusId();
@@ -182,10 +181,10 @@ var init = function(id) {
                             });
                             new Observer(text, 'onclick', function(e) {
                                 e.stop();
-                                if (pers.selected == id) {
-                                    pers.selected = null;
+                                if (pers.get('selected') == id) {
+                                    pers.del('selected');
                                 } else {
-                                    pers.selected = id;
+                                    pers.set('selected', id);
                                 }
                                 updateSelectedRow();
                             });

@@ -318,6 +318,10 @@ ul.status_toolbar ul.breadcrums li:last-child:after {
    padding: 0;
 }
 
+#store {
+   display: none;
+}
+
 ul
 {
    margin: 0;
