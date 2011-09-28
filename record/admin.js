@@ -6,7 +6,7 @@ var Admin = function(update) {
         var req = new XMLHttpRequest();
         var uri = api('admin_'+cmd, args);
         uri.params['timestamp'] = encodeURI(new Date());
-        req.open('GET', uri+ '');
+        req.open('GET', uri+'');
 
         req.onreadystatechange = function(e) {
             if (req.readyState == 4) {

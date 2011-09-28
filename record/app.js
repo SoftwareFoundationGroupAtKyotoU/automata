@@ -114,8 +114,8 @@ var init = function(id) {
                 var admin;
                 if ((json.master||{}).admin) admin = new Admin(updateRecord);
 
-                var logView = new LogView(sc.id, json.user);
-                var solvedList = new SolvedView(sc.id, json.user);
+                var logView = new LogView(sc.id, json.user||[]);
+                var solvedList = new SolvedView(sc.id, json.user||[]);
                 var testResult = new TestResultView(sc.id, admin);
                 var fileBrowser = new FileBrowserView(sc.id);
                 var tabs = [ logView, solvedList ];
@@ -146,7 +146,7 @@ var init = function(id) {
                     var id = pers.get('selected');
                     if (!id) return;
 
-                    if (json.user.length > 1) { // highlight
+                    if ((json.user||[]).length > 1) { // highlight
                         var elem = $(makeStatusId(id));
                         if (elem) {
                             var parent = getParent(elem);

@@ -1,51 +1,84 @@
 (function() {
-    var JSONP = GNN.inherit(function(uri, obj, method) {
-        return JSONP.add(uri, obj, method);
+    var JSONP = GNN.inherit(function(uri, callback, error) {
+        return JSONP.add(uri, callback, error);
     }, {
-        add: function(uri, obj, method) {
+        add: function(uri, callback, error) {
             if (typeof uri == 'string') uri = new GNN.URI(uri);
-
-            var cb = [
-                [ '%', '_' ],
-                [ '-', '_' ],
-                [ '\\*', '_' ],
-                [ '\\.', '_' ]
-            ].reduce(function(r, x) {
-                return r.replace(new RegExp(x[0], 'g'), x[1]);
-            }, escape(encodeURIComponent(uri+'')));
-            while (JSONP.callback[cb]) cb += '_';
-
-            uri.params['callback'] = 'GNN.JSONP.callback'+'.'+cb;
-            if (typeof uri.params['timestamp'] == 'undefined') {
-                uri.params['timestamp'] = encodeURI(new Date());
-            }
-            if (typeof(obj) == 'function' && typeof(method) == 'undefined') {
-                obj = { callback: obj };
-                method = 'callback';
-            }
+            callback = callback || function(){};
+            error = error || function(){};
 
             var self = { uri: uri+'' };
-
-            self.callback = function(args) {
-                var r = obj[method].call(obj, args);
+            self.callback = function() {
+                var r = callback.apply(null, arguments);
                 self.done = true;
                 self.stop();
                 return r;
             };
-            self.stop = function() {
-                delete JSONP.callback[cb];
+            self.error = function() {
+                var r = error.apply(null, arguments);
+                self.done = true;
+                self.stop();
+                return r;
             };
 
-            self.script = document.createElement('script');
-            self.script.src = self.uri;
-            self.script.type = 'text/javascript';
+            if (typeof uri.params['timestamp'] == 'undefined') {
+                uri.params['timestamp'] = encodeURI(new Date());
+            }
 
-            JSONP.callback[cb] = self.callback;
-            document.getElementsByTagName('head')[0].appendChild(self.script);
+            if (typeof XMLHttpRequest == 'undefined' ||
+                typeof JSON == 'undefined') {
+                var cb = [
+                    [ '%', '_' ],
+                    [ '-', '_' ],
+                    [ '\\*', '_' ],
+                    [ '\\.', '_' ]
+                ].reduce(function(r, x) {
+                    return r.replace(new RegExp(x[0], 'g'), x[1]);
+                }, escape(encodeURIComponent(self.uri)));
+                while (JSONP.callback[cb]) cb += '_';
+
+                self.stop = function() {
+                    delete JSONP.callback[cb];
+                };
+                JSONP.callback[cb] = self.callback;
+                uri.params['callback'] = 'GNN.JSONP.callback'+'.'+cb;
+
+                self.script = document.createElement('script');
+                self.script.src = uri+'';
+                self.script.type = 'text/javascript';
+
+                var head = document.getElementsByTagName('head')[0];
+                head.appendChild(self.script);
+            } else { // use XHR
+                var req = new XMLHttpRequest();
+                self.req = req;
+                self.stop = function() {
+                    self.callback = function(){};
+                    self.error = function(){};
+                };
+
+                req.open('GET', uri+'');
+                req.onreadystatechange = function(e) {
+                    if (req.readyState == 4) {
+                        if (200 <= req.status && req.status < 300) {
+                            var obj;
+                            try {
+                                obj = JSON.parse(req.responseText);
+                            } catch (e) {
+                                // ignore
+                            }
+                            self.callback(obj);
+                        } else {
+                            self.error(req);
+                        }
+                    }
+                }
+                req.send(null);
+            }
 
             return self;
         },
-        retrieve: function(hash, callback, timeout) {
+        retrieve: function(hash, callback, error) {
             var t = 10000;
             if (typeof hash.timeout != 'undefined') {
                 t = hash.timeout;
@@ -95,10 +128,12 @@
             };
             run();
 
-            timeout && setTimeout(function() {
+            error && setTimeout(function() {
                 if (wait.length) {
+                    keys = [];
                     timedout = true;
-                    timeout(jsonp, wait);
+                    wait.forEach(function(k){ jsonp[k] && jsonp[k].stop(); });
+                    error(jsonp, wait);
                 }
             }, t);
         },

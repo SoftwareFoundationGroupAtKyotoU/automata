@@ -89,7 +89,7 @@ var reportFatalErrors = function(errors) {
 
 var jsonpFailure = function(jsonp, failed) {
     failedURIs = {};
-    var none = { uri: 'waiting for request' };
+    var none = { uri: 'preparing for request' };
     failed.forEach(function(k){ failedURIs[k]=(jsonp[k]||none).uri; });
 
     reportFatalErrors([
