@@ -114,8 +114,8 @@ var init = function(id) {
                 var admin;
                 if ((json.master||{}).admin) admin = new Admin(updateRecord);
 
-                var logView = new LogView(sc.id, json.user||[]);
-                var solvedList = new SolvedView(sc.id, json.user||[]);
+                var logView = new LogView(sc.id, json.user||[], admin);
+                var solvedList = new SolvedView(sc.id, json.user||[], admin);
                 var testResult = new TestResultView(sc.id, admin);
                 var fileBrowser = new FileBrowserView(sc.id);
                 var tabs = [ logView, solvedList ];
@@ -208,7 +208,7 @@ var init = function(id) {
                                     selected: x[0] == current
                                 };
                             }), function(v) {
-                                admin.changeStatus(id, sc.id, v, updateRecord);
+                                admin.editStatus(id, sc.id, v, updateRecord);
                             });
                         });
                         return edit;

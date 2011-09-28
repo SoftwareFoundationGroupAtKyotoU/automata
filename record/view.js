@@ -192,7 +192,7 @@ var StatusWindow = function(id, tabs, persistent) {
     return self;
 };
 
-var LogView = function(id, records) {
+var LogView = function(id, records, admin) {
     var pre = function(x) {
         return GNN.UI.$new('pre', { child: GNN.UI.$node(x) });
     };
@@ -208,15 +208,18 @@ var LogView = function(id, records) {
         },
         { prop: 'message',
           label: 'メッセージ',
-          node: GNN.UI.$node
+          node: GNN.UI.$node,
+          editable: true
         },
         { prop: 'error',
           label: 'エラー',
-          node: pre
+          node: pre,
+          editable: true
         },
         { prop: 'reason',
           label: 'エラーの詳細',
-          node: pre
+          node: pre,
+          editable: true
         },
         { prop: 'test',
           label: 'テスト通過率',
@@ -226,43 +229,93 @@ var LogView = function(id, records) {
         }
     ]
 
-    var ppLog = function(parent, log) {
+    var ppLog = function(parent, logs, edit) {
         var r = [];
+        var params = {};
         defs.forEach(function(def) {
-            if (log[def.prop]) {
-                var l = log[def.prop];
+            var l = logs.reduce(function(r, x) {
+                return r || x[def.prop];
+            }, null);
+            if (l || (def.editable && edit)) {
                 parent.appendChild(GNN.UI.$new('dt', {
-                    klass: def.prop,
-                    child: def.label
+                    klass: def.prop, child: def.label
                 }));
+
+                var node;
+                if (edit && def.editable) {
+                    node = GNN.UI.$new('textarea', {
+                        attr: { cols: 80, rows: 2 },
+                        child: l || ''
+                    });
+                    params[def.prop] = node;
+                } else {
+                    node = def.node(l);
+                }
                 parent.appendChild(GNN.UI.$new('dd', {
-                    klass: def.prop,
-                    child: def.node(l)
+                    klass: def.prop, child: node
                 }));
                 r.push(def.prop);
             }
         });
-        return r;
+        return { keys: r, params: params };
     };
 
     var makeLogMsg = function(record) {
         if (!record.timestamp && !record.log) return null;
 
         var dl = GNN.UI.$new('dl', { klass: 'log_msg' });
-        ppLog(dl, record);
-        if (record.log) {
-            var list = ppLog(dl, record.log);
-            for (var prop in record.log) {
-                if (list.indexOf(prop) < 0) {
-                    dl.appendChild(GNN.UI.$new('dt', { child: prop }));
-                    dl.appendChild(GNN.UI.$new('dd', {
-                        child: GNN.UI.$new('pre', { child: record.log[prop] })
-                    }));
-                }
+        var list = ppLog(dl, [ record, record.log ]).keys;
+        for (var prop in record.log) {
+            if (list.indexOf(prop) < 0) {
+                dl.appendChild(GNN.UI.$new('dt', {
+                    klass: 'etc', child: prop
+                }));
+                dl.appendChild(GNN.UI.$new('dd', {
+                    klass: 'etc', child: pre(record.log[prop])
+                }));
             }
         }
 
         return dl;
+    };
+
+    var editMode = function(target, record, view, button) {
+        var dummy = GNN.UI.$node('');
+        var dl = GNN.UI.$new('dl', { klass: 'log_msg' });
+        var submit = GNN.UI.$new('input', { attr: {
+            type: 'submit', value: '変更'
+        } });
+        var cancel = GNN.UI.$new('input', { attr: {
+            type: 'button', value: 'キャンセル'
+        } });
+        var form = GNN.UI.$new('form', {
+            attr: { action: '.' }, child: [ dl, submit, cancel ]
+        });
+        var params = ppLog(dl, [ record, record.log ], true).params;
+
+        var onConfirm = function(e) {
+            e.stop();
+
+            var args = {};
+            for (var k in params) {
+                var param = params[k];
+                if (param.value.length != 0) args[k] = param.value;
+            }
+            admin.editLog(target, id, args, function() {
+                admin.update();
+            });
+        };
+        var onCancel = function(e) {
+            dummy.parentNode.replaceChild(button, dummy);
+            var msg = makeLogMsg(record);
+            if (msg) view.set(msg);
+        };
+        new GNN.UI.Observer(form, 'onsubmit', onConfirm);
+        new GNN.UI.Observer(cancel, 'onclick', onCancel);
+
+        button.blur();
+        button.parentNode.replaceChild(dummy, button);
+        view.set(form);
     };
 
     var self = {
@@ -273,6 +326,18 @@ var LogView = function(id, records) {
                 return target == u.token ? u : r;
             }, { report: {} });
             var record = student.report[id]||{};
+
+            if (admin) {
+                var a = GNN.UI.$new('a', {
+                    attr: { href: '.' }, child: '編集'
+                });
+                toolbar.addButton(a);
+                new GNN.UI.Observer(a, 'onclick', function(e) {
+                    e.stop();
+                    editMode(target, record, view, e.target());
+                });
+            }
+
             var msg = makeLogMsg(record);
             if (msg) view.set(msg);
         }

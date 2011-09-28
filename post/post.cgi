@@ -44,7 +44,8 @@ app = App.new
 time = Time.now
 
 id = 'report_id'
-rep_id = app.cgi.params[id][0].read
+rep_id = app.cgi.params[id][0]
+rep_id = rep_id.read if rep_id.respond_to?(:read)
 raise ArgumentError, (err[:require] % id) unless defined?(rep_id)
 
 rep_schemes = app.file(:scheme)['scheme'] || []

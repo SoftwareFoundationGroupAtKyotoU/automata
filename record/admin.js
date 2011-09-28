@@ -1,12 +1,20 @@
 var Admin = function(update) {
+    var toFormData = function(hash) {
+        var list = [];
+        for (var k in hash) {
+            list.push([k, hash[k]].map(encodeURIComponent).join('='));
+        }
+        return list.join(';');
+    };
     var command = function(cmd, args, callback, error) {
         callback = callback || function(){};
         error = error || function(){};
 
         var req = new XMLHttpRequest();
-        var uri = api('admin_'+cmd, args);
-        uri.params['timestamp'] = encodeURI(new Date());
-        req.open('GET', uri+'');
+        var uri = api('admin_'+cmd, {});
+        var mime = 'application/x-www-form-urlencoded';
+        req.open('POST', uri+'');
+        req.setRequestHeader('Content-Type', mime);
 
         req.onreadystatechange = function(e) {
             if (req.readyState == 4) {
@@ -18,12 +26,16 @@ var Admin = function(update) {
             }
         }
 
-        req.send(null);
+        req.send(toFormData(args));
     };
 
     return {
-        changeStatus: function(user, report, status, callback, error) {
+        editStatus: function(user, report, status, callback, error) {
             var args = { user: user, report: report, status: status };
+            command('log', args, callback, error);
+        },
+        editLog: function(user, report, args, callback, error) {
+            args.user = user; args.report = report;
             command('log', args, callback, error);
         },
         runTest: function(user, report, callback, error) {

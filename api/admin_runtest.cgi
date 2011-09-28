@@ -34,6 +34,7 @@ app.error_exit(STATUS[403]) unless app.su?
 # user must be specified
 app.error_exit(STATUS[400]) if app.params['user'].empty?
 user = app.params['user'][0]
+user = user.read if user.respond_to?(:read)
 
 # resolve real login name in case user id is a token
 user = app.user_from_token(user)
@@ -42,6 +43,7 @@ app.error_exit(STATUS[400]) unless user
 # report ID must be specified
 app.error_exit(STATUS[400]) if app.params['report'].empty?
 report_id = app.params['report'][0]
+report_id = report_id.read if report_id.respond_to?(:read)
 
 cmd =
   [ App::FILES[:test_script],
