@@ -157,7 +157,22 @@ var StatusWindow = function(id, tabs, persistent) {
                     GNN.UI.appendClass(e, 'selected');
                     GNN.UI.removeAllChildren(toolbar);
                     GNN.UI.removeAllChildren(view);
-                    tab.show(target, toolbar, self);
+                    var tb = {
+                        parent: toolbar,
+                        reset: function() {
+                            GNN.UI.removeAllChildren(this.parent);
+                        },
+                        add: function(node, klass) {
+                            this.parent.appendChild(GNN.UI.$new('li', {
+                                child: node, klass: klass || ''
+                            }));
+                            return this;
+                        },
+                        addButton: function(node) {
+                            this.add(node, 'toolbutton');
+                        }
+                    };
+                    tab.show(target, tb, self);
                 } else {
                     GNN.UI.removeClass(e, 'selected');
                 }
@@ -374,7 +389,7 @@ var TestResultView = function(id, admin) {
                     var a = $new('a', {
                         attr: { href: '.' }, child: 'テストを再実行'
                     });
-                    toolbar.appendChild(a);
+                    toolbar.addButton(a);
 
                     new GNN.UI.Observer(a, 'onclick', function(e) {
                         e.stop();
@@ -478,9 +493,7 @@ var FileBrowserView = function(id) {
         return {
             set: function(location) {
                 if (!GNN.UI.$([ id, 'breadcrum' ].join('_'))) {
-                    parent.appendChild($new('li', { child: [
-                        '場所:', ul
-                    ]}));
+                    parent.add([ '場所:', ul ]);
                 }
                 GNN.UI.removeAllChildren(ul);
 
@@ -540,7 +553,7 @@ var FileBrowserView = function(id) {
                 this.location = location;
                 this.persistent.set('location', location);
 
-                GNN.UI.removeAllChildren(this.toolbar);
+                this.toolbar.reset();
                 this.breadcrum.set(location);
             },
             path2uri: function(path) {
@@ -571,12 +584,9 @@ var FileBrowserView = function(id) {
             },
             file: function(location) {
                 this.reset(location);
-                this.toolbar.appendChild($new('li', {
-                    klass: 'toolbutton',
-                    child: $new('a', {
-                        child: '直接開く',
-                        attr: { href: this.path2uri(location.path) }
-                    })
+                this.toolbar.addButton($new('a', {
+                    child: '直接開く',
+                    attr: { href: this.path2uri(location.path) }
                 }));
 
                 var req = new XMLHttpRequest();
