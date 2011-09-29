@@ -374,14 +374,14 @@ ul#selector li
    border-radius:         4px;
 }
 
-div#list_view
+div.list_view
 {
    column-count: 3;
    -moz-column-count: 3;
    -webkit-column-count: 3;
 }
 
-ul#ex, ul#ex ul
+ul.ex, ul.ex ul
 {
    display: inline;
    list-style-type: none;
@@ -389,12 +389,12 @@ ul#ex, ul#ex ul
    padding: 0;
 }
 
-ul#ex li
+ul.ex li
 {
    margin: 0 3em;
 }
 
-ul#ex li ul li
+ul.ex li ul li
 {
    margin: 0 1em;
 }

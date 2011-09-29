@@ -65,6 +65,14 @@ class App
 
   def params() return @cgi.params end
 
+  def param(key)
+    val = params[key.to_s]
+    return nil if val.empty?
+    val = val[0]
+    val = val.read if val.respond_to?(:read)
+    return val
+  end
+
   def optional(key)
     param = params[key.to_s].deep_copy
     def param.include?(x) return empty? ? true : member?(x) end

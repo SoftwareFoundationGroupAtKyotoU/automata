@@ -1,12 +1,7 @@
 #! /usr/bin/env ruby
 
-# Usage: admin_log report=<report-id> user=<login> id=<log-id>
-#   ログを変更
-# Options:
-#   status   ステータスを変更
-#   message  メッセージを変更
-#   error    エラーメッセージを変更
-#   reason   エラーの詳細を変更
+# Usage: admin_solved report=<report-id> user=<login> exercise=ex1,ex2,..,exN
+#   問いた問題を変更
 # Security:
 #   master.su に入っているユーザのみ実行可能
 
@@ -20,10 +15,9 @@ STATUS = {
   500 => '500 Internal Server Error',
 }
 
-LOGKEYS = [ 'message', 'error', 'reason' ]
-
 require 'app'
 require 'log'
+require 'report/exercise'
 
 app = App.new
 def app.error_exit(status)
@@ -47,30 +41,17 @@ app.error_exit(STATUS[400]) unless user
 report_id = app.param(:report)
 app.error_exit(STATUS[400]) unless report_id
 
-# log ID must be specified
-log_id = app.param(:id)
-app.error_exit(STATUS[400]) unless log_id
+# exercises must be specified
+exercises = app.param(:exercise)
+app.error_exit(STATUS[400]) unless exercises
+exercises = exercises.split(',').sort{|a,b| a.to_ex <=> b.to_ex}
 
 begin
   log_file = (App::KADAI + report_id + user)[App::FILES[:log]]
   latest = Log.new(log_file).latest(:data)
 
-  hash = {}
-  st = app.param(:status)
-  hash['status'] = st if st
-
-  log = {}
-  LOGKEYS.each do |k|
-    val = app.param(k)
-    log[k] = val if val
-  end
-  hash['log'] = log unless log.empty?
-
-  unless hash.empty?
-    Log.new(log_file, Time.parse(log_id)).lock do |log|
-      app.error_exit(STATUS[400]) if latest['id'] != log_id
-      log.update_data(hash)
-    end
+  Log.new(log_file, Time.parse(latest['id'])) do |log|
+    log.update_data('report' => exercises)
   end
 
   print(app.cgi.header)

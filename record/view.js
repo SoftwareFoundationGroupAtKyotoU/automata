@@ -137,6 +137,7 @@ var StatusWindow = function(id, tabs, persistent) {
         },
         set: function(node) {
             GNN.UI.removeAllChildren(view);
+            if (!node) return;
             if (!(node instanceof Array)) node = [ node ];
             node.forEach(function(e){
                 view.appendChild(GNN.UI.$node(e));
@@ -190,6 +191,52 @@ var StatusWindow = function(id, tabs, persistent) {
     self.hide();
 
     return self;
+};
+
+var ToolButton = function(button) {
+    var dummy = GNN.UI.$node('');
+    return {
+        button: button,
+        parent: button.parentNode,
+        enable: function() {
+            if (button.parentNode == this.parent) return;
+            this.parent.replaceChild(button, dummy);
+        },
+        disable: function() {
+            if (button.parentNode != this.parent) return;
+            button.blur();
+            this.parent.replaceChild(dummy, button);
+        }
+    };
+};
+
+var editMode = function(makeForm, confirm, view, button, restore) {
+    var submit = GNN.UI.$new('input', { attr: {
+        type: 'submit', value: '変更'
+    } });
+    var cancel = GNN.UI.$new('input', { attr: {
+        type: 'button', value: 'キャンセル'
+    } });
+
+    var form = GNN.UI.$new('form', { attr: { action: '.' } });
+    makeForm(form);
+    form.appendChild(submit);
+    form.appendChild(cancel);
+
+    var onConfirm = function(e) {
+        e.stop();
+        button.enable();
+        confirm();
+    };
+    var onCancel = function(e) {
+        button.enable();
+        view.set(restore);
+    };
+    new GNN.UI.Observer(form, 'onsubmit', onConfirm);
+    new GNN.UI.Observer(cancel, 'onclick', onCancel);
+
+    button.disable();
+    view.set(form);
 };
 
 var LogView = function(id, records, admin) {
@@ -279,23 +326,11 @@ var LogView = function(id, records, admin) {
         return dl;
     };
 
-    var editMode = function(target, record, view, button) {
-        var dummy = GNN.UI.$node('');
+    var logEditMode = function(target, record, view, button, restore) {
         var dl = GNN.UI.$new('dl', { klass: 'log_msg' });
-        var submit = GNN.UI.$new('input', { attr: {
-            type: 'submit', value: '変更'
-        } });
-        var cancel = GNN.UI.$new('input', { attr: {
-            type: 'button', value: 'キャンセル'
-        } });
-        var form = GNN.UI.$new('form', {
-            attr: { action: '.' }, child: [ dl, submit, cancel ]
-        });
         var params = ppLog(dl, [ record, record.log ], true).params;
 
-        var onConfirm = function(e) {
-            e.stop();
-
+        editMode(function(form){ form.appendChild(dl); }, function() {
             var args = {};
             for (var k in params) {
                 var param = params[k];
@@ -304,18 +339,7 @@ var LogView = function(id, records, admin) {
             args.id = record.submit; args.user = target; args.report = id;
             var update = function(){ admin.update(); };
             admin.editLog(args, update, update);
-        };
-        var onCancel = function(e) {
-            dummy.parentNode.replaceChild(button, dummy);
-            var msg = makeLogMsg(record);
-            if (msg) view.set(msg);
-        };
-        new GNN.UI.Observer(form, 'onsubmit', onConfirm);
-        new GNN.UI.Observer(cancel, 'onclick', onCancel);
-
-        button.blur();
-        button.parentNode.replaceChild(dummy, button);
-        view.set(form);
+        }, view, new ToolButton(button), restore);
     };
 
     var self = {
@@ -327,6 +351,9 @@ var LogView = function(id, records, admin) {
             }, { report: {} });
             var record = student.report[id]||{};
 
+            var msg = makeLogMsg(record);
+            view.set(msg);
+
             if (admin) {
                 var a = GNN.UI.$new('a', {
                     attr: { href: '.' }, child: '編集'
@@ -334,19 +361,16 @@ var LogView = function(id, records, admin) {
                 toolbar.addButton(a);
                 new GNN.UI.Observer(a, 'onclick', function(e) {
                     e.stop();
-                    editMode(target, record, view, e.target());
+                    logEditMode(target, record, view, e.target(), msg);
                 });
             }
-
-            var msg = makeLogMsg(record);
-            if (msg) view.set(msg);
         }
     };
 
     return self;
 };
 
-var SolvedView = function(id, records) {
+var SolvedView = function(id, records, admin) {
     var List = function(target) {
         var getUserRecord = function(record, what) {
             record = record.reduce(function(r, u) {
@@ -377,6 +401,36 @@ var SolvedView = function(id, records) {
             return list;
         };
 
+        var solvedEditMode = function(solved, view, button, restore) {
+            view.set(loadingIcon());
+            var btn = new ToolButton(button);
+            btn.disable();
+
+            var ul = GNN.UI.$new('ul', { klass: 'ex' });
+            var div = GNN.UI.$new('div', { klass: 'list_view', child: ul });
+
+            var uri = api('scheme', { id: id, exercise: true });
+            GNN.JSONP.retrieve({ result: uri }, function(json) {
+                var exs = json.result[0].exercise;
+                makeExerciseSelector(ul, exs, solved);
+
+                editMode(function(form){ form.appendChild(div); }, function() {
+                    var checks = ul.getElementsByTagName('input');
+                    var checked = [];
+                    for (var i=0; i<checks.length; i++) {
+                        if (checks[i].checked) checked.push(checks[i].value);
+                    }
+
+                    var update = function(){ admin.update(); };
+                    admin.editSolved({
+                        user: target, report: id, exercise: checked.join(',')
+                    }, update, update);
+                }, view, btn, restore);
+            }, function() {
+                view.set(restore);
+            });
+        };
+
         return {
             show: function(toolbar, view) {
                 view.set(loadingIcon());
@@ -385,9 +439,21 @@ var SolvedView = function(id, records) {
                     user: target, report: id, type: 'status', status: 'solved'
                 });
                 GNN.JSONP.retrieve({ user: uri }, function(json) {
-                    var list1 = makeList(json.user, 'solved', '解答済み');
-                    var list2 = makeList(records, 'unsolved', '未解答');
-                    view.set(list1.concat(list2));
+                    var ls = makeList(json.user, 'solved', '解答済み');
+                    ls = ls.concat(makeList(records, 'unsolved', '未解答'));
+                    view.set(ls);
+
+                    if (admin) {
+                        var a = GNN.UI.$new('a', {
+                            attr: { href: '.' }, child: '編集'
+                        });
+                        toolbar.addButton(a);
+                        new GNN.UI.Observer(a, 'onclick', function(e) {
+                            e.stop();
+                            var solved = getUserRecord(json.user, 'solved');
+                            solvedEditMode(solved, view, e.target(), ls);
+                        });
+                    }
                 }, function() {
                     view.set('読み込み失敗')
                 });

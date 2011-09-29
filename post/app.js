@@ -130,106 +130,15 @@ var init = function() {
                     }
                 };
 
-                var makeCheck = function(name, option, solved) {
-                    var check = $new('input', {
-                        id: name,
-                        attr: {
-                            type: 'checkbox',
-                            name: name,
-                            value: 'yes'
-                        }
-                    });
-
-                    new Observer(check, 'onchange', updateReqs);
-                    new Observer(check, 'onclick', updateReqs); // IE
-
-                    if (solved.indexOf(name) >= 0) check.checked = true;
-                    if (option.level) {
-                        var stars = '';
-                        var level = option.level;
-                        for (var i=0; i < level; i++) stars += '★';
-                        name += '['+stars+']';
-                    }
-                    if (option.required) {
-                        if (Math.abs(option.required) == (option.number||1)) {
-                            if (option.required > 0) name += ' [必修]';
-                            if (solved.length <= 0) check.checked = true;
-                        } else if (!(option.required instanceof Array)) {
-                            name += ' [必修('+option.required+'問選択)]';
-                        }
-                    }
-                    var label = $new('label', {
-                        child: $node(name),
-                        attr: { 'for': name }
-                    });
-
-                    return { check: check, label: label };
-                };
-
                 // exercise selector
                 var ul = $('ex');
                 removeAllChildren(ul);
 
                 var solved = self.solved || {};
-                var lastSolved = (solved[report.id]||{}).solved || [];
-                (report.exercise||[]).forEach(function(ex) {
-                    var name = ex[0];
-                    var option = ex[1] || {};
-                    var li = $new('li');
-                    if (option.sub && option.sub.every(function(sub) {
-                        return (sub[1]||{}).required;
-                    })) {
-                        option.required = option.sub.length;
-                        option.number = option.sub.length;
-                    }
-                    var r = makeCheck(name+'', option, lastSolved);
-
-                    li.appendChild(r.check);
-                    li.appendChild(r.label);
-
-                    var subs = [];
-
-                    // Ex.X.XX(i)
-                    if (option.sub) {
-                        var sul = $new('ul');
-                        option.sub.forEach(function(sub) {
-                            var sname = sub[0];
-                            var sopt = sub[1] || {};
-                            if (option.required == option.sub.length) {
-                                sopt.required = -1;
-                            }
-
-                            var sli = $new('li');
-                            var sr = makeCheck(sname, sopt, lastSolved);
-
-                            sli.appendChild(sr.check);
-                            sli.appendChild(sr.label);
-                            sul.appendChild(sli);
-                            subs.push(sr.check);
-                        });
-                        li.appendChild(sul);
-
-                        // synchronize parent and child check boxes
-                        var onChild = function() {
-                            r.check.checked = subs.every(function(child) {
-                                return child.checked;
-                            });
-                        };
-                        var onParent = function(e) {
-                            var c = e.target().checked;
-                            subs.forEach(function(child){ child.checked=c; });
-                        };
-                        subs.forEach(function(child){
-                            new Observer(child, 'onchange', onChild);
-                            new Observer(child, 'onclick', onChild); // IE
-                        });
-                        new Observer(r.check, 'onchange', onParent);
-                        new Observer(r.check, 'onclick', onParent); // IE
-                        onChild();
-                    }
-
-                    ul.appendChild(li);
-                });
+                solved = (solved[report.id]||{}).solved || [];
+                if (solved.length <= 0) solved = null;
+                var exercises = report.exercise||[];
+                makeExerciseSelector(ul, exercises, solved, updateReqs);
 
                 // requirements
                 reqs = $('requirements')

@@ -44,9 +44,8 @@ app = App.new
 time = Time.now
 
 id = 'report_id'
-rep_id = app.cgi.params[id][0]
-rep_id = rep_id.read if rep_id.respond_to?(:read)
-raise ArgumentError, (err[:require] % id) unless defined?(rep_id)
+rep_id = app.param(id)
+raise ArgumentError, (err[:require] % id) unless rep_id
 
 rep_schemes = app.file(:scheme)['scheme'] || []
 rep_defined = rep_schemes.any?{|r| r['id'] == rep_id}
@@ -103,13 +102,11 @@ begin
     src_dir.entries2utf8
 
     # solved exercises
-    report = []
-    app.cgi.params.each do |k,v|
-      report << k if k =~ /#{app.file(:scheme)['regex']}/
-    end
-    report = report.sort{|a,b| a.to_ex <=> b.to_ex}
+    exercises = app.params['ex']
+    exercises = exercises.map{|ex| ex.respond_to?(:read) ? ex.read : ex}
+    exercises = exercises.sort{|a,b| a.to_ex <=> b.to_ex}
     Log.new(log_file, time) do |log|
-      log.write_data('status' => 'build', 'report' => report)
+      log.write_data('status' => 'build', 'report' => exercises)
     end
 
     # build and run test
