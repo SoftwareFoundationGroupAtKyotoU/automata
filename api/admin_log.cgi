@@ -26,11 +26,6 @@ require 'app'
 require 'log'
 
 app = App.new
-def app.error_exit(status)
-  print(cgi.header('type' => 'text/plain', 'status' => status))
-  puts(status)
-  exit
-end
 
 # reject request by normal users
 app.error_exit(STATUS[403]) unless app.su?
@@ -52,24 +47,22 @@ log_id = app.param(:id)
 app.error_exit(STATUS[400]) unless log_id
 
 begin
-  log_file = (App::KADAI + report_id + user)[App::FILES[:log]]
-  latest = Log.new(log_file).latest(:data)
-
-  hash = {}
+  data = {}
   st = app.param(:status)
-  hash['status'] = st if st
+  data['status'] = st if st
 
-  log = {}
+  data_log = {}
   LOGKEYS.each do |k|
     val = app.param(k)
-    log[k] = val if val
+    data_log[k] = val if val
   end
-  hash['log'] = log unless log.empty?
+  data['log'] = data_log unless data_log.empty?
 
-  unless hash.empty?
-    Log.new(log_file, Time.parse(log_id)).lock do |log|
-      app.error_exit(STATUS[400]) if latest['id'] != log_id
-      log.update_data(hash)
+  unless data.empty?
+    log_file = (App::KADAI + report_id + user)[App::FILES[:log]]
+    Log.new(log_file).transaction do |log|
+      app.error_exit(STATUS[400]) if log.latest(:data)['id'] != log_id
+      log.update(:data, log_id, data)
     end
   end
 

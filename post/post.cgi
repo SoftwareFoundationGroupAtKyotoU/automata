@@ -80,7 +80,8 @@ begin
     if entries.length == 1 && entries[0] =~ /\.tar$/
       Dir.chdir(src_dir.to_s) do
         file = File.basename(entries[0])
-        res = system("tar xf '#{file}' > /dev/null 2>&1 && rm '#{file}'")
+        res = system("tar xf '#{file}' > /dev/null 2>&1")
+        res = FileUtils.rm(file) rescue nil
       end
       raise RuntimeError, err[:unzip] unless res
       entries = Dir.glob("#{src_dir}/*")
@@ -102,12 +103,10 @@ begin
     src_dir.entries2utf8
 
     # solved exercises
-    exercises = app.params['ex']
-    exercises = exercises.map{|ex| ex.respond_to?(:read) ? ex.read : ex}
-    exercises = exercises.sort{|a,b| a.to_ex <=> b.to_ex}
-    Log.new(log_file, time) do |log|
-      log.write_data('status' => 'build', 'report' => exercises)
-    end
+    exs = app.params['ex']
+    exs = exs.map{|ex| ex.respond_to?(:read) ? ex.read : ex}
+    exs = exs.sort{|a,b| a.to_ex <=> b.to_ex}
+    Log.new(log_file).write(:data, time, 'status' => 'build', 'report' => exs)
 
     # build and run test
     cmd = App::FILES[:test_script]
@@ -116,9 +115,8 @@ begin
     system(cmd)
 
   rescue RuntimeError => e
-    Log.new(log_file, time) do |log|
-      log.write_data('status' => 'NG', 'log' => { 'error' => e.to_s })
-    end
+    entry = { 'status' => 'NG', 'log' => { 'error' => e.to_s } }
+    Log.new(log_file).write(:data, time, entry)
   end
 ensure
   print app.cgi.header('status' => '302 Found', 'Location' => '../record/')

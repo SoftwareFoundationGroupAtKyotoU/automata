@@ -8,11 +8,22 @@
 
 - 通ってないテストを「要再提出」にするオプション
 - コメントタブ
-  - プレーンテキストで./db/report/user/comment.ymlに管理
-  - 表示形式
-    a. Markdownか何かでJS側で整形
-    b. rdocでRuby側で整形
-    - XSSだいじょうぶか
+  - インデックスファイル
+    - PStore
+    - max_id: int
+      count: int
+      entries: { :id => int, :user => string, :acl => array,
+                 :create => string, :timestamp => string }
+  - コンテントファイル
+    - エントリIDがファイル名
+    - 中身は生テキスト
+  - 整形済みコンテントファイル
+    - kramdownで整形
+    - sanitizeでXSS対策
+  - フォームUI
+    - プレビュー: AJAXでkramdownする
+    - GUI?: wmd.js@StackOverflow
+      - ライセンスだいじょうぶ?
   - 未読管理
     - どうやって管理するか
       a. コメントごとに既読者を記録

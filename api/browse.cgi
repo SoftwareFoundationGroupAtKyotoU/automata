@@ -36,13 +36,8 @@ require 'time'
 require 'app'
 require 'log'
 require 'mime'
-app = App.new
 
-def app.error_exit(status)
-  print(cgi.header('type' => 'text/plain', 'status' => status))
-  puts(status)
-  exit
-end
+app = App.new
 
 app.error_exit(STATUS[400]) if app.params['user'].empty?
 user = app.params['user'][0]
@@ -58,9 +53,7 @@ path = CGI.unescape(app.params['path'].first || '.')
 dir_user = App::KADAI + report_id + user
 log_file = dir_user + App::FILES[:log]
 app.error_exit(STATUS[404]) unless [dir_user, log_file].all?(&:exist?)
-
-log = Log.new(log_file).latest(:data)
-time = log['id'] || log['timestamp']
+time = Log.new(log_file, true).latest(:data)['id']
 
 src = dir_user + time + 'src'
 path = (src+path).expand_path

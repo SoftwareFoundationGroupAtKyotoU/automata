@@ -111,4 +111,4 @@ rescue => e
   }
 end
 
-Log.new(files[:log], Time.parse(post_tz)).write_data(info)
+Log.new(files[:log]).write(:data, post_tz, info)

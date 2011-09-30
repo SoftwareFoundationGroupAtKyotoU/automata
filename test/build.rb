@@ -127,4 +127,4 @@ info = Dir.chdir(dir[:test].to_s) do
   info
 end
 
-Log.new(files[:log], Time.parse(post_tz)).write_build(info)
+Log.new(files[:log]).write(:build, post_tz, info)

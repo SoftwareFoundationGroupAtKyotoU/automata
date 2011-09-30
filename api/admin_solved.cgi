@@ -20,11 +20,6 @@ require 'log'
 require 'report/exercise'
 
 app = App.new
-def app.error_exit(status)
-  print(cgi.header('type' => 'text/plain', 'status' => status))
-  puts(status)
-  exit
-end
 
 # reject request by normal users
 app.error_exit(STATUS[403]) unless app.su?
@@ -48,10 +43,8 @@ exercises = exercises.split(',').sort{|a,b| a.to_ex <=> b.to_ex}
 
 begin
   log_file = (App::KADAI + report_id + user)[App::FILES[:log]]
-  latest = Log.new(log_file).latest(:data)
-
-  Log.new(log_file, Time.parse(latest['id'])) do |log|
-    log.update_data('report' => exercises)
+  Log.new(log_file).transaction do |log|
+    log.latest(:data)['report'] = exercises
   end
 
   print(app.cgi.header)

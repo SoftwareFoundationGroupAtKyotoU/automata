@@ -3,6 +3,8 @@ require 'yaml'
 require 'time'
 require 'pathname'
 require 'clone'
+require 'log'
+require 'conf'
 
 require 'rubygems'
 require 'json'
@@ -56,6 +58,12 @@ class App
   def header()
     ctype = @callback ? 'text/javascript' : 'application/json'
     return "Content-Type: #{ctype}; charset=utf-8\r\n\r\n"
+  end
+
+  def error_exit(status, message=nil)
+    print(cgi.header('type' => 'text/plain', 'status' => status))
+    puts(message ? message : status)
+    exit
   end
 
   def file(name)
@@ -142,9 +150,7 @@ class App
     if (file(:scheme)['scheme'].find{|r| r['id']==id} || {})['type'] == 'post'
       fname = KADAI[id, u, FILES[:log]]
       return nil unless File.exist?(fname)
-      yaml = YAML.load_file(fname)||{} rescue {}
-      yaml = yaml['data'] || {}
-      yaml = yaml.first if yaml.is_a?(Array)
+      yaml = Log.new(fname, true).latest(:data)
       src = Report::Source::Post.new(yaml, optional)
     else
       yaml = file(:data) rescue {}

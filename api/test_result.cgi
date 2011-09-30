@@ -39,7 +39,7 @@ dir_user = App::KADAI + report_id + user
 log_file = dir_user + App::FILES[:log]
 app.error_exit({}) unless [dir_user, log_file].all?(&:exist?)
 
-log = Log.new(log_file).latest(:data)
+log = Log.new(log_file, true).latest(:data)
 result = {}
 
 if log['log'] && log['log']['test']

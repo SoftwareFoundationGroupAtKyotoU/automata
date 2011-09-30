@@ -39,11 +39,11 @@ Dir.chdir(oldwd){ Permission.ensure_writable(dir[:user].to_s) }
 
 log_file = dir[:user][App::FILES[:log]]
 log = if $argv[:id]
-        Log.new(log_file, Time.parse($argv[:id])).get(:data)
+        Log.new(log_file, true).retrieve(:data, $argv[:id])
       else
-        Log.new(log_file).latest(:data)
+        Log.new(log_file, true).latest(:data)
       end
-time = log['id'] || log['timestamp']
+time = log['id']
 
 cmd = {}
 
@@ -59,20 +59,22 @@ begin
   build = nil
   IO.popen(cmd[:build], 'w'){|io| log['report'].each{|l| io.puts(l)}}
   if $?.to_i == 0
-    Log.new(log_file, Time.parse(time)) do |log|
+    Log.new(log_file).transaction do |log|
+      build_log = log.retrieve(:build, time)
+
       hash = {
         'status' => 'build:NG',
         'log'    => {
-          'error'   => log.build['detail'],
+          'error'   => build_log['detail'],
           'message' => err[:build] }
       }
 
-      if log.build['status'] == 'OK'
+      if build_log['status'] == 'OK'
         build = true
         hash = { 'status' => 'check', 'log' => { 'build'  => 'OK' } }
       end
 
-      log.write_data(hash.merge('timestamp' => log.build['timestamp']))
+      log.write(:data, time, hash.merge('timestamp' => build_log['timestamp']))
     end
   else
     raise RuntimeError, err[:build_fatal]
@@ -90,7 +92,8 @@ begin
   end
 
 rescue => e
-  Log.new(log_file, Time.parse(time)) do |log|
-    log.write_data('status' => 'NG', 'log' => { 'error' => e.to_s })
-  end
+  entry = {
+    'status' => 'NG',
+    'log' => { 'error' => [ e.to_s, e.backtrace ].join("\n") } }
+  Log.new(log_file).write(:data, time, entry)
 end
