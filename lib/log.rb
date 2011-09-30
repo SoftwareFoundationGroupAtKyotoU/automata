@@ -47,9 +47,9 @@ class Log
     return block.call(self) if @io
 
     open(@file, 'w') do |io|
+      @io = io
+      io.flock(File::LOCK_EX)
       begin
-        @io = io
-        io.flock(File::LOCK_EX)
         return block.call(self)
       ensure
         lock{|log| YAML.dump(@log, io)}
