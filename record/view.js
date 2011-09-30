@@ -198,14 +198,17 @@ var ToolButton = function(button) {
     return {
         button: button,
         parent: button.parentNode,
+        alternative: null,
         enable: function() {
             if (button.parentNode == this.parent) return;
-            this.parent.replaceChild(button, dummy);
+            this.parent.replaceChild(button, this.alternative);
         },
-        disable: function() {
+        disable: function(alternative) {
             if (button.parentNode != this.parent) return;
+            if (alternative) alternative = GNN.UI.$node(alternative);
+            this.alternative = alternative || dummy;
             button.blur();
-            this.parent.replaceChild(dummy, button);
+            this.parent.replaceChild(this.alternative, button);
         }
     };
 };
@@ -235,7 +238,7 @@ var editMode = function(makeForm, confirm, view, button, restore) {
     new GNN.UI.Observer(form, 'onsubmit', onConfirm);
     new GNN.UI.Observer(cancel, 'onclick', onCancel);
 
-    button.disable();
+    button.disable('編集中');
     view.set(form);
 };
 
