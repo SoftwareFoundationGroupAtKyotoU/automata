@@ -311,7 +311,7 @@ var LogView = function(id, records, admin) {
     };
 
     var makeLogMsg = function(record) {
-        if (!record.timestamp && !record.log) return null;
+        if (!record.timestamp && !record.log) return 'なし';
 
         var dl = GNN.UI.$new('dl', { klass: 'log_msg' });
         var list = ppLog(dl, [ record, record.log ]).keys;
@@ -352,12 +352,12 @@ var LogView = function(id, records, admin) {
             var student = records.reduce(function(r, u) {
                 return target == u.token ? u : r;
             }, { report: {} });
-            var record = student.report[id]||{};
+            var record = (student.report||[])[id]||{};
 
             var msg = makeLogMsg(record);
             view.set(msg);
 
-            if (admin) {
+            if (admin && (student.report||[])[id]) {
                 var a = GNN.UI.$new('a', {
                     attr: { href: '.' }, child: '\u270f 編集'
                 });
@@ -379,7 +379,8 @@ var SolvedView = function(id, records, admin) {
             record = record.reduce(function(r, u) {
                 return u.token == target ? u : r;
             }, {}).report;
-            record = ((record||{})[id]||{})[what] || [];
+            record = ((record||{})[id]||{})[what];
+            if (!record) return;
             record = record.map(function(r) {
                 return r instanceof Array ? r[0] : r;
             });
@@ -388,6 +389,7 @@ var SolvedView = function(id, records, admin) {
 
         var makeList = function(record, name, label) {
             record = getUserRecord(record, name);
+            if (!record) return;
             var h = GNN.UI.$new('h3', { child: label });
             var list = [ h ];
 
@@ -442,8 +444,13 @@ var SolvedView = function(id, records, admin) {
                     user: target, report: id, type: 'status', status: 'solved'
                 });
                 GNN.JSONP.retrieve({ user: uri }, function(json) {
-                    var ls = makeList(json.user, 'solved', '解答済み');
-                    ls = ls.concat(makeList(records, 'unsolved', '未解答'));
+                    var ls1 = makeList(json.user, 'solved', '解答済み');
+                    if (!ls1) {
+                        view.set('なし');
+                        return;
+                    }
+                    var ls2 = makeList(records, 'unsolved', '未解答') || [];
+                    var ls = ls1.concat(ls2);
                     view.set(ls);
 
                     if (admin) {
@@ -454,7 +461,7 @@ var SolvedView = function(id, records, admin) {
                         new GNN.UI.Observer(a, 'onclick', function(e) {
                             e.stop();
                             var solved = getUserRecord(json.user, 'solved');
-                            solvedEditMode(solved, view, e.target(), ls);
+                            solvedEditMode(solved||[], view, e.target(), ls);
                         });
                     }
                 }, function() {
@@ -703,15 +710,13 @@ var FileBrowserView = function(id) {
             dir: function(location, callback) {
                 this.reset(location);
 
-                GNN.JSONP.retrieve({
-                    entries: apiBrowse({
-                        user: target,
-                        report: id,
-                        path: location.path
-                    })
-                }, function(json) {
-                    callback(json.entries);
-                    self.view.set(callback(json.entries));
+                new GNN.JSONP(apiBrowse({
+                    user: target,
+                    report: id,
+                    path: location.path
+                }), function(entries) {
+                    callback(entries);
+                    self.view.set(callback(entries));
                 }, function() {
                     self.view.set($text('読み込み失敗'));
                 });

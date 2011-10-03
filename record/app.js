@@ -6,6 +6,7 @@ var init = function(id) {
 
     var defs = {
         status: [
+            [ '',         '未提出'   ],
             [ 'OK',       '提出済'   ],
             [ 'NG',       '要再提出' ],
             [ 'build',    '確認中'   ],
@@ -64,10 +65,9 @@ var init = function(id) {
 
                 switch (klass) {
                 case 'status':
-                    if (obj == null) return '';
                     if (typeof obj == 'boolean' && obj) obj = 'OK';
                     return defs.status.reduce(function(r, x) {
-                        return r || (x[0] == obj && x[1])
+                        return r || (x[0] == (obj||'') && x[1])
                     }, null) || '';
                 case 'unsolved':
                     if (obj == null) return '';
@@ -227,16 +227,15 @@ var init = function(id) {
                         var text = toText(fld, col.field, record);
 
                         if (col.field == 'status') {
-                            if (text.length > 0) {
-                                text = makeStatusNode(text);
+                            text = makeStatusNode(text);
 
-                                if (admin) {
-                                    var edit = makeEditButton({
-                                        id: record.submit, status: fld
-                                    }, text);
-                                    text = [ text, edit ];
-                                }
+                            if (admin && fld && fld.length > 0) {
+                                var edit = makeEditButton({
+                                    id: record.submit, status: fld
+                                }, text);
+                                text = [ text, edit ];
                             }
+
                             if (fld == 'check' && sc.update == 'auto') {
                                 autoUpdate = true;
                                 td.appendChild(loadingIcon());
