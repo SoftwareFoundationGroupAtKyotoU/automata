@@ -118,11 +118,12 @@ var init = function(id) {
                 var solvedList = new SolvedView(sc.id, json.user||[], admin);
                 var testResult = new TestResultView(sc.id, admin);
                 var fileBrowser = new FileBrowserView(sc.id);
+                var comment = new CommentView(sc.id, updateRecord, admin);
                 var tabs = [ logView, solvedList ];
                 if (sc.record.some(function(col){return col.field=='test';})) {
                     tabs.push(testResult);
                 }
-                tabs.push(fileBrowser);
+                tabs.push(fileBrowser, comment);
                 var status = new StatusWindow(sc.id, tabs, pers);
 
                 var makeStatusId = function(x) {
@@ -194,7 +195,7 @@ var init = function(id) {
 
                     var makeEditButton = function(current, status) {
                         var edit = $new('a', {
-                            child: $new('img', { attr: { src: 'edit.png' } }),
+                            child: '\u270f',
                             klass: 'edit',
                             attr: { href: '.', title: '変更する' }
                         });

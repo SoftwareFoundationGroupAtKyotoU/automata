@@ -8,20 +8,11 @@
 
 - 通ってないテストを「要再提出」にするオプション
 - コメントタブ
-  - インデックスファイル
-    - PStore
-    - max_id: int
-      count: int
-      entries: { :id => int, :user => string, :acl => array,
-                 :create => string, :timestamp => string }
-  - コンテントファイル
-    - エントリIDがファイル名
-    - 中身は生テキスト
-  - 整形済みコンテントファイル
-    - kramdownで整形
-    - sanitizeでXSS対策
+  - 凍結機能
+  - .messageのデザイン
+  - 未提出の場合も表示するようにする?
+  - いろいろな条件でテスト
   - フォームUI
-    - プレビュー: AJAXでkramdownする
     - GUI?: wmd.js@StackOverflow
       - ライセンスだいじょうぶ?
   - 未読管理
@@ -36,10 +27,6 @@
       b. コメントタブ?
       c. 両方?
     - 編集されたときは未読にするかどうか
-  - 閲覧制限(管理者のみ設定可)
-    - 管理者と投稿者は許可
-    - ユーザ自身
-    - 他のユーザ(master.record.open==trueのときのみ)
 
 = ./script
 

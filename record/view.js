@@ -359,7 +359,7 @@ var LogView = function(id, records, admin) {
 
             if (admin) {
                 var a = GNN.UI.$new('a', {
-                    attr: { href: '.' }, child: '編集'
+                    attr: { href: '.' }, child: '\u270f 編集'
                 });
                 toolbar.addButton(a);
                 new GNN.UI.Observer(a, 'onclick', function(e) {
@@ -415,7 +415,7 @@ var SolvedView = function(id, records, admin) {
             var uri = api('scheme', { id: id, exercise: true });
             GNN.JSONP.retrieve({ result: uri }, function(json) {
                 var exs = json.result[0].exercise;
-                makeExerciseSelector(ul, exs, solved);
+                makeExerciseSelector(ul, exs, solved, ['ex', id].join('_'));
 
                 editMode(function(form){ form.appendChild(div); }, function() {
                     var checks = ul.getElementsByTagName('input');
@@ -448,7 +448,7 @@ var SolvedView = function(id, records, admin) {
 
                     if (admin) {
                         var a = GNN.UI.$new('a', {
-                            attr: { href: '.' }, child: '編集'
+                            attr: { href: '.' }, child: '\u270f 編集'
                         });
                         toolbar.addButton(a);
                         new GNN.UI.Observer(a, 'onclick', function(e) {
@@ -521,7 +521,7 @@ var TestResultView = function(id, admin) {
 
                 if (admin) {
                     var a = $new('a', {
-                        attr: { href: '.' }, child: 'テストを再実行'
+                        attr: { href: '.' }, child: '\u26a1 テストを再実行'
                     });
                     toolbar.addButton(a);
 
@@ -719,7 +719,7 @@ var FileBrowserView = function(id) {
             file: function(location) {
                 this.reset(location);
                 this.toolbar.addButton($new('a', {
-                    child: '直接開く',
+                    child: '\u23ce 直接開く',
                     attr: { href: this.path2uri(location.path) }
                 }));
 
@@ -783,4 +783,216 @@ var FileBrowserView = function(id) {
             browsers[target].show(toolbar, view);
         }
     };
+};
+
+var CommentView = function(id, update, admin) {
+    var $new = GNN.UI.$new;
+
+    var acl2text = function(acl) {
+        acl = acl || [];
+        if (acl.indexOf('user') >= 0 && acl.indexOf('other') >= 0) {
+            return '全員に公開';
+        } else if (acl.indexOf('user') >= 0) {
+            return '提出者に公開';
+        } else if (acl.indexOf('other') >= 0) {
+            return '提出者以外に公開';
+        } else {
+            return '非公開';
+        }
+    };
+
+    var makeForm = function(target, action, config, entry, onCancel) {
+        entry = entry || {}
+        entry.content = entry.content || '';
+        entry.acl = entry.acl || config.acl || [];
+        var textarea = $new('textarea', {
+            child: entry.content,
+            attr: { rows: 6 }
+        });
+        var submit = $new('input', { attr: {
+            type: 'submit', value: 'コメントする'
+        } });
+        var preview = $new('input', { attr: {
+            type: 'button', value: 'プレビュー'
+        } });
+        var form = $new('div', { klass: 'form', child: [
+            textarea, submit, preview
+        ] });
+
+        if (onCancel) {
+            var cancel = $new('input', { attr: {
+                type: 'button', value: 'キャンセル'
+            } });
+            new GNN.UI.Observer(cancel, 'onclick', onCancel);
+            form.appendChild(cancel);
+        }
+
+        var acl = [];
+        if (admin) {
+            [ 'user', 'other' ].forEach(function(a) {
+                var check_id = [ 'acl', id, a ].join('_');
+                var check = $new('input', {
+                    id: check_id, attr: { type: 'checkbox', name: a }
+                });
+                if (entry.acl.indexOf(a) >= 0) {
+                    check.checked = true;
+                }
+                var label = $new('label', {
+                    child: acl2text([a]),
+                    attr: { 'for': check_id }
+                } );
+                form.appendChild(check);
+                form.appendChild(label);
+                acl.push(check);
+            });
+        }
+
+        var onSubmit = function(e) {
+            e.stop();
+            var args = {
+                user: target, report: id, action: action,
+                acl: acl.filter(function(a) {
+                    return a.checked;
+                }).map(function(a) {
+                    return a.name;
+                }).join(','),
+                message: textarea.value
+            };
+            if (typeof entry.id != 'undefined') args.id = entry.id+'';
+            apiPost('comment', args, update, function(r) {
+                if (r.status == 400) {
+                    var res = r.responseText;
+                    if (/size limit exceeded/.test(res)) {
+                        alert('コメントが長過ぎます');
+                        return;
+                    }
+                }
+                update();
+            });
+        };
+        var onPreview = function(e) {
+            e.stop();
+            var preview = e.target();
+
+            apiPost('comment', {
+                action: 'preview', message: textarea.value
+            }, function(r) {
+                var div = $new('div', { klass: 'preview' });
+                div.innerHTML = r.responseText;
+                textarea.parentNode.replaceChild(div, textarea);
+
+                var restore = $new('input', { attr: {
+                    type: 'button', value: '再編集'
+                } });
+                new GNN.UI.Observer(restore, 'onclick', function(e) {
+                    e.stop();
+                    var restore = e.target();
+                    div.parentNode.replaceChild(textarea, div);
+                    restore.parentNode.replaceChild(preview, restore);
+                });
+                preview.parentNode.replaceChild(restore, preview);
+            }, function(r) {
+                alert('プレビュー失敗');
+            });
+        };
+        new GNN.UI.Observer(submit, 'onclick', onSubmit);
+        new GNN.UI.Observer(form, 'onsubmit', onSubmit);
+        new GNN.UI.Observer(preview, 'onclick', onPreview);
+
+        return form;
+    };
+
+    var self = {
+        name: 'comment',
+        label: 'コメント',
+        show: function(target, toolbar, view) {
+            view.set(loadingIcon());
+
+            GNN.JSONP.retrieve({
+                master: api('master', { user: true }),
+                config: api('comment', { action: 'config' }),
+                entries: api('comment', {
+                    user: target, report: id, action: 'get'
+                })
+            }, function(json) {
+                var ul = $new('ul', { klass: 'comments' });
+                json.entries.forEach(function(e) {
+                    var eid = e.id;
+
+                    var edit_tools = $new('p', { klass: 'edit' });
+                    var meta = $new('div', { klass: 'meta', child: [
+                        $new('p', { klass: 'author', child: e.user }),
+                        edit_tools,
+                        $new('p', { klass: 'acl', child: acl2text(e.acl) }),
+                        $new('p', { klass: 'date', child: e.create })
+                    ] });
+
+                    var message = $new('div', { klass: 'message' });
+                    message.innerHTML = e.content;
+
+                    ul.appendChild($new('li', { child: [
+                        meta, message
+                    ], klass: (e.acl||[]).length==0 ? 'private' : '' }));
+
+                    if (admin || e.user == json.master.user) {
+                        var edit = $new('a', { child: '\u270f', attr: {
+                            href: '.', title: '編集する'
+                        } });
+                        var del = $new('a', { child: '\u2716', attr: {
+                            href: '.', title: '削除する'
+                        }});
+                        edit_tools.appendChild(edit);
+                        edit_tools.appendChild(del);
+
+                        var onEdit = function(entry) {
+                            var u = target;
+                            var c = json.config;
+                            var parent = message.parentNode;
+                            var form;
+                            var cancel = function(e) {
+                                e.stop();
+                                parent.replaceChild(message, form);
+                            };
+                            form = makeForm(u, 'edit', c, entry, cancel);
+                            parent.replaceChild(form, message);
+
+                            var ta = form.getElementsByTagName('textarea');
+                            if (ta[0]) ta[0].focus();
+                        };
+                        new GNN.UI.Observer(edit, 'onclick', function(e) {
+                            e.stop();
+                            new GNN.JSONP(api('comment', {
+                                user: target, report: id, action: 'get',
+                                id: eid, type: 'raw'
+                            }), function(entries) {
+                                onEdit(entries[0]||{});
+                            });
+                        });
+                        new GNN.UI.Observer(del, 'onclick', function(e) {
+                            e.stop();
+                            apiPost('comment', {
+                                action: 'delete', user: target, report: id,
+                                id: eid+''
+                            }, update, update);
+                        });
+                    }
+                });
+
+                var form;
+
+                if (json.config.max <= json.entries.length) {
+                    form = 'コメント数が上限に達しました';
+                } else {
+                    form = makeForm(target, 'post', json.config);
+                }
+                ul.appendChild($new('li', { child: form }));
+
+                view.set(ul);
+            }, function(r) {
+                view.set('読み込み失敗')
+            });
+        }
+    };
+
+    return self;
 };

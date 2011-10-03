@@ -138,7 +138,7 @@ var init = function() {
                 solved = (solved[report.id]||{}).solved || [];
                 if (solved.length <= 0) solved = null;
                 var exercises = report.exercise||[];
-                makeExerciseSelector(ul, exercises, solved, updateReqs);
+                makeExerciseSelector(ul, exercises, solved, 'ex', updateReqs);
 
                 // requirements
                 reqs = $('requirements')

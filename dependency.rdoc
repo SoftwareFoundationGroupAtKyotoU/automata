@@ -1,0 +1,37 @@
+= Required
+
+== rubygems
+
+- json (or apt:libjson-ruby)
+- kramdown
+  - for comment tab
+- sanitize
+  - for comment tab
+- nokogiri
+  - for sanitize
+
+== apt (binary)
+
+- file (file)
+  - for file browser
+- vim (vim)
+  - for file browser
+- (env)
+- curl (curl)
+- zip (zip)
+- p7zip-full (7z)
+- apache2
+- ruby-dev
+  - for nokogiri
+- libxslt1-dev
+  - for nokogiri
+- libxml2-dev
+  - for nokogiri
+
+== Apache2 modules
+
+- mod_rewrite
+  - for file browser
+
+= Optional
+

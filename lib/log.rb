@@ -1,28 +1,7 @@
-require 'yaml/store'
+require 'store'
 require 'time'
 
-class Log
-  def initialize(file, readonly=false)
-    @file = file.to_s
-    @store = nil
-    @readonly = readonly
-  end
-
-  def transaction(readonly=nil, &block)
-    return block.call(self) if @store
-
-    begin
-      @store = YAML::Store.new(@file)
-      @store.transaction((readonly==nil && @readonly) || readonly) do
-        block.call(self)
-      end
-    ensure
-      @store = nil
-    end
-  end
-
-  def ro() return self.class.new(@file, true) end
-
+class Log < Store::YAML
   def latest(root)
     transaction do
       return (@store[root.to_s]||[]).sort{|a,b| a['id'] <=> b['id']}.last || {}

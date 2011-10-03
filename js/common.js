@@ -98,6 +98,36 @@ var jsonpFailure = function(jsonp, failed) {
     ]);
 };
 
+var apiPost = function(cgi, args, callback, error) {
+    var toFormData = function(hash) {
+        var list = [];
+        for (var k in hash) {
+            list.push([k, hash[k]].map(encodeURIComponent).join('='));
+        }
+        return list.join(';');
+    };
+    callback = callback || function(){};
+    error = error || function(){};
+
+    var req = new XMLHttpRequest();
+    var uri = api(cgi, {});
+    var mime = 'application/x-www-form-urlencoded';
+    req.open('POST', uri+'');
+    req.setRequestHeader('Content-Type', mime);
+
+    req.onreadystatechange = function(e) {
+        if (req.readyState == 4) {
+            if (200 <= req.status && req.status < 300) {
+                callback(req);
+            } else {
+                error(req);
+            }
+        }
+    }
+
+    req.send(toFormData(args));
+};
+
 var loadingIcon = function() {
     return GNN.UI.$new('img', {
         klass: 'loading',
@@ -105,13 +135,16 @@ var loadingIcon = function() {
     });
 };
 
-var makeExerciseSelector = function(parent, exs, solved, updateReqs) {
+var makeExerciseSelector = function(parent, exs, solved, prefix, updateReqs) {
     var $new = GNN.UI.$new;
     var Observer = GNN.UI.Observer;
+    prefix = prefix || 'ex';
 
     var makeCheck = function(name, option) {
+        var id = prefix + name;
+
         var check = $new('input', {
-            id: name, attr: { type: 'checkbox', name: 'ex', value: name }
+            id: id, attr: { type: 'checkbox', name: 'ex', value: name }
         });
 
         if (updateReqs) {
@@ -136,7 +169,7 @@ var makeExerciseSelector = function(parent, exs, solved, updateReqs) {
         }
         var label = $new('label', {
             child: name,
-            attr: { 'for': name }
+            attr: { 'for': id }
         });
 
         return { check: check, label: label };
@@ -201,3 +234,4 @@ var makeExerciseSelector = function(parent, exs, solved, updateReqs) {
         parent.appendChild(li);
     });
 };
+

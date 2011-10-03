@@ -122,6 +122,8 @@ td.status .loading {
 }
 
 td.status a.edit {
+   font-size: 1.2em;
+   margin-left: 0.2em;
    text-decoration: none;
 }
 
@@ -316,6 +318,79 @@ ul.status_toolbar ul.breadcrums li:last-child:after {
 .file_browser.file .content {
    margin: 0;
    padding: 0;
+}
+
+ul.comments {
+   list-style-type: none;
+   margin: 0;
+   padding: 0;
+}
+ul.comments > li {
+   vertical-align: top;
+   clear: both;
+   margin: 0 5em 0 2em;
+   padding: 0 0 0 10em;
+   border-top: solid #99aa99 1px;
+   max-width: 40em;
+}
+ul.comments > li:first-child {
+   border-top-style: none;
+}
+ul.comments > li.private {
+   background-color: #eef8ee;
+}
+.comments div.meta {
+   vertical-align: top;
+   display: inline-block;
+   margin-left: -10em;
+   padding-left: 0.5em;
+   margin-bottom: 1em;
+   width: 9.5em;
+}
+.comments div.meta .author {
+   font-weight: bold;
+   margin-bottom: 0;
+   display: inline-block;
+}
+.comments div.meta .edit {
+   visibility: hidden;
+   display: inline;
+   float: right;
+}
+.comments li:hover div.meta .edit {
+   visibility: visible;
+}
+.comments div.meta .edit a {
+   margin-left: 0.5em;
+   text-decoration: none;
+}
+.comments div.meta .date,
+.comments div.meta .acl {
+   font-size: 60%;
+   margin: 0;
+}
+.comments div.message {
+   vertical-align: top;
+   display: inline-block;
+   margin-left: 2%;
+   width: 98%;
+}
+.comments .form {
+   vertical-align: top;
+   display: inline-block;
+   margin-left: 2%;
+   margin-top: 1em;
+   width: 98%;
+}
+.comments .preview {
+   border: solid #99aa99 1px;
+   padding: 0.5em;
+}
+.comments textarea {
+   width: 100%;
+}
+.comments input[type="checkbox"] {
+   margin-left: 2em;
 }
 
 #store {
