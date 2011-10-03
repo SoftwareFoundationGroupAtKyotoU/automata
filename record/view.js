@@ -827,8 +827,9 @@ var CommentView = function(id, update, admin) {
             form.appendChild(cancel);
         }
 
-        var acl = [];
+        var aclChecks;
         if (admin) {
+            aclChecks = [];
             [ 'user', 'other' ].forEach(function(a) {
                 var check_id = [ 'acl', id, a ].join('_');
                 var check = $new('input', {
@@ -843,19 +844,22 @@ var CommentView = function(id, update, admin) {
                 } );
                 form.appendChild(check);
                 form.appendChild(label);
-                acl.push(check);
+                aclChecks.push(check);
             });
         }
 
         var onSubmit = function(e) {
             e.stop();
-            var args = {
-                user: target, report: id, action: action,
-                acl: acl.filter(function(a) {
+            if (aclChecks) {
+                entry.acl = aclChecks.filter(function(a) {
                     return a.checked;
                 }).map(function(a) {
                     return a.name;
-                }).join(','),
+                });
+            }
+            var args = {
+                user: target, report: id, action: action,
+                acl: entry.acl.join(','),
                 message: textarea.value
             };
             if (typeof entry.id != 'undefined') args.id = entry.id+'';
