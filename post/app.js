@@ -106,7 +106,7 @@ var init = function() {
 
                             var list = d['default'];
                             for (var x in d) {
-                                var node = $(x);
+                                var node = $('ex'+x);
                                 if (node && node.checked) {
                                     d[x].forEach(function(r) {
                                         list = list.map(function(s) {
