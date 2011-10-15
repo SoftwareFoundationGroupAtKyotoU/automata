@@ -1,6 +1,8 @@
 = 未分類
 
 - コメント等があることをメールで通知する機能
+- JSONを返す場合にX-Requested-Withをチェックする
+  (参考: http://d.hatena.ne.jp/ockeghem/20110907/p1 )
 
 = ./post
 
