@@ -29,7 +29,8 @@ var init = function(id) {
                 wait = wait || 0;
                 var func = function() {
                     GNN.JSONP.retrieve({
-                        user: apiUser.refresh()
+                        user: apiUser.refresh(),
+                        timeout: 60000
                     }, function(json2) {
                         json2.master = json.master;
                         json2.scheme = json.scheme;
@@ -284,6 +285,7 @@ var init = function(id) {
             user:     apiUser,
             scheme:   apiScheme,
             template: apiTempl,
+            timeout: 60000,
             async: async
         }, null, jsonpFailure);
     }
