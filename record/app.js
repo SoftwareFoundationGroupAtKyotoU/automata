@@ -110,6 +110,11 @@ var init = function(id) {
                         });
                     }) })
                 });
+                if (!json.user) {
+                    table.appendChild($new('tr', {
+                        child: $new('td', { child: loadingIcon() })
+                    }));
+                }
 
                 var admin;
                 if ((json.master||{}).admin) admin = new Admin(updateRecord);
