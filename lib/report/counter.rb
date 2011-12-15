@@ -21,7 +21,7 @@ module Report
 
       r = (@report[ex.to_s]||{})[:spec]
       unless r # vode on parent node
-        r = @report.sort{|a,b| a[1][:ex]<=>b[1][:ex]}.find do |k,v|
+        r = @sorted.find do |k,v|
           v[:ex].match(ex)
         end.last
         r = (r||{})[:spec]
