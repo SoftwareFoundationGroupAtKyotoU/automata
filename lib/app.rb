@@ -110,7 +110,7 @@ class App
   end
 
   def user(u=nil)
-    @user = u || conf[:user] || cgi.remote_user unless @user
+    @user = u || conf[:user] || cgi.remote_user || ENV['USER'] unless @user
     return @user
   end
 
