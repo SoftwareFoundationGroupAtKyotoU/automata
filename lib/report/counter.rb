@@ -9,7 +9,17 @@ module Report
       @report = report.deep_copy
       @report = @report.map{|k,v| [ k, { :spec => v, :ex => k.to_ex } ]}
       @report = Hash[*@report.flatten]
-      @sorted = @report.sort{|a,b| a[1][:ex] <=> b[1][:ex]}
+
+      sorted = @report.sort{|a,b| a[1][:ex] <=> b[1][:ex]}
+      sorted.each do |k,v|
+        parent = sorted.find{|l,w| k!=l && w[:ex].match(v[:ex])}
+        if parent
+          parent[1][:child] = [] unless parent[1][:child]
+          parent[1][:child] << v[:ex]
+          v[:parent] = parent[1]
+        end
+      end
+
       @overflow = {}
     end
 
@@ -17,15 +27,10 @@ module Report
       ex = ex.to_ex unless ex.is_a?(Exercise)
 
       # parent node
-      return if @report.find{|k,v| ex.to_s != k && ex.match(v[:ex])}
+      return if @report[ex.to_s][:child]
 
       r = (@report[ex.to_s]||{})[:spec]
-      unless r # vode on parent node
-        r = @sorted.find do |k,v|
-          v[:ex].match(ex)
-        end.last
-        r = (r||{})[:spec]
-      end
+      r = (@report[ex.to_s][:parent]||{})[:spec] unless r # vode on parent node
 
       if r
         if (r['required']||0) > 0
