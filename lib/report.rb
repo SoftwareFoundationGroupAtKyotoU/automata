@@ -57,7 +57,8 @@ module Report
 
     def to_hash()
       hash = @src.to_hash
-      hash['solved'] = @src.solved.sort{|a,b| a.to_ex <=> b.to_ex}
+      solved = @src.solved.map(&:to_ex)
+      hash['solved'] = @src.solved.sort
       return hash
     end
   end
@@ -72,13 +73,14 @@ module Report
       hash = @src.to_hash
       return hash unless @src.status?
 
+      solved = @src.solved.map(&:to_ex)
       counter = Counter.new(@scheme)
-      @src.solved.each{|ex| counter.vote(ex)}
+      solved.each{|ex| counter.vote(ex)}
 
       insuf = counter.insufficient
-      hash['unsolved'] = insuf.sort{|a,b| a[0].to_ex <=> b[0].to_ex}
+      hash['unsolved'] = insuf.sort{|a,b| a[0] <=> b[0]}.map{|x,y| [x.to_s,y]}
       counter.overflow.each do |level, solved|
-        hash['optional'+level] = solved.sort{|a,b| a.to_ex <=> b.to_ex}
+        hash['optional'+level] = solved.sort{|a,b| a <=> b}.map(&:to_s)
       end
 
       return hash

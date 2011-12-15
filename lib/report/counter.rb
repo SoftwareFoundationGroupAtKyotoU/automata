@@ -7,23 +7,25 @@ module Report
 
     def initialize(report)
       @report = report.deep_copy
+      @report = @report.map{|k,v| [ k, { :spec => v, :ex => k.to_ex } ]}
+      @report = Hash[*@report.flatten]
+      @sorted = @report.sort{|a,b| a[1][:ex] <=> b[1][:ex]}
       @overflow = {}
     end
 
     def vote(ex)
-      # parent node
-      return if @report.find{|k,v| ex != k && ex.to_ex.match(k.to_ex)}
+      ex = ex.to_ex unless ex.is_a?(Exercise)
 
-      ex = ex.to_ex
+      # parent node
+      return if @report.find{|k,v| ex.to_s != k && ex.match(v[:ex])}
 
       r = @report[ex.to_s]
       unless r # vode on parent node
-        r = @report.sort do |a,b|
-          a[0].to_ex <=> b[0].to_ex
-        end.find do |k,v|
-          k.to_ex.match(ex)
+        r = @sorted.find do |k,v|
+          v[:ex].match(ex)
         end.last
       end
+      r = (r||{})[:spec]
 
       if r
         if (r['required']||0) > 0
@@ -39,9 +41,9 @@ module Report
     def insufficient()
       insuf = []
       @report.each do |ex, val|
-        val = {} unless val
-        if (val['required']||0) > 0
-          insuf << [ex, val['required']]
+        val[:spec] = {} unless val[:spec]
+        if (val[:spec]['required']||0) > 0
+          insuf << [val[:ex], val[:spec]['required']]
         end
       end
       return insuf
@@ -52,7 +54,7 @@ module Report
     def add_overflow(scheme, ex)
       level = (scheme['level']||'').to_s
       @overflow[level] = [] unless @overflow[level]
-      @overflow[level] << ex.to_s
+      @overflow[level] << ex
     end
   end
 end
