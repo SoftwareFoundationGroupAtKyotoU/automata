@@ -58,7 +58,7 @@ module Report
     def to_hash()
       hash = @src.to_hash
       solved = @src.solved.map(&:to_ex)
-      hash['solved'] = @src.solved.sort
+      hash['solved'] = solved.sort
       return hash
     end
   end
