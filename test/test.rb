@@ -86,7 +86,7 @@ begin
 
   raise RuntimeError, cmd unless result
   begin
-    result = YAML.load(result)
+    result = YAML.load(result) || []
     passed = result.count{|r| /^\s*ok\s*$/i =~ (r['result']||'')}
     log = { 'test' => { 'passed' => passed, 'number' => result.size } }
   rescue => e
