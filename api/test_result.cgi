@@ -49,7 +49,13 @@ if log['log'] && log['log']['test']
 end
 
 if log['test'] && (app.conf[:record, :detail] || app.su?)
-  result['detail'] = log['test']
+  detail = log['test']
+
+  if app.conf[:record, :detail] == 'brief' && !app.su?
+    detail = detail.map{|x| { 'name' => x['name'], 'result' => x['result'] }}
+  end
+
+  result['detail'] = detail
 end
 
 print(app.header)

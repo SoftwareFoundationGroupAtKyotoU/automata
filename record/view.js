@@ -499,6 +499,14 @@ var TestResultView = function(id, admin) {
             return new RegExp('^\\s*ok\\s*', 'i').test(t);
         };
 
+        var isBrief = function(t) {
+            return defs.map(function(x){
+                return t[x.prop];
+            }).filter(function(x) {
+                return !!x;
+            }).length <= 1;
+        };
+
         var defs = [
             { prop: 'result',
               name: 'result',
@@ -582,6 +590,7 @@ var TestResultView = function(id, admin) {
                                         }
                                     }, [])
                                 });
+                                if (isBrief(c)) table = '';
 
                                 var k = isPassed(c) ? 'passed' : 'failed';
                                 return list.concat([
