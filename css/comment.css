@@ -1,0 +1,20 @@
+.comments .message {
+   color: #333333;
+}
+
+.comments .message h1 {
+   margin-top: 0.5em;
+   font-size: 150%;
+   font-weight: bold;
+   border-bottom: 1px solid #333333;
+}
+
+.comments .message blockquote {
+   margin: 1em;
+   padding: 0 1em 0 1em;
+   border: 1px solid #333333;
+}
+
+.comments .message em {
+   color: inherit ! important;
+}

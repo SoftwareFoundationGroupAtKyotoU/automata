@@ -895,7 +895,7 @@ var CommentView = function(id, update, admin) {
             apiPost('comment', {
                 action: 'preview', message: textarea.value
             }, function(r) {
-                var div = $new('div', { klass: 'preview' });
+                var div = $new('div', { klass: 'preview message' });
                 div.innerHTML = r.responseText;
                 textarea.parentNode.replaceChild(div, textarea);
 
