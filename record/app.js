@@ -3,6 +3,7 @@ var init = function(id) {
     var apiUser   = api('user', { type: 'status', status: 'record', log: 1 });
     var apiScheme = api('scheme', { record: true });
     var apiTempl  = api('template', { type: 'record', links: true });
+    var apiCommentConf  = api('comment', { action: 'config' });
 
     var defs = {
         status: [
@@ -19,7 +20,6 @@ var init = function(id) {
     var persistent = new Persistent(GNN.UI.$('persistent'));
 
     with (GNN.UI) {
-
         var div = GNN.UI.$(id);
 
         var showRecord = function(json) {
@@ -129,7 +129,11 @@ var init = function(id) {
                 if (sc.record.some(function(col){return col.field=='test';})) {
                     tabs.push(testResult);
                 }
-                tabs.push(fileBrowser, comment);
+                tabs.push(fileBrowser);
+                if ((json.comment||{}).enable) {
+                    if ((json.comment||{}).enable != 'admin' ||
+                        (json.master||{}).admin) tabs.push(comment);
+                }
                 var status = new StatusWindow(sc.id, tabs, pers);
 
                 var makeStatusId = function(x) {
@@ -285,6 +289,7 @@ var init = function(id) {
             user:     apiUser,
             scheme:   apiScheme,
             template: apiTempl,
+            comment:  apiCommentConf,
             timeout: 60000,
             async: async
         }, null, jsonpFailure);
