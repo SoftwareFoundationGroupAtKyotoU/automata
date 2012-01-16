@@ -18,7 +18,7 @@ require 'log'
 app = App.new
 
 def app.error_exit(obj)
-  print(ap.header)
+  print(app.header)
   puts(app.json(obj))
   exit
 end
