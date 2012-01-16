@@ -34,6 +34,7 @@ var init = function(id) {
                     }, function(json2) {
                         json2.master = json.master;
                         json2.scheme = json.scheme;
+                        json2.comment = json.comment;
                         showRecord(json2);
                     });
                 };
