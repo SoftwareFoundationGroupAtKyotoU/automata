@@ -282,7 +282,8 @@ var init = function(id) {
                 keys: 'user scheme'.split(' '),
                 callback: showRecord
             },
-            scheme: showRecord
+            scheme: showRecord,
+            comment: showRecord
         };
 
         GNN.JSONP.retrieve({
