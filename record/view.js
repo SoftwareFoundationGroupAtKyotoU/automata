@@ -1021,10 +1021,12 @@ var CommentView = function(id, updater, admin) {
                         });
                         new GNN.UI.Observer(del, 'onclick', function(e) {
                             e.stop();
-                            apiPost('comment', {
-                                action: 'delete', user: target, report: id,
-                                id: eid+''
-                            }, update, update);
+                            if (confirm('この記事を削除しますか?')) {
+                                apiPost('comment', {
+                                    action: 'delete', user: target, report: id,
+                                    id: eid+''
+                                }, update, update);
+                            }
                         });
                     }
                 });
