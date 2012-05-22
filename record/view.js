@@ -885,6 +885,7 @@ var CommentView = function(id, updater, admin) {
 
         var onSubmit = function(e) {
             e.stop();
+            e.disable();
             if (aclChecks) {
                 entry.acl = aclChecks.filter(function(a) {
                     return a.checked;
@@ -904,6 +905,7 @@ var CommentView = function(id, updater, admin) {
                     var res = r.responseText;
                     if (/size limit exceeded/.test(res)) {
                         alert('コメントが長過ぎます');
+                        e.enable();
                         return;
                     }
                 }

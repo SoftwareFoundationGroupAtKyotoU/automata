@@ -139,6 +139,12 @@ if (typeof GNN.UI == 'undefined') GNN.UI = {};
         self.target = function() {
             return self.event.target || self.event.srcElement;
         };
+        self.disable = function() {
+            self.target().disabled = true;
+        };
+        self.enable = function() {
+            self.target().disabled = false;
+        };
         return self;
     };
     ns.Observer = function(node, event, obj, m) {
