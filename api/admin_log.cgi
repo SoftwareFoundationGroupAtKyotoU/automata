@@ -56,7 +56,7 @@ begin
     val = app.param(k)
     data_log[k] = val if val
   end
-  data['log'] = data_log unless data_log.empty?
+  data['log'] = data_log
 
   unless data.empty?
     log_file = (App::KADAI + report_id + user)[App::FILES[:log]]
