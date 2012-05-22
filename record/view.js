@@ -123,17 +123,25 @@ var StatusWindow = function(id, tabs, persistent) {
             this.tabs[tab.name] = tab;
             var self = this;
             var a = GNN.UI.$new('a', { attr: { href: '.' } });
-            var button = GNN.UI.$new('li', {
-                id: [ makeTabId(tab.name), 'button' ].join('_'),
-                child: a,
-                klass: 'status_tabbar_button'
-            });
             a.appendChild(GNN.UI.$text(tab.label));
-            tabbar.appendChild(button);
             new GNN.UI.Observer(a, 'onclick', function(e) {
                 e.stop();
                 if (self.target) self.show(self.target, tab.name, true);
             });
+            var button = this.tabButton(tab.name, a);
+            tabbar.appendChild(button);
+        },
+        tabButton: function(name, a) {
+            var tabButtonId = [ makeTabId(name), 'button' ].join('_');
+            var button = GNN.UI.$(tabButtonId);
+            if (!button) {
+                button = GNN.UI.$new('li', {
+                    id: tabButtonId,
+                    child: a || [],
+                    klass: 'status_tabbar_button'
+                });
+            }
+            return button;
         },
         set: function(node) {
             GNN.UI.removeAllChildren(view);
@@ -812,7 +820,7 @@ var FileBrowserView = function(id) {
     };
 };
 
-var CommentView = function(id, updateRecord, admin) {
+var CommentView = function(id, updater, admin) {
     var $new = GNN.UI.$new;
 
     var acl2text = function(acl) {
@@ -890,7 +898,7 @@ var CommentView = function(id, updateRecord, admin) {
                 message: textarea.value
             };
             if (typeof entry.id != 'undefined') args.id = entry.id+'';
-            var update = function(){ updateRecord(id, target); };
+            var update = function(){ updater.record(id, target); };
             apiPost('comment', args, update, function(r) {
                 if (r.status == 400) {
                     var res = r.responseText;
@@ -939,18 +947,28 @@ var CommentView = function(id, updateRecord, admin) {
         label: 'コメント',
         show: function(target, toolbar, view) {
             view.set(loadingIcon());
-            var update = function(){ updateRecord(id, target); };
+            var update = function(){ updater.record(id, target); };
 
             GNN.JSONP.retrieve({
                 master: api('master', { user: true }),
                 config: api('comment', { action: 'config' }),
                 entries: api('comment', {
                     user: target, report: id, action: 'get'
+                }),
+                news: api('comment', {
+                    user: target, report: id, action: 'news'
                 })
             }, function(json) {
                 var ul = $new('ul', { klass: 'comments' });
-                json.entries.forEach(function(e) {
+                var lastId;
+                var unreads = (json.news||{}).unreads||0;
+                var unreadId;
+
+                json.entries.forEach(function(e, i) {
                     var eid = e.id;
+                    var nodeId = [ target, id, 'comment', eid ].join('-');
+                    lastId = eid;
+                    if (i + unreads == json.entries.length) unreadId = nodeId;
 
                     var edit_tools = $new('p', { klass: 'edit' });
                     var meta = $new('div', { klass: 'meta', child: [
@@ -963,7 +981,7 @@ var CommentView = function(id, updateRecord, admin) {
                     var message = $new('div', { klass: 'message' });
                     message.innerHTML = e.content;
 
-                    ul.appendChild($new('li', { child: [
+                    ul.appendChild($new('li', { id: nodeId, child: [
                         meta, message
                     ], klass: (e.acl||[]).length==0 ? 'private' : '' }));
 
@@ -1010,6 +1028,13 @@ var CommentView = function(id, updateRecord, admin) {
                         });
                     }
                 });
+                if (lastId) {
+                    apiPost('comment', {
+                        action: 'read', user: target, report: id, id: lastId+''
+                    }, function() {
+                        updater.comment(id, target);
+                    });
+                }
 
                 var form;
 
@@ -1021,6 +1046,8 @@ var CommentView = function(id, updateRecord, admin) {
                 ul.appendChild($new('li', { child: form }));
 
                 view.set(ul);
+
+                if (unreadId) location.href = '#'+unreadId;
             }, function(r) {
                 view.set('読み込み失敗')
             });

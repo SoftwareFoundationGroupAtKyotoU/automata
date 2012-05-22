@@ -18,3 +18,19 @@
 .comments .message em {
    color: inherit ! important;
 }
+
+.unread {
+   border-radius: 7px 7px 7px 7px;
+   background-color: red;
+   color: white;
+   font-weight: bold;
+   font-size: 10px;
+   width: 14px;
+   height: 14px;
+   text-align: center;
+   vertical-align: middle;
+   display: inline-block;
+   margin-top: -20px;
+   margin-left: -14px;
+   padding-top: 1px;
+}

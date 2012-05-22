@@ -23,17 +23,17 @@ class Comment
     @config = config
   end
 
-  def index()
+  def db_index()
     return Store.new(@path + FILE[:index])
   end
 
-  def read()
+  def db_read()
     return Store.new(@path + FILE[:read])
   end
 
   def retrieve(args)
-    return [] unless File.exist?(index.path)
-    index.ro.transaction do |db|
+    return [] unless File.exist?(db_index.path)
+    db_index.ro.transaction do |db|
       entries = db[:entries]
       entries = filter_forbidden(entries)
       entries.reject!{|e| e['id'] != args[:id]} if args[:id]
@@ -44,7 +44,7 @@ class Comment
   end
 
   def add(args)
-    index.transaction do |db|
+    db_index.transaction do |db|
       # new ID
       id = (db[:max_id] || 0) + 1
       raise MaxCommentsExceeded if id > (@config['max'] || 256)
@@ -68,7 +68,7 @@ class Comment
   end
 
   def edit(args)
-    index.transaction do |db|
+    db_index.transaction do |db|
       entries = db[:entries]
       entry = entries.find{|e| e['id'] == args[:id]}
       raise NotFound unless entry
@@ -83,7 +83,7 @@ class Comment
   end
 
   def delete(id)
-    index.transaction do |db|
+    db_index.transaction do |db|
       entries = db[:entries]
       entries = entries.reject do |e|
         e['id'] == id && (@group == :super || e['user'] == @user)
@@ -97,7 +97,7 @@ class Comment
   def read(id)
     raise PermissionDenied unless @group == :super || @group == :user
 
-    read.transaction do |r|
+    db_read.transaction do |r|
       max = r[@user] || 0
       r[@user] = id if max < id
     end
@@ -106,9 +106,9 @@ class Comment
   def news()
     raise PermissionDenied unless @group == :super || @group == :user
 
-    read.ro.transaction do |r|
+    db_read.ro.transaction do |r|
       max = r[@user] || 0
-      index.ro.transaction do |db|
+      db_index.ro.transaction do |db|
         entries = db[:entries]
         entries = filter_forbidden(entries)
         size = entries.size

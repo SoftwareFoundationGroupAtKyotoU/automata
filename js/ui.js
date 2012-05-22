@@ -35,7 +35,8 @@ if (typeof GNN.UI == 'undefined') GNN.UI = {};
     ns.$select = function(args) {
         if (!args.klass) args.klass = [];
         if (!(args.klass instanceof Array)) args.klass = [args.klass];
-        var elems = ns.doc().getElementsByTagName(args.tag);
+        var root = args.root || ns.doc();
+        var elems = root.getElementsByTagName(args.tag);
         var result = [];
         for (var i=0; i < elems.length; i++) {
             var klass = ns.classNames(elems[i]);

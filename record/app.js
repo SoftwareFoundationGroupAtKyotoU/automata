@@ -30,6 +30,7 @@ var init = function(id) {
             var id = student.token;
             var self = { tr: tr, openAlways: false, admin: null, token: null };
             var updateRecord = function(){ self.update(); };
+            var count = { comments: 0, unreads: 0 };
 
             // textify function specific to the field
             var toText = function(obj, klass, record) {
@@ -89,6 +90,35 @@ var init = function(id) {
                 }
             };
 
+            var notifyUnreadCount = function(node, unreads) {
+                var args = { root: node, tag: 'div', klass: 'unread' };
+                $select(args).forEach(function(child) {
+                    child.parentNode.removeChild(child);
+                });
+
+                if (unreads <= 0) return;
+
+                var notifier = $new('div', {
+                    klass: 'unread', child: unreads+''
+                });
+                if (node.firstChild) {
+                    node.insertBefore(notifier, node.firstChild);
+                } else {
+                    node.appendChild(notifier);
+                }
+            };
+
+            var updateCommentTab = function(comment) {
+                var comment = status.tabs.comment;
+                var btn = status.tabButton('comment');
+                var link = btn.firstChild;
+                notifyUnreadCount(btn, count.unreads);
+
+                removeAllChildren(link);
+                var label = comment.label+'('+count.comments+')';
+                link.appendChild(document.createTextNode(label));
+            };
+
             var makeStatusId = function(x) {
                 return [ x, sc.id, 'status' ].filter(function(x) {
                     return !!x;
@@ -119,7 +149,10 @@ var init = function(id) {
                         appendClass(parent, 'selected');
                         status.show(id, 'log');
                     }
+
                 }
+
+                updateCommentTab(status.tabs.comment);
             };
 
             var makeStatusNode = function(text) {
@@ -175,6 +208,24 @@ var init = function(id) {
                 return edit;
             };
 
+            var showCommentCount = function(scid, token, comment) {
+                if (!status.tabs.comment) return;
+
+                GNN.JSONP.retrieve({ comment: api('comment', {
+                    report: scid, user: token, action: 'news'
+                }) }, function(json) {
+                    count.unreads = json.comment.unreads;
+                    count.comments = json.comment.comments;
+
+                    var name = $([token,scid,'name'].join('-'));
+                    if (name) notifyUnreadCount(name, count.unreads);
+
+                    var id = pers.get('selected');
+                    if (!id) return;
+                    if (id == token) updateCommentTab(comment);
+                });
+            };
+
             var updateRecordFields = function(record) {
                 removeAllChildren(tr);
 
@@ -190,6 +241,9 @@ var init = function(id) {
                     if (!fld && !record) fld = loadingIcon();
                     var text = toText(fld, col.field, record);
 
+                    if (col.field == 'name') {
+                        td.id = [ id, sc.id, 'name' ].join('-');
+                    }
                     if (col.field == 'status') {
                         text = makeStatusNode(text);
 
@@ -231,7 +285,13 @@ var init = function(id) {
 
                     var id = pers.get('selected');
                     if (id && id == student.token) updateSelectedRow();
+
+                    self.updateComment();
                 }, jsonpFailure);
+            };
+
+            self.updateComment = function() {
+                showCommentCount(sc.id, student.token, status.tabs.comment);
             };
 
             return self;
@@ -241,6 +301,10 @@ var init = function(id) {
         var updateRecord = function(scid, token) {
             var f = updater[scid][token];
             if (typeof f == 'function') f();
+        };
+        var updateComment = function(scid, token) {
+            var f = updater[scid][token];
+            if (f && typeof f.comment == 'function') f.comment();
         };
 
         var showRecord = function(json) {
@@ -270,7 +334,9 @@ var init = function(id) {
                 var solvedList = new SolvedView(sc.id, admin);
                 var testResult = new TestResultView(sc.id, admin);
                 var fileBrowser = new FileBrowserView(sc.id);
-                var comment = new CommentView(sc.id, updateRecord, admin);
+                var comment = new CommentView(sc.id, {
+                    record: updateRecord, comment: updateComment
+                }, admin);
                 var tabs = [ logView, solvedList ];
                 if (admin ||
                     sc.record.some(function(col){return col.field=='test';})) {
@@ -288,12 +354,18 @@ var init = function(id) {
                     fields.admin = admin;
                     fields.openAlways = (json.user.length == 1);
                     fields.token = json.master.token;
-                    fields.update();
+
+                    var update = function() {
+                        fields.update();
+                        fields.updateComment();
+                    };
+                    update.comment = function() {
+                        fields.updateComment();
+                    };
+                    updater[sc.id][student.token] = update;
+                    update();
 
                     table.appendChild(fields.tr);
-                    updater[sc.id][student.token] = function() {
-                        fields.update();
-                    };
                 });
 
                 div.appendChild(table);
