@@ -242,7 +242,7 @@ var editMode = function(makeForm, confirm, view, button, restore) {
     view.set(form);
 };
 
-var LogView = function(id, records, admin) {
+var LogView = function(id, admin) {
     var pre = function(x) {
         return GNN.UI.$new('pre', { child: GNN.UI.$node(x) });
     };
@@ -340,7 +340,7 @@ var LogView = function(id, records, admin) {
                 if (param.value.length != 0) args[k] = param.value;
             }
             args.id = record.submit; args.user = target; args.report = id;
-            var update = function(){ admin.update(); };
+            var update = function(){ admin.update(id, target); };
             admin.editLog(args, update, update);
         }, view, new ToolButton(button), restore);
     };
@@ -349,31 +349,37 @@ var LogView = function(id, records, admin) {
         name: 'log',
         label: 'ログ',
         show: function(target, toolbar, view) {
-            var student = records.reduce(function(r, u) {
-                return target == u.token ? u : r;
-            }, { report: {} });
-            var record = (student.report||[])[id]||{};
+            view.set(loadingIcon());
 
-            var msg = makeLogMsg(record);
-            view.set(msg);
+            GNN.JSONP.retrieve({ user: api('user', {
+                report: id, user: target,
+                type: 'status', status: 'record', log: 1
+            }) }, function(json) {
+                var record = ((json.user[0]||{}).report||[])[id];
+                var msg = makeLogMsg(record || {});
+                view.set(msg);
 
-            if (admin && (student.report||[])[id]) {
-                var a = GNN.UI.$new('a', {
-                    attr: { href: '.' }, child: '\u270f 編集'
-                });
-                toolbar.addButton(a);
-                new GNN.UI.Observer(a, 'onclick', function(e) {
-                    e.stop();
-                    logEditMode(target, record, view, e.target(), msg);
-                });
-            }
+                if (admin && record) {
+                    var a = GNN.UI.$new('a', {
+                        attr: { href: '.' }, child: '\u270f 編集'
+                    });
+                    toolbar.reset();
+                    toolbar.addButton(a);
+                    new GNN.UI.Observer(a, 'onclick', function(e) {
+                        e.stop();
+                        logEditMode(target, record, view, e.target(), msg);
+                    });
+                }
+            }, function() {
+                    view.set('読み込み失敗')
+            });
         }
     };
 
     return self;
 };
 
-var SolvedView = function(id, records, admin) {
+var SolvedView = function(id, admin) {
     var List = function(target) {
         var getUserRecord = function(record, what) {
             record = record.reduce(function(r, u) {
@@ -426,7 +432,7 @@ var SolvedView = function(id, records, admin) {
                         if (checks[i].checked) checked.push(checks[i].value);
                     }
 
-                    var update = function(){ admin.update(); };
+                    var update = function(){ admin.update(id, target); };
                     admin.editSolved({
                         user: target, report: id, exercise: checked.join(',')
                     }, update, update);
@@ -440,27 +446,33 @@ var SolvedView = function(id, records, admin) {
             show: function(toolbar, view) {
                 view.set(loadingIcon());
 
-                var uri = api('user', {
+                var apiSolved = api('user', {
                     user: target, report: id, type: 'status', status: 'solved'
                 });
-                GNN.JSONP.retrieve({ user: uri }, function(json) {
-                    var ls1 = makeList(json.user, 'solved', '解答済み');
+                var apiUnsolved = api('user', {
+                    user: target, report: id, type: 'status', status: 'record'
+                });
+                GNN.JSONP.retrieve({
+                    solved: apiSolved, unsolved: apiUnsolved
+                }, function(json) {
+                    var ls1 = makeList(json.solved, 'solved', '解答済み');
                     if (!ls1) {
                         view.set('なし');
                         return;
                     }
-                    var ls2 = makeList(records, 'unsolved', '未解答') || [];
-                    var ls = ls1.concat(ls2);
+                    var ls2 = makeList(json.unsolved, 'unsolved', '未解答');
+                    var ls = ls1.concat(ls2 || []);
                     view.set(ls);
 
                     if (admin) {
                         var a = GNN.UI.$new('a', {
                             attr: { href: '.' }, child: '\u270f 編集'
                         });
+                        toolbar.reset();
                         toolbar.addButton(a);
                         new GNN.UI.Observer(a, 'onclick', function(e) {
                             e.stop();
-                            var solved = getUserRecord(json.user, 'solved');
+                            var solved = getUserRecord(json.solved, 'solved');
                             solvedEditMode(solved||[], view, e.target(), ls);
                         });
                     }
@@ -538,12 +550,13 @@ var TestResultView = function(id, admin) {
                     var a = $new('a', {
                         attr: { href: '.' }, child: '\u26a1 テストを再実行'
                     });
+                    toolbar.reset();
                     toolbar.addButton(a);
 
                     new GNN.UI.Observer(a, 'onclick', function(e) {
                         e.stop();
                         admin.runTest(target, id, function() {
-                            admin.update();
+                            admin.update(id, target);
                         });
                     });
                 }
@@ -799,7 +812,7 @@ var FileBrowserView = function(id) {
     };
 };
 
-var CommentView = function(id, update, admin) {
+var CommentView = function(id, updateRecord, admin) {
     var $new = GNN.UI.$new;
 
     var acl2text = function(acl) {
@@ -877,6 +890,7 @@ var CommentView = function(id, update, admin) {
                 message: textarea.value
             };
             if (typeof entry.id != 'undefined') args.id = entry.id+'';
+            var update = function(){ updateRecord(id, target); };
             apiPost('comment', args, update, function(r) {
                 if (r.status == 400) {
                     var res = r.responseText;
@@ -925,6 +939,7 @@ var CommentView = function(id, update, admin) {
         label: 'コメント',
         show: function(target, toolbar, view) {
             view.set(loadingIcon());
+            var update = function(){ updateRecord(id, target); };
 
             GNN.JSONP.retrieve({
                 master: api('master', { user: true }),
