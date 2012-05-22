@@ -898,6 +898,10 @@ var CommentView = function(id, updater, admin) {
                 acl: entry.acl.join(','),
                 message: textarea.value
             };
+            if (textarea.value.replace(/\s*/, '') == '') {
+                e.enable();
+                return;
+            }
             if (typeof entry.id != 'undefined') args.id = entry.id+'';
             var update = function(){ updater.record(id, target); };
             apiPost('comment', args, update, function(r) {
