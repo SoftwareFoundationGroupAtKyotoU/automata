@@ -53,7 +53,9 @@ if (typeof GNN.UI == 'undefined') GNN.UI = {};
         return ns.classNames(e).indexOf(klass) >= 0;
     };
     ns.appendClass = function(e, klass) {
-        e.className = ns.classNames(e).concat([klass]).join(' ');
+        e.className = ns.classNames(e).filter(function(k) {
+            return k != klass;
+        }).concat([klass]).join(' ');
     };
     ns.removeClass = function(e, klass) {
         e.className = ns.classNames(e).filter(function(k) {
