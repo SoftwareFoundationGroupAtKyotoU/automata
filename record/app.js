@@ -111,7 +111,7 @@ var init = function(id) {
             var updateCommentTab = function(comment) {
                 var comment = status.tabs.comment;
                 var btn = status.tabButton('comment');
-                var link = btn.firstChild;
+                var link = btn.lastChild;
                 notifyUnreadCount(btn, count.unreads);
 
                 removeAllChildren(link);
