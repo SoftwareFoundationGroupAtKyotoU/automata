@@ -272,7 +272,8 @@ var init = function(id) {
                 var fileBrowser = new FileBrowserView(sc.id);
                 var comment = new CommentView(sc.id, updateRecord, admin);
                 var tabs = [ logView, solvedList ];
-                if (sc.record.some(function(col){return col.field=='test';})) {
+                if (admin ||
+                    sc.record.some(function(col){return col.field=='test';})) {
                     tabs.push(testResult);
                 }
                 tabs.push(fileBrowser);
