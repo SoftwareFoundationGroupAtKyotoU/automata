@@ -3,6 +3,19 @@ var History = function() {
     var tracking = false;
     var last;
 
+    var pushState = function(){};
+    var replaceState = function(){};
+    if (window.history.pushState) {
+        pushState = function(obj, title, url) {
+            window.history.pushState(obj, title, url);
+        };
+    }
+    if (window.history.replaceState) {
+        replaceState = function(obj, title, url) {
+            window.history.replaceState(obj, title, url);
+        };
+    }
+
     self.track = function(block) {
         var trackingStarted = false;
         if (!tracking) {
@@ -28,10 +41,10 @@ var History = function() {
         if (tracking) {
             var title = document.getElementsByTagName('title')[0] || {};
             if (!last) {
-                window.history.pushState(obj, GNN.UI.text(title), url);
+                pushState(obj, GNN.UI.text(title), url);
                 last = obj;
             } else {
-                window.history.replaceState(obj, GNN.UI.text(title), url);
+                replaceState(obj, GNN.UI.text(title), url);
             }
         }
     };
