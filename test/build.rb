@@ -19,8 +19,6 @@ post_tz   = $*.shift
 exes = $*
 exes = ARGF.file.readlines.map(&:strip).reject(&:empty?) if exes.empty?
 
-ignore = [ 'cm[iox]', 'o', 'output', 'depend' ]
-
 dir = {}
 dir[:user]   = App::KADAI + report_id + user
 dir[:test]   = dir[:user] + 'test'
@@ -88,8 +86,10 @@ src_files.reject!{|f| f =~ /\/\.+$/}
 FileUtils.cp_r(src_files, dir[:target].to_s)
 
 # clean
+ignore = conf[:build]['ignore'] || []
+ignore = '(?:'+ignore.join('|')+')' if ignore.is_a?(Array)
 Dir.each_leaf(dir[:target].to_s, File::FNM_DOTMATCH) do |f|
-  FileUtils.rm(f) if f =~ /\.(?:#{ignore.join('|')})$/
+  FileUtils.rm(f) if f =~ /#{ignore}/
 end
 
 # make input file
