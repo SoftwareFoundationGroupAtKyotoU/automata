@@ -2,6 +2,7 @@ require 'cgi'
 require 'yaml'
 require 'time'
 require 'pathname'
+require 'strscan'
 require 'clone'
 require 'log'
 require 'conf'
@@ -171,5 +172,27 @@ class App
     else
       return src
     end
+  end
+
+  def check_disk_usage(dir)
+    dir = Pathname.new(dir.to_s) unless dir.is_a?(Pathname)
+
+    checkers = {
+      :size => proc{ StringScanner.new(`du -sk "#{dir}"`).scan(/\d+/).to_i },
+      :entries => proc do
+        if (dir+App::FILES[:log]).exist?
+          Log.new(dir[App::FILES[:log]]).size
+        else
+          Pathname.new(dir).children.select(&:directory?).size
+        end
+      end,
+    }
+
+    checkers.each do |k,f|
+      c = conf[:post, :limit, k]
+      return false if c && c != 0 && c < f[]
+    end
+
+    return true
   end
 end

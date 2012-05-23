@@ -17,6 +17,7 @@
 - vim (vim)
   - for file browser
 - (env)
+- (du)
 - curl (curl)
 - zip (zip)
 - p7zip-full (7z)

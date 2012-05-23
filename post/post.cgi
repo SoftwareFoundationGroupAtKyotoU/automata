@@ -114,6 +114,15 @@ begin
     cmd = "#{cmd} > /dev/null 2>&1"
     system(cmd)
 
+    # GC
+    until app.check_disk_usage(USER_DIR)
+      break unless Log.new(log_file).transaction do |log|
+        log.size > 1 && log.pop.tap do |id|
+          FileUtils.rm_r((USER_DIR+id).to_s) if id
+        end
+      end
+    end
+
   rescue RuntimeError => e
     entry = { 'status' => 'NG', 'log' => { 'error' => e.to_s } }
     Log.new(log_file).write(:data, time, entry)

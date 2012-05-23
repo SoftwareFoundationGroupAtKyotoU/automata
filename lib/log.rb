@@ -29,6 +29,25 @@ class Log < Store::YAML
     write(root, id, val)
   end
 
+  def size()
+    transaction do
+      return @store.roots.map{|r| (@store[r]||[]).size}.max
+    end
+  end
+
+  def pop()
+    transaction do
+      root = @store.roots.min_by{|r| oldest_id(r)}
+      if root
+        id = oldest_id(root)
+        @store.roots.each do |r|
+          @store[r] = (@store[r]||[]).reject{|x| x['id'] == id}
+        end
+        return id
+      end
+    end
+  end
+
   private
 
   def get(root, id)
@@ -55,5 +74,9 @@ class Log < Store::YAML
 
   def build!(id, val)
     put(:build, id, val)
+  end
+
+  def oldest_id(root)
+    return ((@store[root]||[]).last||{})['id'] || ''
   end
 end
