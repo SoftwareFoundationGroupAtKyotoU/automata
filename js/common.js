@@ -235,3 +235,27 @@ var makeExerciseSelector = function(parent, exs, solved, prefix, updateReqs) {
     });
 };
 
+var deepEq = function(lhs, rhs) {
+    if (typeof lhs != typeof rhs) return false;
+    if (typeof lhs == 'object') {
+        if (lhs instanceof Array && rhs instanceof Array) {
+            if (lhs.length != rhs.length) return false;
+            for (var i=0; i < lhs.length; i++) {
+                if (!deepEq(lhs[i], rhs[i])) return false;
+            }
+            return true;
+        } else {
+            var keys = {};
+            for (var k in lhs) {
+                if (!deepEq(lhs[k], rhs[k])) return false;
+                keys[k] = true;
+            }
+            for (var k in rhs) {
+                if (!keys[k]) return false;
+            }
+            return true;
+        }
+    } else {
+        return lhs === rhs;
+    }
+};

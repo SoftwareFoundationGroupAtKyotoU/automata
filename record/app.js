@@ -18,7 +18,27 @@ var init = function(id) {
         ]
     };
 
-    var persistent = new Persistent(GNN.UI.$('persistent'));
+    var updater = {};
+    var history = new History();
+    var persistent = new Persistent(GNN.UI.$('persistent'), history);
+    new GNN.UI.Observer(window, 'onpopstate', function(e) {
+        if (e.event.state) {
+            var hash = e.event.state;
+            var last = persistent.hash;
+            var keys = [];
+            for (var k in hash) {
+                if (!deepEq(hash[k], last[k])) keys.push(k);
+            }
+            persistent.reset(hash);
+            keys.forEach(function(k) {
+                var token = hash[k].selected;
+                if (token) {
+                    var update = (updater[k]||{})[token] || function(){};
+                    update();
+                }
+            })
+        }
+    });
 
     with (GNN.UI) {
         var div = GNN.UI.$(id);
@@ -155,6 +175,26 @@ var init = function(id) {
                 updateCommentTab(status.tabs.comment);
             };
 
+            self.open = function() {
+                pers.set('selected', id);
+                updateSelectedRow();
+            };
+            self.close = function() {
+                if (pers.get('selected') == id) {
+                    pers.del('selected');
+                    updateSelectedRow();
+                }
+            };
+            self.toggle = function() {
+                history.track(function() {
+                    if (pers.get('selected') == id) {
+                        self.close();
+                    } else {
+                        self.open();
+                    }
+                });
+            };
+
             var makeStatusNode = function(text) {
                 if (self.openAlways) {
                     pers.set('selected', student.token);
@@ -172,12 +212,7 @@ var init = function(id) {
                     });
                     new Observer(text, 'onclick', function(e) {
                         e.stop();
-                        if (pers.get('selected') == id) {
-                            pers.del('selected');
-                        } else {
-                            pers.set('selected', id);
-                        }
-                        updateSelectedRow();
+                        self.toggle();
                     });
                 }
                 return text;
@@ -297,7 +332,6 @@ var init = function(id) {
             return self;
         };
 
-        var updater = {};
         var updateRecord = function(scid, token) {
             var f = updater[scid][token];
             if (typeof f == 'function') f();
@@ -370,6 +404,10 @@ var init = function(id) {
 
                 div.appendChild(table);
                 div.appendChild(status.window);
+            });
+
+            history.track(function() {
+                history.push(persistent.hash, '#');
             });
         };
 

@@ -95,6 +95,14 @@ var FileBrowser = (function(klass) {
 
     var self = { view: $new('table', { klass: 'file_browser' }) };
 
+    self.onMove = function(location) {
+        if (handler.onMove) {
+            handler.onMove(location);
+        } else {
+            self.move(location);
+        }
+    };
+
     self.move = function(location) {
         if (location.type == 'dir') {
             handler.dir(location, function(entries) {
@@ -121,7 +129,7 @@ var FileBrowser = (function(klass) {
                     if (f.type != 'bin') {
                         new GNN.UI.Observer(a, 'onclick', function(e) {
                             e.stop();
-                            self.move(l);
+                            self.onMove(l);
                         });
                     }
 

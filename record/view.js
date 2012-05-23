@@ -1,4 +1,44 @@
-var Persistent = function(node) {
+var History = function() {
+    var self = {};
+    var tracking = false;
+    var last;
+
+    self.track = function(block) {
+        var trackingStarted = false;
+        if (!tracking) {
+            tracking = true;
+            last = null;
+            trackingStarted = true;
+        }
+
+        block(self);
+
+        if (trackingStarted) {
+            tracking = false;
+        }
+    };
+
+    self.next = function(block) {
+        tracking = false;
+        self.track(block);
+    };
+
+    self.push = function(obj, url) {
+        url = url || '#';
+        if (tracking) {
+            var title = document.getElementsByTagName('title')[0] || {};
+            if (!last) {
+                window.history.pushState(obj, GNN.UI.text(title), url);
+                last = obj;
+            } else {
+                window.history.replaceState(obj, GNN.UI.text(title), url);
+            }
+        }
+    };
+
+    return self;
+};
+var Persistent = function(node, hist) {
     if (typeof JSON == 'undefined') {
         return {
             del: function(){ return this; },
@@ -20,6 +60,23 @@ var Persistent = function(node) {
 
     return {
         hash: deserialize(node.value) || {},
+        history: hist,
+        move: function(url) {
+            var history = this.history;
+            var last = this.hash;
+            history.next(function() {
+                history.push(last, url);
+                if (/^#/.test(url)) {
+                    location.href = url;
+                    history.push(last, url);
+                }
+            });
+            return this;
+        },
+        reset: function(hash) {
+            this.hash = hash;
+            node.value = serialize(this.hash);
+        },
         del: function(keys) {
             var dummy;
             return this.set(keys, dummy);
@@ -33,9 +90,11 @@ var Persistent = function(node) {
                 if (typeof r[x] == 'undefined') r[x] = {};
                 return r[x];
             }, this.hash);
+            var diff = !deepEq(entry[key], value);
             entry[key] = value;
 
-            node.value = serialize(this.hash);
+            if (diff) hist.push(this.hash);
+            this.reset(this.hash);
             return this;
         },
         get: function(keys) {
@@ -52,7 +111,12 @@ Persistent.Entry = function(parent, keys) {
     if (!(keys instanceof Array)) keys = [keys];
     return {
         parent: parent,
+        history: parent.history,
         keys: keys,
+        move: function(url) {
+            this.parent.move(url);
+            return this;
+        },
         del: function(keys) {
             return this.parent.del(this.keys.concat(keys));
         },
@@ -126,7 +190,9 @@ var StatusWindow = function(id, tabs, persistent) {
             a.appendChild(GNN.UI.$text(tab.label));
             new GNN.UI.Observer(a, 'onclick', function(e) {
                 e.stop();
-                if (self.target) self.show(self.target, tab.name, true);
+                persistent.history.track(function() {
+                    if (self.target) self.show(self.target, tab.name, true);
+                });
             });
             var button = this.tabButton(tab.name, a);
             tabbar.appendChild(button);
@@ -683,7 +749,7 @@ var FileBrowserView = function(id) {
                     });
                     new GNN.UI.Observer(a, 'onclick', function(e) {
                         e.stop();
-                        browser.move(loc);
+                        browser.onMove(loc);
                     });
 
                     ul.appendChild($new('li', { child: a }));
@@ -738,6 +804,7 @@ var FileBrowserView = function(id) {
                 });
             },
             dir: function(location, callback) {
+                if (location.path == '.') location.name = id;
                 this.reset(location);
 
                 new GNN.JSONP(apiBrowse({
@@ -752,6 +819,7 @@ var FileBrowserView = function(id) {
                 });
             },
             file: function(location) {
+                delete location.time;
                 this.reset(location);
                 this.toolbar.addButton($new('a', {
                     child: '\u23ce 直接開く',
@@ -785,6 +853,12 @@ var FileBrowserView = function(id) {
                     }
                 }
                 req.send(null);
+            },
+            onMove: function(location) {
+                var self = this;
+                this.persistent.history.track(function() {
+                    self.move(location);
+                });
             }
         };
 
@@ -1055,7 +1129,7 @@ var CommentView = function(id, updater, admin) {
 
                 view.set(ul);
 
-                if (unreadId) location.href = '#'+unreadId;
+                if (unreadId) view.persistent.move('#'+unreadId);
             }, function(r) {
                 view.set('読み込み失敗')
             });
