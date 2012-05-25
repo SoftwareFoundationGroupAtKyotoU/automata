@@ -34,7 +34,7 @@ class Comment
   def retrieve(args)
     return [] unless File.exist?(db_index.path)
     db_index.ro.transaction do |db|
-      entries = db[:entries]
+      entries = db[:entries] || []
       entries = filter_forbidden(entries)
       entries.reject!{|e| e['id'] != args[:id]} if args[:id]
       entries = entries.drop(args[:offset]) if args[:offset]
@@ -69,7 +69,7 @@ class Comment
 
   def edit(args)
     db_index.transaction do |db|
-      entries = db[:entries]
+      entries = db[:entries] || []
       entry = entries.find{|e| e['id'] == args[:id]}
       raise NotFound unless entry
       raise PermissionDenied unless @group == :super || entry['user'] == @user
@@ -84,7 +84,7 @@ class Comment
 
   def delete(id)
     db_index.transaction do |db|
-      entries = db[:entries]
+      entries = db[:entries] || []
       entries = entries.reject do |e|
         e['id'] == id && (@group == :super || e['user'] == @user)
       end
@@ -109,7 +109,7 @@ class Comment
     db_read.ro.transaction do |r|
       max = r[@user] || 0
       db_index.ro.transaction do |db|
-        entries = db[:entries]
+        entries = db[:entries] || []
         entries = filter_forbidden(entries)
         size = entries.size
         entries = entries.drop_while{|e| e['id'] <= max}
