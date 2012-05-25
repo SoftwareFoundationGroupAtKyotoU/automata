@@ -438,7 +438,7 @@ var LogView = function(id, admin) {
         show: function(target, toolbar, view) {
             view.set(loadingIcon());
 
-            GNN.JSONP.retrieve({ user: api('user', {
+            GNN.XHR.json.retrieve({ user: api('user', {
                 report: id, user: target,
                 type: 'status', status: 'record', log: 1
             }) }, function(json) {
@@ -508,7 +508,7 @@ var SolvedView = function(id, admin) {
             var div = GNN.UI.$new('div', { klass: 'list_view', child: ul });
 
             var uri = api('scheme', { id: id, exercise: true });
-            GNN.JSONP.retrieve({ result: uri }, function(json) {
+            GNN.XHR.json.retrieve({ result: uri }, function(json) {
                 var exs = json.result[0].exercise;
                 makeExerciseSelector(ul, exs, solved, ['ex', id].join('_'));
 
@@ -539,7 +539,7 @@ var SolvedView = function(id, admin) {
                 var apiUnsolved = api('user', {
                     user: target, report: id, type: 'status', status: 'record'
                 });
-                GNN.JSONP.retrieve({
+                GNN.XHR.json.retrieve({
                     solved: apiSolved, unsolved: apiUnsolved
                 }, function(json) {
                     var ls1 = makeList(json.solved, 'solved', '解答済み');
@@ -649,7 +649,7 @@ var TestResultView = function(id, admin) {
                 }
 
                 var uri = api('test_result', { user: target, report: id });
-                GNN.JSONP.retrieve({ test: uri }, function(json) {
+                GNN.XHR.json.retrieve({ test: uri }, function(json) {
                     var t = json.test;
                     if (!t ||
                         typeof t.passed == 'undefined' ||
@@ -820,7 +820,7 @@ var FileBrowserView = function(id) {
                 if (location.path == '.') location.name = id;
                 this.reset(location);
 
-                new GNN.JSONP(apiBrowse({
+                new GNN.XHR.json(apiBrowse({
                     user: target,
                     report: id,
                     path: location.path
@@ -1042,7 +1042,7 @@ var CommentView = function(id, updater, admin) {
             view.set(loadingIcon());
             var update = function(){ updater.record(id, target); };
 
-            GNN.JSONP.retrieve({
+            GNN.XHR.json.retrieve({
                 master: api('master', { user: true }),
                 config: api('comment', { action: 'config' }),
                 entries: api('comment', {
@@ -1105,7 +1105,7 @@ var CommentView = function(id, updater, admin) {
                         };
                         new GNN.UI.Observer(edit, 'onclick', function(e) {
                             e.stop();
-                            new GNN.JSONP(api('comment', {
+                            new GNN.XHR.json(api('comment', {
                                 user: target, report: id, action: 'get',
                                 id: eid, type: 'raw'
                             }), function(entries) {

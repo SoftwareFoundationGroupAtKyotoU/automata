@@ -172,7 +172,7 @@ var init = function() {
                 login.appendChild($node(json.master.user));
 
                 // load solved data
-                new GNN.JSONP(api('user', {
+                new GNN.XHR.json(api('user', {
                     user: json.master.user,
                     type: 'status',
                     status: 'solved'
@@ -199,7 +199,7 @@ var init = function() {
                         uploader.reset();
                     };
                 });
-                GNN.JSONP.retrieve(apis, null, jsonpFailure);
+                GNN.XHR.json.retrieve(apis, null, jsonpFailure);
             },
             reqs: {
                 keys: 'scheme reqs'.split(' '),
@@ -213,7 +213,7 @@ var init = function() {
             }
         };
 
-        GNN.JSONP.retrieve({
+        GNN.XHR.json.retrieve({
             master: api('master', { year: true, user: true, token: true }),
             template: api('template', { type: 'none', links: true }),
             scheme: api('scheme', { type: 'post' }),

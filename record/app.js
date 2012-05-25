@@ -246,7 +246,7 @@ var init = function(id) {
             var showCommentCount = function(scid, token, comment) {
                 if (!status.tabs.comment) return;
 
-                GNN.JSONP.retrieve({ comment: api('comment', {
+                GNN.XHR.json.retrieve({ comment: api('comment', {
                     report: scid, user: token, action: 'news'
                 }) }, function(json) {
                     count.unreads = json.comment.unreads;
@@ -311,7 +311,7 @@ var init = function(id) {
             self.update = function() {
                 updateRecordFields();
 
-                GNN.JSONP.retrieve({ user: api('user', {
+                GNN.XHR.json.retrieve({ user: api('user', {
                     report: sc.id, user: student.token,
                     type: 'status', status: 'record', log: 1
                 }) }, function(json) {
@@ -423,7 +423,7 @@ var init = function(id) {
             comment: showRecord
         };
 
-        GNN.JSONP.retrieve({
+        GNN.XHR.json.retrieve({
             master:   apiMaster,
             user:     apiUser,
             scheme:   apiScheme,
