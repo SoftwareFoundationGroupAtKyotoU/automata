@@ -1143,7 +1143,7 @@ var CommentView = function(id, updater, admin) {
                 view.set(ul);
 
                 if (unreadId) view.persistent.move('#'+unreadId);
-            }, function(r) {
+            }, function() {
                 view.set('読み込み失敗')
             });
         }
