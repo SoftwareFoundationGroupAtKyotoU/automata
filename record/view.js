@@ -1114,7 +1114,7 @@ var CommentView = function(id, updater, admin) {
                         });
                         new GNN.UI.Observer(del, 'onclick', function(e) {
                             e.stop();
-                            if (confirm('この記事を削除しますか?')) {
+                            if (confirm('このコメントを削除しますか?')) {
                                 apiPost('comment', {
                                     action: 'delete', user: target, report: id,
                                     id: eid+''
