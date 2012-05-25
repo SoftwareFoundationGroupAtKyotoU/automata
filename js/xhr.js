@@ -17,8 +17,16 @@
     };
 
     XHR.callback = {};
+    XHR.maxConnections = 8;
+    XHR.retryDelay = 100;
+    XHR.running = [];
+    XHR.defaultTimeout = 20000;
 
-    var add = function(method, alt, uri, callback, error) {
+    var useXhrJson = [ XMLHttpRequest, JSON ].every(function(x) {
+        return typeof x != 'undefined';
+    });
+
+    var add = function(method, alt, uri, callback, error, timeout) {
         if (!(uri instanceof URI)) uri = new URI(uri+'');
         callback = callback || function(){};
         error = error || function(){};
@@ -26,53 +34,77 @@
         var self = { uri: uri+'' };
         self.callback = function() {
             var r = callback.apply(null, arguments);
-            self.done = true;
             self.stop();
             return r;
         };
         self.error = function() {
             var r = error.apply(null, arguments);
-            self.done = true;
             self.stop();
             return r;
+        };
+        self.stop = function() {
+            self.done = true;
+            XHR.running = XHR.running.filter(function(r) {
+                return !r.done;
+            });
         };
 
         if (typeof uri.params['timestamp'] == 'undefined') {
             uri.params['timestamp'] = encodeURI(new Date());
         }
 
-        if (!alt(self, uri)) {
-            var req = new XMLHttpRequest();
-            self.req = req;
-            self.stop = function() {
-                self.callback = function(){};
-                self.error = function(){};
-            };
+        if (typeof timeout == 'undefined') timeout = XHR.defaultTimeout;
 
-            var data = null;
-            if (method == 'POST') {
-                data = uri.data();
-                uri.params = {};
+        var request = function() {
+            if (XHR.running.length >= XHR.maxConnections) {
+                setTimeout(request, XHR.retryDelay);
+                return;
+            }
+            XHR.running.push(self);
+
+            if (timeout) {
+                setTimeout(function() {
+                    if (!self.done) self.error('timeout', self, timeout);
+                }, timeout);
             }
 
-            req.open(method, uri+'');
-            req.onreadystatechange = function(e) {
-                if (req.readyState == 4) {
-                    if (200 <= req.status && req.status < 300) {
-                        self.callback(req);
-                    } else {
-                        self.error(req);
+            if (!alt(self, uri)) {
+                var req = new XMLHttpRequest();
+                self.req = req;
+                self.stop_ = self.stop;
+                self.stop = function() {
+                    req.abort();
+                    self.stop_();
+                    self.callback = function(){};
+                    self.error = function(){};
+                };
+
+                var data = null;
+                if (method == 'POST') {
+                    data = uri.data();
+                    uri.params = {};
+                }
+
+                req.open(method, uri+'');
+                req.onreadystatechange = function(e) {
+                    if (req.readyState == 4) {
+                        if (200 <= req.status && req.status < 300) {
+                            self.callback(req);
+                        } else {
+                            self.error('request', req);
+                        }
                     }
                 }
+                req.send(data);
             }
-            req.send(data);
-        }
+        };
+        request();
 
         return self;
     };
 
     var retrieve = function(method, hash, callback, error) {
-        var t = 10000;
+        var t;
         if (typeof hash.timeout != 'undefined') {
             t = hash.timeout;
             delete hash.timeout;
@@ -107,6 +139,20 @@
         for (var k in hash) keys.push(k);
         var wait = keys.concat([]);
 
+        error = error || function(){};
+        var timeoutHandler = function(reason) {
+            if (reason == 'timeout') {
+                if (wait.length) {
+                    keys = [];
+                    timedout = true;
+                    wait.forEach(function(k){ xhr[k] && xhr[k].stop(); });
+                    error(reason, xhr, wait, arguments[2]);
+                }
+            } else {
+                error.apply(null, arguments);
+            }
+        };
+
         var run = function() {
             if (keys.length > 0) {
                 var k = keys.shift();
@@ -115,32 +161,23 @@
                     wait = wait.filter(function(v){return v!=k;});
                     asyncCallback(wait, result);
                     if (!wait.length && !timedout) callback(result);
-                });
+                }, timeoutHandler, t);
                 setTimeout(run, 0);
             }
         };
         run();
-
-        error && setTimeout(function() {
-            if (wait.length) {
-                keys = [];
-                timedout = true;
-                wait.forEach(function(k){ xhr[k] && xhr[k].stop(); });
-                error(xhr, wait);
-            }
-        }, t);
 
         return { stop: function() {
             while (wait.length > 0) xhr[wait.shift()].stop();
         } };
     };
 
-    XHR.get = function(uri, callback, error) {
-        return add('GET', function(){return false;}, uri, callback, error);
+    XHR.get = function(uri, callback, error, t) {
+        return add('GET', function(){return false;}, uri, callback, error, t);
     };
 
-    XHR.post = function(uri, callback, error) {
-        return add('POST', function(){return false;}, uri, callback, error);
+    XHR.post = function(uri, callback, error, t) {
+        return add('POST', function(){return false;}, uri, callback, error, t);
     };
 
     XHR.retrieve = function(hash, callback, error) {
@@ -158,7 +195,9 @@
         }, escape(encodeURIComponent(self.uri)));
         while (XHR.callback[cb]) cb += '_';
 
+        self.stop_ = self.stop;
         self.stop = function() {
+            self.stop_();
             delete XHR.callback[cb];
         };
         XHR.callback[cb] = self.callback;
@@ -174,10 +213,9 @@
         return true;
     };
 
-    XHR.json = function(uri, callback, error) {
+    XHR.json = function(uri, callback, error, t) {
         var jsonp = alt;
-        if (typeof XMLHttpRequest != 'undefined' &&
-            typeof JSON != 'undefined') {
+        if (useXhrJson) {
             jsonp = function(){ return false; };
             var cb = callback || function(){};
             error = error || function(){};
@@ -186,21 +224,21 @@
                 try {
                     obj = JSON.parse(req.responseText);
                 } catch (e) {
-                    error(req);
+                    error('request', req);
                 }
                 cb(obj);
             };
         }
 
-        return add('GET', jsonp, uri, callback, error);
+        return add('GET', jsonp, uri, callback, error, t);
     };
 
     XHR.json.retrieve = function(hash, callback, error) {
         return retrieve('json', hash, callback, error);
     };
 
-    XHR.jsonp = function(uri, callback, error) {
-        return add('GET', alt, uri, callback, error);
+    XHR.jsonp = function(uri, callback, error, t) {
+        return add('GET', alt, uri, callback, error, t);
     };
 
     XHR.jsonp.retrieve = function(hash, callback, error) {

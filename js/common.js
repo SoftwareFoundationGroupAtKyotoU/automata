@@ -79,7 +79,7 @@ var reportFatalErrors = function(errors) {
 
         var ul = $new('ul');
         errors.forEach(function(e) {
-            var li = $new('li', { child: e.message });
+            var li = $new('li', { child: e.message + ' (' + e.reason + ')' });
             if (e.detail) li.appendChild(toNode(e.detail));
             ul.appendChild(li);
         });
@@ -87,13 +87,14 @@ var reportFatalErrors = function(errors) {
     }
 };
 
-var jsonpFailure = function(jsonp, failed) {
+var jsonpFailure = function(reason, jsonp, failed) {
     failedURIs = {};
     var none = { uri: 'preparing for request' };
     failed.forEach(function(k){ failedURIs[k]=(jsonp[k]||none).uri; });
 
     reportFatalErrors([
-        { message: 'JSONP request timed out:',
+        { message: 'JSONP request failed:',
+          reason: reason,
           detail:  failedURIs }
     ]);
 };
