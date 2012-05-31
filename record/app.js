@@ -150,15 +150,19 @@ var init = function(id) {
                     return e.parentNode.parentNode;
                 };
 
-                $select({
-                    tag: 'a', klass: makeStatusId()
-                }).forEach(function(e) {
-                    removeClass(getParent(e), 'selected');
-                });
                 status.hide();
 
                 var id = pers.get('selected');
-                if (!id) return;
+                if (!id) {
+                    $select({
+                        tag: 'a', klass: makeStatusId()
+                    }).forEach(function(e) {
+                        e = getParent(e);
+                        e.style.display = '';
+                        removeClass(e, 'selected');
+                    });
+                    return;
+                }
 
                 if (self.openAlways) {
                     status.show(id, 'log');
@@ -166,6 +170,12 @@ var init = function(id) {
                     var elem = $(makeStatusId(id));
                     if (elem) {
                         var parent = getParent(elem);
+                        $select({
+                            tag: 'a', klass: makeStatusId()
+                        }).forEach(function(e) {
+                            e = getParent(e);
+                            if (e != parent) e.style.display = 'none';
+                        });
                         appendClass(parent, 'selected');
                         status.show(id, 'log');
                     }
