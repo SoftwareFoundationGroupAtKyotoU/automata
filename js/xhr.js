@@ -19,8 +19,31 @@
     XHR.callback = {};
     XHR.maxConnections = 8;
     XHR.retryDelay = 100;
-    XHR.running = [];
     XHR.defaultTimeout = 20000;
+
+    var running = [];
+    var queue = {
+        q: [],
+        push: function(x) {
+            this.q.push(x);
+            if (this.q.length == 1) this.process();
+        },
+        pop: function() {
+            if (running.length < XHR.maxConnections) {
+                var request = this.q.shift();
+                if (request) request();
+                return true;
+            }
+            return false;
+        },
+        process: function() {
+            while (this.q.length > 0 && this.pop()){}
+            if (this.q.length > 0) {
+                var self = this;
+                setTimeout(function() { self.process(); }, XHR.retryDelay);
+            }
+        }
+    };
 
     var useXhrJson = [ XMLHttpRequest, JSON ].every(function(x) {
         return typeof x != 'undefined';
@@ -44,7 +67,7 @@
         };
         self.stop = function() {
             self.done = true;
-            XHR.running = XHR.running.filter(function(r) {
+            running = running.filter(function(r) {
                 return !r.done;
             });
         };
@@ -56,11 +79,7 @@
         if (typeof timeout == 'undefined') timeout = XHR.defaultTimeout;
 
         var request = function() {
-            if (XHR.running.length >= XHR.maxConnections) {
-                setTimeout(request, XHR.retryDelay);
-                return;
-            }
-            XHR.running.push(self);
+            running.push(self);
 
             if (timeout) {
                 setTimeout(function() {
@@ -98,7 +117,7 @@
                 req.send(data);
             }
         };
-        request();
+        queue.push(request);
 
         return self;
     };
