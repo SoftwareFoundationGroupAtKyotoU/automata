@@ -21,6 +21,13 @@ var init = function(id) {
     var updater = {};
     var history = new History();
     var persistent = new Persistent(GNN.UI.$('persistent'), history);
+
+    var view = {
+        report: new ReportView(),
+        summary: new SummaryView()
+    };
+    var activeView = view.report;
+
     new GNN.UI.Observer(window, 'onpopstate', function(e) {
         if (e.event.state) {
             var hash = e.event.state;
@@ -29,13 +36,15 @@ var init = function(id) {
             for (var k in hash) {
                 if (!deepEq(hash[k], last[k])) keys.push(k);
             }
+
+            keys.forEach(function(k) {
+                var token = hash[k].selected;
+                if (!token) activeView.close(k);
+            })
             persistent.reset(hash);
             keys.forEach(function(k) {
                 var token = hash[k].selected;
-                if (token) {
-                    var update = (updater[k]||{})[token] || function(){};
-                    update();
-                }
+                if (token) activeView.open(k, token);
             })
         }
     });
@@ -185,19 +194,22 @@ var init = function(id) {
                 updateCommentTab(status.tabs.comment);
             };
 
+            self.isOpen = function() {
+                return pers.get('selected') == id;
+            };
             self.open = function() {
                 pers.set('selected', id);
                 updateSelectedRow();
             };
             self.close = function() {
-                if (pers.get('selected') == id) {
+                if (self.isOpen()) {
                     pers.del('selected');
                     updateSelectedRow();
                 }
             };
             self.toggle = function() {
                 history.track(function() {
-                    if (pers.get('selected') == id) {
+                    if (self.isOpen()) {
                         self.close();
                     } else {
                         self.open();
@@ -406,8 +418,10 @@ var init = function(id) {
                     update.comment = function() {
                         fields.updateComment();
                     };
+
                     updater[sc.id][student.token] = update;
                     update();
+                    view.report.add(sc.id, student.token, fields);
 
                     table.appendChild(fields.tr);
                 });
