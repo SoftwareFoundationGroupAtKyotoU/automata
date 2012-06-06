@@ -50,5 +50,5 @@ cmd =
   ].join(' ')
 system(cmd)
 
-print(app.cgi.header)
+print(app.cgi.header('status' => 'OK'))
 puts('done')

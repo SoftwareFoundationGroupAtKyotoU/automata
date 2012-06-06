@@ -89,10 +89,11 @@ elsif path.mime.type == 'text' && 'highlight' == app.params['type'][0]
       "-S src2html.vim",
     ].join(' ');
   Dir.chdir(dir) do
-    print(app.cgi.header('type' => 'text/html'))
+    print(app.cgi.header('type' => 'text/html', 'status' => 'OK'))
     print(`#{vimcmd} #{Shellwords.escape(path.to_s)}`)
   end
 else
-  print(app.cgi.header('type' => path.mime.to_s, 'length' => path.size))
+  args = { 'type' => path.mime.to_s, 'length' => path.size, 'status' => 'OK' }
+  print(app.cgi.header(args))
   print(IO.read(path.to_s))
 end

@@ -47,7 +47,7 @@ begin
     log.latest(:data)['report'] = exercises
   end
 
-  print(app.cgi.header)
+  print(app.cgi.header('status' => 'OK'))
   puts('done')
 rescue => e
   app.error_exit(STATUS[500])
