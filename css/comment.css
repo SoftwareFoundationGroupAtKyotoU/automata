@@ -20,6 +20,7 @@
 }
 
 .unread {
+   position: absolute;
    border-radius: 7px 7px 7px 7px;
    background-color: #dd0011;
    color: white;
@@ -30,6 +31,6 @@
    text-align: center;
    vertical-align: middle;
    display: inline-block;
-   margin-top: -20px;
+   margin-top: -4px;
    margin-left: -14px;
 }

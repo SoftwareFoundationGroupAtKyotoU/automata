@@ -102,6 +102,13 @@ tr:nth-child(2n+1) td {
    background-color: #ccddcc;
 }
 
+table.record {
+   outline-style: none;
+}
+table.record.focus {
+   outline: solid 4px #cccccc;
+}
+
 tr.selected td {
    background-color: #ddeeee;
 }
@@ -395,6 +402,9 @@ ul.comments > li.private {
 
 #store {
    display: none;
+}
+#store.debug {
+   display: block ! important;
 }
 
 ul

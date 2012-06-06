@@ -1,4 +1,5 @@
 var Admin = function(update) {
+    if (typeof update != 'function') update = update.record;
     var command = function(cmd, args, callback, error) {
         apiPost('admin_'+cmd, args, callback, error);
     };

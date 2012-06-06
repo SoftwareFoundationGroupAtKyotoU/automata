@@ -11,6 +11,7 @@
   <script type="text/javascript" src="../js/file_browser.js"></script>
   <script type="text/javascript" src="../js/common.js"></script>
   <script type="text/javascript" src="./admin.js"></script>
+  <script type="text/javascript" src="./model.js"></script>
   <script type="text/javascript" src="./view.js"></script>
   <script type="text/javascript" src="./tabs.js"></script>
   <script type="text/javascript" src="./app.js"></script>
@@ -30,18 +31,19 @@
       <em>JavaScriptが有効でないと正しく表示されません</em>
     </noscript>
 
-    <div id="fatalerror"></div>
-
     <ul>
       <li>提出が済んだ場合は, 「提出済」と記載されます</li>
       <li>提出内容に不備がある場合は, 「要再提出」と記載されます</li>
       <li>提出しても, チェックが完了するまでは「確認中」と記載されます</li>
     </ul>
-    <div id="record"></div>
+
+    <div id="fatalerror"></div>
 
     <form id="store" action=".">
-      <div><textarea cols="80" rows="40" id="persistent"></textarea></div>
+      <div><textarea cols="80" rows="10" id="persistent"></textarea></div>
     </form>
+
+    <div id="record"></div>
   </div>
   <div id="footer">
     <a href="../post/">提出ページ</a>

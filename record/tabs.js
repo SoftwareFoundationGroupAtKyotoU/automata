@@ -1,3 +1,52 @@
+var ToolButton = function(button) {
+    var dummy = GNN.UI.$node('');
+    return {
+        button: button,
+        parent: button.parentNode,
+        alternative: null,
+        enable: function() {
+            if (button.parentNode == this.parent) return;
+            this.parent.replaceChild(button, this.alternative);
+        },
+        disable: function(alternative) {
+            if (button.parentNode != this.parent) return;
+            if (alternative) alternative = GNN.UI.$node(alternative);
+            this.alternative = alternative || dummy;
+            button.blur();
+            this.parent.replaceChild(this.alternative, button);
+        }
+    };
+};
+
+var editMode = function(makeForm, confirm, view, button, restore) {
+    var submit = GNN.UI.$new('input', { attr: {
+        type: 'submit', value: '変更'
+    } });
+    var cancel = GNN.UI.$new('input', { attr: {
+        type: 'button', value: 'キャンセル'
+    } });
+
+    var form = GNN.UI.$new('form', { attr: { action: '.' } });
+    makeForm(form);
+    form.appendChild(submit);
+    form.appendChild(cancel);
+
+    var onConfirm = function(e) {
+        e.stop();
+        button.enable();
+        confirm();
+    };
+    var onCancel = function(e) {
+        button.enable();
+        view.set(restore);
+    };
+    new GNN.UI.Observer(form, 'onsubmit', onConfirm);
+    new GNN.UI.Observer(cancel, 'onclick', onCancel);
+
+    button.disable('編集中');
+    view.set(form);
+};
+
 var LogView = function(id, admin) {
     var pre = function(x) {
         return GNN.UI.$new('pre', { child: GNN.UI.$node(x) });
