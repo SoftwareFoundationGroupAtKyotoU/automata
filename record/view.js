@@ -613,6 +613,8 @@ var ReportView = function(parent, persistent, r, conf) {
     };
     self.focus = function() {
         GNN.UI.appendClass(table, 'focus');
+        var pos = GNN.UI.getPosition(table);
+        window.scrollTo(pos.x, pos.y);
     };
     self.blur = function() {
         GNN.UI.removeClass(table, 'focus');
