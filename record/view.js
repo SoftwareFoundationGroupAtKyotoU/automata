@@ -222,7 +222,8 @@ var CompoundView = function(selector) {
         activate: function(){ return s('activate')(); },
         deactivate: function(){ return s('deactivate')(); },
         open: function(){ return s('open').apply(null, arguments); },
-        close: function(){ return s('close').apply(null, arguments); }
+        close: function(){ return s('close').apply(null, arguments); },
+        keymap: function(){ return s('keymap')(); }
     };
 };
 
@@ -386,7 +387,8 @@ var notifyUnreadCount = function(node, unreads) {
 var ReportView = function(parent, persistent, r, conf) {
     var VIEW_ID = 'report';
     var self = {};
-    var list = {};
+    var list = [];
+
     var selector = new Selector({
         select: function(rf, t){ rf.open(); },
         unselect: function(rf, t) {
@@ -432,6 +434,24 @@ var ReportView = function(parent, persistent, r, conf) {
     };
     new GNN.UI.Observer(table, 'onclick', onFocus);
     new GNN.UI.Observer(status.window, 'onclick', onFocus);
+
+    var keymap = new KeyMap.Proxy(self);
+    keymap.define(
+        'Down', 'next',
+        'j',    'next',
+        'Up',   'prev',
+        'k',    'prev',
+        'Esc', function() {
+            if (conf.openAlways) return;
+            persistent.history.track(function(){ self.close(); });
+            return true;
+        },
+        'Return', function() {
+            if (conf.openAlways || list.length == 0) return;
+            persistent.history.track(function(){ self.open(r.id, list[0]); });
+            return true;
+        }
+    );
 
     var RecordFields = function(node, fields) {
         var id = fields.token;
@@ -557,6 +577,7 @@ var ReportView = function(parent, persistent, r, conf) {
             rf = new RecordFields(GNN.UI.$new('tr'), fields);
             table.appendChild(rf.node);
             selector.add(token, rf);
+            list.push(token);
         }
         rf.fields = fields;
         if (fields.reason == 'comment') {
@@ -572,11 +593,33 @@ var ReportView = function(parent, persistent, r, conf) {
         persistent.del('selected');
         if (selector.selected) selector.unselect(selector.selected.id);
     };
+    self.next = function() {
+        var i = list.indexOf((selector.selected||{}).id);
+        if (0 <= i && i+1 < list.length) {
+            persistent.history.track(function() {
+                selector.select(list[i+1]);
+            });
+            return true;
+        }
+    };
+    self.prev = function() {
+        var i = list.indexOf((selector.selected||{}).id);
+        if (0 < i) {
+            persistent.history.track(function() {
+                selector.select(list[i-1]);
+            });
+            return true;
+        }
+    };
     self.focus = function() {
         GNN.UI.appendClass(table, 'focus');
     };
     self.blur = function() {
         GNN.UI.removeClass(table, 'focus');
+    };
+    self.keymap = function() {
+        keymap.parent = status.keymap();
+        return keymap;
     };
 
     return self;
@@ -595,7 +638,16 @@ ReportView.Parent = function(parent, persistent) {
     });
 
     var self = {};
+    var list = [];
     var active = false;
+
+    var keymap = new KeyMap.Proxy(self);
+    keymap.define(
+        'Left',  'prev',
+        'h',     'prev',
+        'Right', 'next',
+        'l',     'next'
+    );
 
     var div = GNN.UI.$new('div', { id: 'report_view', klass: 'view' });
     div.appendChild(loadingIcon());
@@ -609,6 +661,7 @@ ReportView.Parent = function(parent, persistent) {
     self.push = function(r, conf) {
         var pers = new Persistent.Entry(persistent, r.id);
         selector.add(r.id, new ReportView(div, pers, r, conf));
+        list.push(r.id);
         if (!selector.selected) selector.select(r.id);
     };
     self.put = function(id, token, fields) {
@@ -631,6 +684,30 @@ ReportView.Parent = function(parent, persistent) {
     self.close = function(id) {
         var view = selector.get(id);
         if (view) view.close(id);
+    };
+    self.keymap = function() {
+        var focus = persistent.get('focus');
+        var view = focus && selector.get(focus);
+        if (view) keymap.parent = view.keymap();
+        return keymap;
+    };
+    self.next = function() {
+        var focus = persistent.get('focus');
+        if (!focus) return;
+        var i = list.indexOf(focus);
+        if (0 <= i && i+1 < list.length) {
+            persistent.set('focus', list[i+1]);
+            return true;
+        }
+    };
+    self.prev = function() {
+        var focus = persistent.get('focus');
+        if (!focus) return;
+        var i = list.indexOf(focus);
+        if (0 < i) {
+            persistent.set('focus', list[i-1]);
+            return true;
+        }
     };
 
     return self;
@@ -717,16 +794,43 @@ var StatusWindow = function(id, tabs, persistent) {
         window: window,
         target: null,
         tabs: {},
+        list: [],
+        select: function(name) {
+            persistent.history.track(function() {
+                if (self.target) self.show(self.target, name, true);
+            });
+        },
+        next: function() {
+            var name = this.persistent.get('selected');
+            var i = this.list.indexOf(name);
+            if (0 <= i && i + 1 < this.list.length) {
+                this.select(this.list[i+1]);
+                return true;
+            } else if (i + 1 == this.list.length) {
+                this.select(this.list[0]);
+                return true;
+            }
+        },
+        prev: function() {
+            var name = this.persistent.get('selected');
+            var i = this.list.indexOf(name);
+            if (0 < i) {
+                this.select(this.list[i-1]);
+                return true;
+            } else if (i == 0) {
+                this.select(this.list[this.list.length-1]);
+                return true;
+            }
+        },
         add: function(tab) {
             this.tabs[tab.name] = tab;
+            this.list.push(tab.name);
             var self = this;
             var a = GNN.UI.$new('a', { attr: { href: '.' } });
             a.appendChild(GNN.UI.$text(tab.label));
             new GNN.UI.Observer(a, 'onclick', function(e) {
                 e.stop();
-                persistent.history.track(function() {
-                    if (self.target) self.show(self.target, tab.name, true);
-                });
+                self.select(tab.name);
             });
             var button = this.tabButton(tab.name, a);
             tabbar.appendChild(button);
@@ -793,6 +897,13 @@ var StatusWindow = function(id, tabs, persistent) {
             window.style.display = 'none';
         }
     };
+
+    var keymap = new KeyMap(self);
+    keymap.define(
+        'Tab',   'next',
+        'S-Tab', 'prev'
+    );
+    self.keymap = function(){ return keymap; };
 
     (tabs||[]).forEach(function(t){ self.add(t) });
 

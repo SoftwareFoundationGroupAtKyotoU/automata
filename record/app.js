@@ -17,6 +17,16 @@ var init = function(id) {
     var views = new CompoundView(selector);
     views.activate();
 
+    var keymap = {
+        global: new KeyMap(null),
+        nil: new KeyMap(null)
+    };
+    new GNN.UI.Observer(document, 'onkeypress', function(e) {
+        var map = views.keymap() || keymap.nil;
+        var ev = e.event;
+        if (map.lookup(ev) ? map.exec(ev) : keymap.global.exec(ev)) e.stop();
+    });
+
     new GNN.UI.Observer(window, 'onpopstate', function(e) {
         if (e.event.state) {
             var hash = e.event.state;
