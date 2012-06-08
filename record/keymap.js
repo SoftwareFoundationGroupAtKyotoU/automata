@@ -137,6 +137,7 @@ var KeyMap = (function() {
         left_shift: '<',
         equals: '=',
         right_shift: '>',
+        subtract: '-',
         comma: ',',
         period: '.',
         slash: '/',
@@ -151,7 +152,7 @@ var KeyMap = (function() {
     for (var k in KeyEvent) { if (/^DOM_VK_(?![A-Z0-9]$)/.test(k)) {
         var v = KeyEvent[k];
         k = k.substr('DOM_VK_'.length).toLowerCase();
-        var names = [ toCamelCase(k.replace(/^numpad/, 'num')) ];
+        var names = toCamelCase(k.replace(/^numpad/, 'num'));
         if (k in specialNames) names = specialNames[k];
         code2key[v] = names;
     } }
@@ -189,7 +190,7 @@ var KeyMap = (function() {
                 key = String.fromCharCode(charCode + 64);
             }
         }
-        if (charCode > 0) {
+        if (charCode > 0 && !key) {
             key = String.fromCharCode(charCode);
             if (key in key2code) {
                 if (/^\s$/.test(key) && event.shiftKey) shift = true;
@@ -198,7 +199,7 @@ var KeyMap = (function() {
                 key = key.toLowerCase();
                 if (key != key.toUpperCase()) {
                     if (event.shiftKey) key = key.toUpperCase();
-                } else {
+                } else if (event.shiftKey) {
                     shift = true;
                 }
             }
