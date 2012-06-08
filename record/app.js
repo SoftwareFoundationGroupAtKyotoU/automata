@@ -9,6 +9,12 @@ var init = function(id) {
     var div = GNN.UI.$(id);
     var history = new History();
     var persistent = new Persistent(GNN.UI.$('persistent'), history);
+    var urlhash = '#';
+    if (/#debug$/.test(location.href)) {
+        GNN.UI.appendClass(GNN.UI.$('persistent'), 'debug');
+        uslhash = '#debug';
+        history.debug = true;
+    }
 
     var selector = new Selector({}, 'activate', 'deactivate');
     selector.add('report', new ReportView.Parent(div, persistent));
@@ -113,7 +119,7 @@ var init = function(id) {
 
         // initial state
         persistent.set('focus', (reports[0]||{}).id);
-        history.track(function(){ history.push(persistent.hash, '#'); });
+        history.track(function(){ history.push(persistent.hash, urlhash); });
     };
 
     async = {

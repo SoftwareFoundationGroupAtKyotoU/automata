@@ -37,7 +37,7 @@ var History = function() {
     };
 
     self.push = function(obj, url) {
-        url = url || '#';
+        url = url || self.debug ? '#debug' : '#';
         if (tracking) {
             var title = document.getElementsByTagName('title')[0] || {};
             if (!last) {
