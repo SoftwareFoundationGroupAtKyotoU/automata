@@ -435,19 +435,25 @@ var ReportView = function(parent, persistent, r, conf) {
     new GNN.UI.Observer(table, 'onclick', onFocus);
     new GNN.UI.Observer(status.window, 'onclick', onFocus);
 
+    var onClose = function() {
+        if (conf.openAlways) return;
+        persistent.history.track(function(){ self.close(); });
+        return true;
+    };
+
     var keymap = new KeyMap.Proxy(self);
     keymap.define(
         'Down', 'next',
         'j',    'next',
         'Up',   'prev',
         'k',    'prev',
-        'Esc', function() {
-            if (conf.openAlways) return;
-            persistent.history.track(function(){ self.close(); });
-            return true;
-        },
+        'Esc', onClose,
         'Return', function() {
             if (conf.openAlways || list.length == 0) return;
+            if (selector.selected) {
+                onClose();
+                return true;
+            }
             persistent.history.track(function(){ self.open(r.id, list[0]); });
             return true;
         }
