@@ -104,9 +104,11 @@ var init = function(id) {
                 u.update.comment();
             });
 
+            if (!persistent.get(r.id)) persistent.set(r.id, {});
+
             var pers = new Persistent.Entry(persistent, r.id);
             var t = pers.get('selected') || conf.token;
-            if (!conf.openAlways && t) views.open(r.id, t);
+            if (t) views.open(r.id, t);
         });
 
         // initial state
