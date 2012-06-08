@@ -157,6 +157,9 @@ var KeyMap = (function() {
         code2key[v] = names;
     } }
     code2key[60] = '<';
+    code2key[186] = ';';
+    code2key[187] = '=';
+    code2key[189] = '-';
 
     var split = function(keyseq) {
         var list = keyseq.split(/ +/);
@@ -183,11 +186,13 @@ var KeyMap = (function() {
             } else {
                 charCode = event.keyCode;
             }
-        } else if (event.ctrlKey && 27 <= charCode && charCode < 31) {
-            if (charCode == 27) {
+        } else if (charCode < 31) {
+            if (charCode == 13 || charCode == 27) {
+                if (event.shiftKey) shift = true;
                 key = code2key[charCode];
-            } else {
-                key = String.fromCharCode(charCode + 64);
+            } else if (event.ctrlKey) {
+                key = String.fromCharCode(charCode + 96);
+                if (event.shiftKey) key = key.toUpperCase();
             }
         }
         if (charCode > 0 && !key) {
