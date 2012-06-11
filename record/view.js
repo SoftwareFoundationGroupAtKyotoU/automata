@@ -1,162 +1,3 @@
-var History = function() {
-    var self = {};
-    var tracking = false;
-    var last;
-
-    var pushState = function(){};
-    var replaceState = function(){};
-    if (window.history.pushState) {
-        pushState = function(obj, title, url) {
-            window.history.pushState(obj, title, url);
-        };
-    }
-    if (window.history.replaceState) {
-        replaceState = function(obj, title, url) {
-            window.history.replaceState(obj, title, url);
-        };
-    }
-
-    self.track = function(block) {
-        var trackingStarted = false;
-        if (!tracking) {
-            tracking = true;
-            last = null;
-            trackingStarted = true;
-        }
-
-        block(self);
-
-        if (trackingStarted) {
-            tracking = false;
-        }
-    };
-
-    self.next = function(block) {
-        tracking = false;
-        self.track(block);
-    };
-
-    self.push = function(obj, url) {
-        url = url || self.debug ? '#debug' : '#';
-        if (tracking) {
-            var title = document.getElementsByTagName('title')[0] || {};
-            if (!last) {
-                pushState(obj, GNN.UI.text(title), url);
-                last = obj;
-            } else {
-                replaceState(obj, GNN.UI.text(title), url);
-            }
-        }
-    };
-
-    return self;
-};
-
-var Persistent = function(node, hist) {
-    if (typeof JSON == 'undefined') {
-        return {
-            del: function(){ return this; },
-            set: function(){ return this; },
-            get: function(){ return null; }
-        };
-    }
-
-    var serialize = function(hash) {
-        return JSON.stringify(hash);
-    };
-    var deserialize = function(text) {
-        try {
-            return JSON.parse(text);
-        } catch (e) {
-            // ignore
-        }
-    };
-    var hooks = [];
-
-    return {
-        hash: deserialize(node.value) || {},
-        history: hist,
-        addHook: function(hook) {
-            hooks.push(hook);
-        },
-        move: function(url) {
-            var history = this.history;
-            var last = this.hash;
-            history.next(function() {
-                history.push(last, url);
-                if (/^#/.test(url)) {
-                    location.href = url;
-                    history.push(last, url);
-                }
-            });
-            return this;
-        },
-        reset: function(hash) {
-            this.hash = hash;
-            node.value = serialize(this.hash);
-        },
-        del: function(keys) {
-            var dummy;
-            return this.set(keys, dummy);
-        },
-        set: function(keys, value) {
-            if (!(keys instanceof Array)) keys = [keys];
-            if (keys.length <= 0) keys.push('');
-            var keys_ = keys.concat([]);
-            var key = keys.pop();
-
-            var entry = keys.reduce(function(r, x) {
-                if (typeof r[x] == 'undefined') r[x] = {};
-                return r[x];
-            }, this.hash);
-            var diff = !deepEq(entry[key], value);
-            entry[key] = value;
-
-            if (diff) {
-                var self = this;
-                hooks.forEach(function(hook) {
-                    hook(keys_, self.hash);
-                });
-                hist.push(this.hash);
-            }
-            this.reset(this.hash);
-            return this;
-        },
-        get: function(keys) {
-            if (!(keys instanceof Array)) keys = [keys];
-            if (keys.length <= 0) keys.push('');
-
-            return keys.reduce(function(r, x) {
-                return (r||{})[x];
-            }, this.hash);
-        }
-    };
-};
-Persistent.Entry = function(parent, keys) {
-    if (!(keys instanceof Array)) keys = [keys];
-    return {
-        parent: parent,
-        history: parent.history,
-        keys: keys,
-        move: function(url) {
-            this.parent.move(url);
-            return this;
-        },
-        del: function(keys) {
-            return this.parent.del(this.keys.concat(keys));
-        },
-        set: function(keys, value) {
-            if (!(keys instanceof Array)) keys = [keys];
-            this.parent.set(this.keys.concat(keys), value);
-            return this;
-        },
-        get: function(keys) {
-            if (!(keys instanceof Array)) keys = [keys];
-            return this.parent.get(this.keys.concat(keys));
-        }
-    };
-};
-
 var Selector = function(cmd, select, unselect) {
     var self = { selected: null };
     var elements = {};
@@ -180,6 +21,7 @@ var Selector = function(cmd, select, unselect) {
 
     self.add = function(id, element) {
         elements[id] = element;
+        return element;
     };
     self.forEach = function(f) {
         for (var id in elements) f(id, elements[id]);
@@ -208,21 +50,21 @@ var CompoundView = function(selector) {
         var recv = selector.selected||{}; var f = recv[x] || function(){};
         return function(){ return f.apply(recv, arguments); };
     };
+    var a = function(x) {
+        return function() {
+            var args = arguments;
+            selector.forEach(function(key, value) {
+                value[x].apply(value, args);
+            });
+        };
+    };
     return {
-        setup: function(rs, us, conf) {
-            selector.forEach(function(key, value) {
-                value.setup(rs, us, conf);
-            });
-        },
-        put: function(id, token, fields) {
-            selector.forEach(function(key, value) {
-                value.put(id, token, fields);
-            });
-        },
+        setup: function(rs, us, conf){ a('setup')(rs, us, conf); },
+        put: function(id, token, fields){ a('put')(id, token, fields); },
         activate: function(){ return s('activate')(); },
         deactivate: function(){ return s('deactivate')(); },
-        open: function(){ return s('open').apply(null, arguments); },
-        close: function(){ return s('close').apply(null, arguments); },
+        open: function(){ a('open').apply(null, arguments); },
+        close: function(){ a('close').apply(null, arguments); },
         keymap: function(){ return s('keymap')(); }
     };
 };
@@ -262,10 +104,9 @@ var Field = (function() {
         return self;
     };
 
-    var Field = GNN.inherit(function(conf, prefix, klass, u) {
+    var Field = GNN.inherit(function(conf, prefix, klass, u, node) {
         var self = {};
 
-        var node = GNN.UI.$new('td', { klass: klass });
         var data = u[klass] || (u.record||{})[klass];
         if (!data && !u.record) data = loadingIcon();
         var extra = u.record || {};
@@ -351,7 +192,7 @@ var Field = (function() {
             parent.appendChild(GNN.UI.$node(data));
             return {};
         },
-        factory: function(prefix, klass, u) {
+        factory: function(prefix, klass, u, td) {
             var conf = Field[klass] || Field[klass+'_'];
             if (!conf) {
                 if (/^optional/.test(klass)) {
@@ -360,7 +201,8 @@ var Field = (function() {
                     conf = Field.other;
                 }
             }
-            return new Field(conf, prefix, klass, u);
+            td = td || GNN.UI.$new('td', { klass: klass });
+            return new Field(conf, prefix, klass, u, td);
         }
     });
     return Field;
@@ -386,7 +228,7 @@ var notifyUnreadCount = function(node, unreads) {
 
 var ReportView = function(parent, persistent, r, conf) {
     var VIEW_ID = 'report';
-    var self = {};
+    var self = { id: VIEW_ID };
     var list = [];
 
     var selector = new Selector({
@@ -423,7 +265,7 @@ var ReportView = function(parent, persistent, r, conf) {
         }
     };
 
-    var status = makeStatus(persistent, r, conf, updater);
+    var status = makeStatus(persistent, self, r, conf, updater);
     var admin = conf.admin && new Admin(updater);
 
     parent.appendChild(table);
@@ -450,10 +292,7 @@ var ReportView = function(parent, persistent, r, conf) {
         'Esc', onClose,
         'Return', function() {
             if (conf.openAlways || list.length == 0) return;
-            if (selector.selected) {
-                onClose();
-                return true;
-            }
+            if (selector.selected) return onClose();
             persistent.history.track(function(){ self.open(r.id, list[0]); });
             return true;
         }
@@ -467,7 +306,9 @@ var ReportView = function(parent, persistent, r, conf) {
             updater.record(r.id, self.fields.token);
         };
 
-        self.isOpen = function(){ return persistent.get('selected') == id; };
+        self.isOpen = function() {
+            return persistent.get('selected') == id;
+        };
         self.open = function() {
             persistent.set('selected', id);
             self.show();
@@ -488,7 +329,7 @@ var ReportView = function(parent, persistent, r, conf) {
                 }
             });
         };
-        self.show = function(noRedraw) {
+        self.show = function(noRedraw, noStatus) {
             var u = self.fields;
             var id = u.token;
             var record = u.record;
@@ -498,13 +339,14 @@ var ReportView = function(parent, persistent, r, conf) {
             if (typeof selected == 'undefined' || self.isOpen()) {
                 tr.style.display = '';
                 if (self.isOpen()) {
-                    status.show(id, 'log');
+                    selector.selected = self;
+                    if (!noStatus) status.show(id, 'log');
                     GNN.UI.appendClass(tr, 'selected');
                 } else {
                     GNN.UI.removeClass(tr, 'selected');
                 }
             } else {
-                tr.style.display = 'none';
+                self.hide();
             }
             if (noRedraw) return;
             GNN.UI.removeAllChildren(tr);
@@ -589,7 +431,7 @@ var ReportView = function(parent, persistent, r, conf) {
         if (fields.reason == 'comment') {
             rf.updateComment();
         } else {
-            rf.show();
+            rf.show(false, fields.reason != 'record');
         }
     };
     self.open = function(id, token) {
@@ -618,7 +460,7 @@ var ReportView = function(parent, persistent, r, conf) {
         }
     };
     self.focus = function() {
-        GNN.UI.appendClass(table, 'focus');
+        if (!conf.openAlways) GNN.UI.appendClass(table, 'focus');
         var pos = GNN.UI.getPosition(table);
         window.scrollTo(pos.x, pos.y);
     };
@@ -639,13 +481,13 @@ ReportView.Parent = function(parent, persistent) {
     persistent.addHook(function(keys, store) {
         if (keys[0] == 'focus') {
             selector.select(store.focus);
-        } else {
-            selector.select(keys[0]);
-            store.focus = keys[0];
+        } else if (keys[0] == 'report') {
+            selector.select(keys[1]);
+            store.focus = keys[1];
         }
     });
 
-    var self = {};
+    var self = { id: 'report', label: '課題ごと' };
     var list = [];
     var active = false;
 
@@ -658,19 +500,20 @@ ReportView.Parent = function(parent, persistent) {
     );
 
     var div = GNN.UI.$new('div', { id: 'report_view', klass: 'view' });
-    div.appendChild(loadingIcon());
     parent.appendChild(div);
-    self.div = div;
 
     self.setup = function(rs, us, conf) {
         GNN.UI.removeAllChildren(div);
         rs.forEach(function(r){ self.push(r, conf); });
+        if (!selector.selected) {
+            var rid = persistent.get('focus') || (rs[0]||{}).id;
+            selector.select(rid);
+        }
     };
     self.push = function(r, conf) {
-        var pers = new Persistent.Entry(persistent, r.id);
+        var pers = new Persistent.Entry(persistent, 'report', r.id);
         selector.add(r.id, new ReportView(div, pers, r, conf));
         list.push(r.id);
-        if (!selector.selected) selector.select(r.id);
     };
     self.put = function(id, token, fields) {
         var view = selector.get(id);
@@ -721,12 +564,367 @@ ReportView.Parent = function(parent, persistent) {
     return self;
 };
 
-var SummaryView = function() {
-    var self = {};
+var SummaryView = function(parent, persistent) {
+    var VIEW_ID = 'summary';
+    var self = { id: VIEW_ID, label: '一覧' };
+    var list = { rs: [], us: [] };
+    var active = false;
 
-    self.setup = function() {
+    var RecordRow = function(node, selector) {
+        var self = { node: node, selector: selector };
+        self.show = function() {
+            node.style.display = '';
+        };
+        self.hide = function() {
+            selector.forEach(function(id, rf){ rf.close(); });
+            node.style.display = 'none';
+        };
+        return self;
     };
-    self.put = function() {
+
+    var FieldSelector = function() {
+        var self = { selected: null };
+
+        var rows = new Selector({
+        }, 'show', 'hide');
+
+        self.addRow = function(uid, node) {
+            var sel = new Selector({
+                select: function(rf){ rf.open(); },
+                unselect: function(rf){ rf.close(); }
+            }, 'show', 'hide');
+            return rows.add(uid, new RecordRow(node, sel));
+        };
+        self.row = function(uid){ return rows.get(uid); };
+        self.add = function(rid, uid, rf) {
+            var row = rows.get(uid);
+            if (row) row.selector.add(rid, rf);
+        };
+        self.get = function(rid, uid) {
+            var row = rows.get(uid);
+            if (row) return row.selector.get(rid);
+        };
+        self.select = function(rid, uid) {
+            rows.select(uid);
+            var selected = rows.selected;
+            if (selected) {
+                selected.selector.select(rid);
+                self.selected = selected.selector.selected;
+            }
+        };
+        self.unselect = function(rid) {
+            var rf = self.selected;
+            if (rf && rf.rid == rid) {
+                self.selected = null;
+                rf.close();
+                rows.forEach(function(rid, row){ row.show(); });
+            }
+        };
+
+        return self;
+    };
+    var selector = new FieldSelector();
+
+    var div = GNN.UI.$new('div', { id: 'report_view', klass: 'view' });
+    parent.appendChild(div);
+
+    var table = GNN.UI.$new('table', {
+        id: 'summary', klass: 'record', attr: { summary: 'status summary' }
+    });
+
+    var updater = {
+        record: function(rid, uid) {
+            var rf = selector.get(rid, uid);
+            if (rf && (rf.fields||{}).update) {
+                rf.fields.update();
+                rf.fields.update.comment();
+            }
+        },
+        comment: function(rid, uid) {
+            var rf = selector.get(rid, uid);
+            if (rf && (rf.fields||{}).update) rf.fields.update.comment();
+        }
+    };
+
+    var onClose = function() {
+        if (selector.selected) {
+            var rid = selector.selected.rid;
+            persistent.history.track(function(){ self.close(rid); });
+            return true;
+        }
+    };
+
+    var keymap = new KeyMap.Proxy(self);
+    keymap.define(
+        'Down', 'nextUser',
+        'j',    'nextUser',
+        'Up',   'prevUser',
+        'k',    'prevUser',
+        'Left',  'prev',
+        'h',     'prev',
+        'Right', 'next',
+        'l',     'next',
+        'Esc', onClose,
+        'Return', function() {
+            if (list.length == 0) return;
+            if (selector.selected) return onClose();
+            persistent.history.track(function() {
+                self.open(list.rs[0], list.us[0]);
+            });
+            return true;
+        }
+    );
+
+    var RecordField = function(node, r, fields, status, conf) {
+        var rid = r.id; var uid = fields.token;
+        var self = { rid: rid, uid: uid, fields: fields, node: node };
+        var pers = new Persistent.Entry(persistent, 'summary');
+
+        var updateRecord = function(){ updater.record(rid, uid); };
+        var admin = conf.admin && new Admin(updater);
+
+        self.isOpen = function() {
+            return pers.get(rid, 'selected')==uid;
+        };
+        self.open = function() {
+            var hash = pers.get();
+            for (var r in hash) pers.del(r, 'selected');
+            pers.set([rid, 'selected'], uid);
+            pers.set('user', uid);
+            self.show();
+        };
+        self.close = function() {
+            if (self.isOpen()) {
+                pers.del(rid, 'selected');
+                status.hide();
+            }
+            self.hide();
+        };
+        self.toggle = function() {
+            pers.history.track(function() {
+                if (self.isOpen()) {
+                    self.close();
+                    selector.unselect(rid);
+                } else {
+                    selector.select(rid, uid);
+                }
+            });
+        };
+        self.show = function(noRedraw, noStatus) {
+            var u = self.fields;
+            var record = u.record;
+
+            var td = self.node;
+            var tr = self.node.parentNode;
+            if (pers.get('user') == uid || self.isOpen()) {
+                tr.style.display = '';
+                if (self.isOpen()) {
+                    selector.selected = self;
+                    if (!noStatus) status.show(uid, 'log');
+                    GNN.UI.appendClass(td, 'selected');
+                } else {
+                    GNN.UI.removeClass(td, 'selected');
+                }
+            } else if (pers.get('user') == uid) {
+                self.hide();
+            }
+            if (noRedraw) return;
+            GNN.UI.removeAllChildren(td);
+
+            var prefix = [ VIEW_ID, rid ].join('-');
+            var klass = r.field;
+            var fld = Field.factory(prefix, klass, u, td);
+
+            if (klass == 'status') {
+                if (fld.a) {
+                    new GNN.UI.Observer(fld.a, 'onclick', function(e) {
+                        e.stop();
+                        self.toggle();
+                    });
+                }
+
+                if (fld.edit && conf.admin) {
+                    fld.node.appendChild(fld.edit.node);
+                    fld.edit.callback = function(v) {
+                        admin.editStatus({
+                            id: record.submit, user: uid,
+                            report: rid, status: v
+                        }, updateRecord, updateRecord);
+                    };
+                }
+
+                if (fld.data == 'check' && r.update == 'auto') {
+                    u.autoUpdate = true;
+                    var node = fld.node;
+                    node.insertBefore(loadingIcon(), node.firstChild);
+                }
+            }
+
+            self.updateComment();
+        };
+        self.hide = function() {
+            GNN.UI.removeClass(self.node, 'selected');
+            status.hide();
+        };
+        self.updateComment = function() {
+            var u = self.fields;
+            var count = u.comment || {};
+            var id = u.token;
+            var node = GNN.UI.$([VIEW_ID, rid, uid, 'status'].join('-'));
+            node = (node||{}).parentNode;
+            if (node) notifyUnreadCount(node, count.unreads || 0);
+
+            if (!self.isOpen()) return;
+
+            var comment = status.tabs.comment;
+            if (comment) {
+                var btn = status.tabButton('comment');
+                var link = btn.lastChild;
+                notifyUnreadCount(btn, count.unreads || 0);
+
+                GNN.UI.removeAllChildren(link);
+                var label = comment.label+'('+(count.comments||0)+')';
+                link.appendChild(GNN.UI.$node(label));
+            }
+        };
+        self.keymap = function(){ return status.keymap(); };
+
+        return self;
+    };
+
+    var status = {};
+
+    self.setup = function(rs, us, conf) {
+        GNN.UI.removeAllChildren(div);
+        GNN.UI.removeAllChildren(table);
+        div.appendChild(table);
+
+        var getLabel = function(r, x, l) {
+            r.some(function(c){ return x == c.field ? (l=c.label) : false; });
+            return l;
+        };
+        var cols = rs.map(function(x, i){ return { field: 'status', i: i }; });
+        cols.unshift({ field: 'name', i: 0 });
+        cols.map(function(x) {
+            x.label = getLabel(rs[x.i].record, x.field);
+            x.id = rs[x.i].id;
+            x.update = rs[x.i].update;
+            return x;
+        }).filter(function(x){ return x.label; });
+
+        var tr = GNN.UI.$new('tr');
+        cols.forEach(function(col) {
+            tr.appendChild(GNN.UI.$new('th', {
+                className: col.field, child: col.label
+            }));
+        });
+        table.appendChild(tr);
+
+        rs.forEach(function(r) {
+            list.rs.push(r.id);
+
+            var pers = new Persistent.Entry(persistent, 'summary', r.id);
+            status[r.id] = makeStatus(pers, self, r, conf, updater);
+            div.appendChild(status[r.id].window);
+        });
+
+        var user = persistent.get('summary', 'user');
+        us.forEach(function(u) {
+            list.us.push(u.token);
+
+            var tr = GNN.UI.$new('tr');
+            table.appendChild(tr);
+            var row = selector.addRow(u.token, tr);
+            if (user && user != u.token) row.hide();
+
+            cols.forEach(function(col) {
+                var r = rs[col.i];
+                var td = GNN.UI.$new('td', { klass: col.field });
+                tr.appendChild(td);
+
+                if (col.field == 'name') {
+                    var st = { show: function(){}, hide: function(){} };
+                    var rf = new RecordField(td, col, u, st, conf);
+                    rf.show();
+                } else {
+                    var rf = new RecordField(td, col, u, status[r.id], conf);
+                    selector.add(r.id, u.token, rf);
+                }
+            });
+        });
+    };
+    self.put = function(id, token, fields) {
+        var rf = selector.get(id, token);
+        if (!rf) return;
+        rf.fields = fields;
+        if (fields.reason == 'comment') {
+            rf.updateComment();
+        } else {
+            rf.show(false, fields.reason != 'record');
+        }
+    };
+    self.activate = function() {
+        div.style.display = '';
+        active = true;
+    };
+    self.deactivate = function() {
+        div.style.display = 'none';
+        active = false;
+    };
+    self.open = function(id, token) {
+        selector.select(id, token);
+    };
+    self.close = function(id) {
+        selector.unselect(id);
+    };
+    self.next = function() {
+        var rf = selector.selected;
+        if (!rf) return;
+        var i = list.rs.indexOf(rf.rid);
+        if (0 <= i && i+1 < list.rs.length) {
+            persistent.history.track(function() {
+                self.open(list.rs[i+1], rf.uid);
+            });
+            return true;
+        }
+    };
+    self.prev = function() {
+        var rf = selector.selected;
+        if (!rf) return;
+        var i = list.rs.indexOf(rf.rid);
+        if (0 < i) {
+            persistent.history.track(function() {
+                self.open(list.rs[i-1], rf.uid);
+            });
+            return true;
+        }
+    };
+    self.nextUser = function() {
+        var rf = selector.selected;
+        if (!rf) return;
+        var i = list.us.indexOf(rf.uid);
+        if (0 <= i && i+1 < list.us.length) {
+            persistent.history.track(function() {
+                self.open(rf.rid, list.us[i+1]);
+            });
+            return true;
+        }
+    };
+    self.prevUser = function() {
+        var rf = selector.selected;
+        if (!rf) return;
+        var i = list.us.indexOf(rf.uid);
+        if (0 < i) {
+            persistent.history.track(function() {
+                self.open(rf.rid, list.us[i-1]);
+            });
+            return true;
+        }
+    };
+    self.keymap = function() {
+        var rf = selector.selected;
+        keymap.parent = rf ? rf.keymap() : null;
+        return keymap;
     };
 
     return self;
@@ -757,13 +955,14 @@ var showDropdown = function(target, list, callback) {
     });
 };
 
-var makeStatus = function(persistent, r, conf, updater) {
+var makeStatus = function(persistent, view, r, conf, updater) {
+    var prefix = view.id + '-' + r.id;
     var admin = conf.admin && new Admin(updater);
-    var logView = new LogView(r.id, admin);
-    var solvedList = new SolvedView(r.id, admin);
-    var testResult = new TestResultView(r.id, admin);
-    var fileBrowser = new FileBrowserView(r.id);
-    var comment = new CommentView(r.id, updater, admin);
+    var logView = new LogView(prefix, r.id, admin);
+    var solvedList = new SolvedView(prefix, r.id, admin);
+    var testResult = new TestResultView(prefix, r.id, admin);
+    var fileBrowser = new FileBrowserView(prefix, r.id);
+    var comment = new CommentView(prefix, r.id, updater, admin);
     var tabs = [
         [ true, logView ],
         [ true, solvedList ],
@@ -773,7 +972,7 @@ var makeStatus = function(persistent, r, conf, updater) {
         []
     ];
     tabs = tabs.reduce(function(r, x){ return r.concat(x[0]?x[1]:[]); }, []);
-    return new StatusWindow(r.id, tabs, persistent);
+    return new StatusWindow(prefix, tabs, persistent);
 };
 
 var StatusWindow = function(id, tabs, persistent) {

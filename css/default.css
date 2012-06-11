@@ -105,7 +105,8 @@ tr:nth-child(2n+1) td {
 table.record {
    outline-style: none;
 }
-table.record.focus {
+table.record.focus,
+td.selected {
    outline: dashed 2px #cccccc;
 }
 
@@ -410,12 +411,19 @@ ul.comments > li.private {
    top: 0;
 }
 
+#view_switch
+{
+   margin-top: 0.5em;
+   text-align: right;
+}
+
 ul
 {
    margin: 0;
 }
 
-ul#selector
+ul#selector,
+#view_switch ul
 {
    display: inline;
    list-style-type: none;
@@ -423,25 +431,29 @@ ul#selector
    padding: 0 .5em;
 }
 
-ul#selector li
+ul#selector li,
+#view_switch ul li
 {
    display: inline;
    margin-left: 0;
 }
 
-#selector a
+#selector a,
+#view_switch a
 {
    font-weight: bold;
    padding: 0.3em;
    margin: 1em;
 }
 
-#selector a:visited
+#selector a:visited,
+#view_switch a:visited
 {
    color: darkblue;
 }
 
-#selector a:visited:hover
+#selector a:visited:hover,
+#view_switch a:hover
 {
    background-color: #e0e0ff;
    outline-color: blue;
@@ -451,7 +463,11 @@ ul#selector li
 #selector .selected a:hover,
 #selector .selected a:active,
 #selector .selected a:link,
-#selector .selected a:visited
+#selector .selected a:visited,
+#view_switch a.selected,
+#view_switch a.selected:hover,
+#view_switch a.selected:active,
+#view_switch a.selected:visited
 {
    color: white;
    background-color: gray;

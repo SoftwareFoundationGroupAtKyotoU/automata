@@ -47,7 +47,7 @@ var editMode = function(makeForm, confirm, view, button, restore) {
     view.set(form);
 };
 
-var LogView = function(id, admin) {
+var LogView = function(prefix, id, admin) {
     var pre = function(x) {
         return GNN.UI.$new('pre', { child: GNN.UI.$node(x) });
     };
@@ -184,7 +184,7 @@ var LogView = function(id, admin) {
     return self;
 };
 
-var SolvedView = function(id, admin) {
+var SolvedView = function(prefix, id, admin) {
     var List = function(target) {
         var getUserRecord = function(record, what) {
             record = record.reduce(function(r, u) {
@@ -299,7 +299,7 @@ var SolvedView = function(id, admin) {
     };
 };
 
-var TestResultView = function(id, admin) {
+var TestResultView = function(prefix, id, admin) {
     var $new = GNN.UI.$new;
 
     var List = function(target) {
@@ -441,13 +441,13 @@ var TestResultView = function(id, admin) {
     };
 };
 
-var FileBrowserView = function(id) {
+var FileBrowserView = function(prefix, id) {
     var $new = GNN.UI.$new;
     var $text = GNN.UI.$text;
 
     var Breadcrum = function(browser, parent) {
         var ul = $new('ul', {
-            id: [ id, 'breadcrum' ].join('_'),
+            id: [ prefix, 'breadcrum' ].join('_'),
             klass: 'breadcrums'
         });
 
@@ -460,7 +460,7 @@ var FileBrowserView = function(id) {
         };
         return {
             set: function(location) {
-                if (!GNN.UI.$([ id, 'breadcrum' ].join('_'))) {
+                if (!GNN.UI.$([ prefix, 'breadcrum' ].join('_'))) {
                     parent.add([ '場所:', ul ]);
                 }
                 GNN.UI.removeAllChildren(ul);
@@ -625,7 +625,7 @@ var FileBrowserView = function(id) {
     };
 };
 
-var CommentView = function(id, updater, admin) {
+var CommentView = function(prefix, id, updater, admin) {
     var $new = GNN.UI.$new;
 
     var acl2text = function(acl) {
@@ -671,7 +671,9 @@ var CommentView = function(id, updater, admin) {
         if (admin) {
             aclChecks = [];
             [ 'user', 'other' ].forEach(function(a) {
-                var check_id = [ 'acl', id, a ].join('_');
+                var check_id = [
+                    prefix, 'comment'+(entry.id||''), 'acl', a
+                ].join('_');
                 var check = $new('input', {
                     id: check_id, attr: { type: 'checkbox', name: a }
                 });
@@ -777,7 +779,7 @@ var CommentView = function(id, updater, admin) {
 
                 json.entries.forEach(function(e, i) {
                     var eid = e.id;
-                    var nodeId = [ target, id, 'comment', eid ].join('-');
+                    var nodeId = [ prefix, target, 'comment'+eid ].join('-');
                     lastId = eid;
                     if (i + unreads == json.entries.length) unreadId = nodeId;
 
