@@ -126,7 +126,8 @@ var Field = (function() {
         status: function(parent, data, klass, x) {
             if (isNode(data)) return Field.other(parent, data, klass, x);
             if (typeof data == 'boolean' && data) data = 'OK';
-            GNN.UI.appendClass(parent, (data||'').replace(/[^a-zA-Z]/g, '-'));
+            var k = (data||'none').replace(/[^a-zA-Z]/g, '-');
+            GNN.UI.appendClass(parent, k);
             var label = defs.status.reduce(function(r, x) {
                 return r || (x[0] == (data||'') && x[1]);
             }, null) || '';

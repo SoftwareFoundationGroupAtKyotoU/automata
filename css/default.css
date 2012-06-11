@@ -168,7 +168,12 @@ td.status a.edit img {
    height: 1em;
 }
 
-td.NG, td.build-NG {
+td.status.none {
+   background-color: #dce4dc;
+   color: #999999;
+}
+
+td.status.NG, td.status.build-NG {
    background-color: #eeddee ! important;
 }
 
