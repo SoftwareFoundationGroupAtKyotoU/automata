@@ -106,11 +106,18 @@ table.record {
    outline-style: none;
 }
 table.record.focus,
-td.selected {
+td.selected,
+td.selectable:hover {
    outline: dashed 2px #cccccc;
 }
 
-tr.selected td {
+tr.selectable,
+td.selectable {
+   cursor: pointer;
+}
+
+tr.selected td,
+tr.selectable:hover td {
    background-color: #ddeeee;
 }
 
@@ -122,6 +129,17 @@ td.status {
    text-align: center;
 }
 
+td.status a,
+td.status a:hover,
+td.status a:link,
+td.status a:active,
+td.status a:visited {
+   color: inherit;
+   text-decoration: none;
+   background-color: inherit ! important;
+   outline-style: none;
+}
+
 td.status .loading {
    padding-right: 0.2em;
    border: none;
@@ -130,6 +148,7 @@ td.status .loading {
 }
 
 td.status a.edit {
+   color: darkblue;
    font-size: 1.2em;
    margin-left: 0.2em;
    text-decoration: none;

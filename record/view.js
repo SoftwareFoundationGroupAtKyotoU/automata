@@ -302,6 +302,14 @@ var ReportView = function(parent, persistent, r, conf) {
         var id = fields.token;
         var self = { id: id, fields: fields, node: node };
 
+        if (conf.admin) {
+            GNN.UI.appendClass(node, 'selectable');
+            new GNN.UI.Observer(node, 'onclick', function(e) {
+                self.toggle();
+                e.stop();
+            });
+        }
+
         var updateRecord = function() {
             updater.record(r.id, self.fields.token);
         };
@@ -848,6 +856,11 @@ var SummaryView = function(parent, persistent) {
                     rf.show();
                 } else {
                     var rf = new RecordField(td, col, u, status[r.id], conf);
+                    GNN.UI.appendClass(td, 'selectable');
+                    new GNN.UI.Observer(td, 'onclick', function(e) {
+                        rf.toggle();
+                        e.stop();
+                    });
                     selector.add(r.id, u.token, rf);
                 }
             });
