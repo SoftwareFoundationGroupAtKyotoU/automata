@@ -413,7 +413,7 @@ var ReportView = function(parent, persistent, r, conf) {
 
             if (!self.isOpen()) return;
 
-            var comment = status.tabs.comment;
+            var comment = (status.tabs||{}).comment;
             if (comment) {
                 var btn = status.tabButton('comment');
                 var link = btn.lastChild;
@@ -785,7 +785,7 @@ var SummaryView = function(parent, persistent) {
 
             if (!self.isOpen()) return;
 
-            var comment = status.tabs.comment;
+            var comment = (status.tabs||{}).comment;
             if (comment) {
                 var btn = status.tabButton('comment');
                 var link = btn.lastChild;
