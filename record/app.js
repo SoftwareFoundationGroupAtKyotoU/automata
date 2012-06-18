@@ -12,7 +12,7 @@ var init = function(id) {
     var urlhash = '#';
     if (/#debug$/.test(location.href)) {
         GNN.UI.appendClass(GNN.UI.$('persistent'), 'debug');
-        uslhash = '#debug';
+        urlhash = '#debug';
         history.debug = true;
     }
 
