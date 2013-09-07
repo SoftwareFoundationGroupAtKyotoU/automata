@@ -642,12 +642,15 @@ var CommentView = function(prefix, id, updater, admin) {
     };
 
     var makeForm = function(target, action, config, entry, onCancel) {
-        entry = entry || {}
+        entry = entry || {};
         entry.content = entry.content || '';
         entry.acl = entry.acl || config.acl || [];
         var textarea = $new('textarea', {
             child: entry.content,
             attr: { rows: 6 }
+        });
+        new GNN.UI.Observer(textarea, 'onkeypress', function(e) {
+            e.stopPropagation();
         });
         var submit = $new('input', { attr: {
             type: 'submit', value: 'コメントする'

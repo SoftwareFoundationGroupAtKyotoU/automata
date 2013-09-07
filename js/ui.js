@@ -129,14 +129,23 @@ if (typeof GNN.UI == 'undefined') GNN.UI = {};
     ns.Event = function(e) {
         var self = { event: e };
         self.mousePos = function(){ return ns.getMousePosition(self.event); };
-        self.stop = function() {
+        self.stopPropagation = function() {
             if (self.event.stopPropagation) {
                 self.event.stopPropagation();
-                self.event.preventDefault();
             } else {
                 self.event.cancelBubble = true;
+            }
+        };
+        self.preventDefault = function() {
+            if (self.event.preventDefault) {
+                self.event.preventDefault();
+            } else {
                 self.event.returnValue = false;
             }
+        };
+        self.stop = function() {
+            self.stopPropagation();
+            self.preventDefault();
         };
         self.target = function() {
             return self.event.target || self.event.srcElement;
