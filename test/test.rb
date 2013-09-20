@@ -29,6 +29,7 @@ files = {
   :log    => dir[:user][App::FILES[:log]],
   :master => App::FILES[:master],
   :local  => App::FILES[:local],
+  :scheme => App::FILES[:scheme],
 }
 
 yml = {}
@@ -85,16 +86,40 @@ begin
   end
 
   raise RuntimeError, cmd unless result
+
+  def result_ok?(r)
+    /^\s*ok\s*$/i =~ (r['result']||'')
+  end
+
+  status = 'check:NG'
   begin
     result = YAML.load(result) || []
-    passed = result.count{|r| /^\s*ok\s*$/i =~ (r['result']||'')}
+    passed = result.count{|r| result_ok?(r) }
     log = { 'test' => { 'passed' => passed, 'number' => result.size } }
+
+
+    # status turns out be 'report' if there are no required exercises
+
+    ng_exs = {}
+    result.each do |r|
+      ng_exs[r['ex']] = true unless result_ok?(r)
+    end
+
+    require 'report/counter'
+
+    counter = Report::Counter.new((yml[:scheme]['report'] || [])[report_id] || {})
+    result.map {|r| r['ex']}.uniq.each do |ex|
+      counter.vote(ex.to_ex) unless ng_exs.has_key?(ex)
+    end
+
+    status = 'report' if counter.insufficient.empty?
+
   rescue => e
     log = { 'error' => err[:fail], 'reason' => e.to_s }
   end
 
   info = {
-    'status'    => 'OK',
+    'status'    => status,
     'timestamp' => Time.now.iso8601,
     'log'       => log,
     'test'      => result
