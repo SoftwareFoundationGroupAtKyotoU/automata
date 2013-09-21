@@ -10,6 +10,7 @@ require 'time'
 require 'app'
 require 'conf'
 require 'log'
+require 'report/counter'
 
 report_id = $*.shift
 user      = $*.shift
@@ -104,8 +105,6 @@ begin
     result.each do |r|
       ng_exs[r['ex']] = true unless result_ok?(r)
     end
-
-    require 'report/counter'
 
     counter = Report::Counter.new((yml[:scheme]['report'] || [])[report_id] || {})
     result.map {|r| r['ex']}.uniq.each do |ex|
