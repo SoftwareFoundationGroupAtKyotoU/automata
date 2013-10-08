@@ -132,7 +132,7 @@ var KeyMap = (function() {
         escape: 'Esc',
         space: 'Space',
         insert: 'Ins',
-        delete: 'Del',
+        'delete': 'Del',
         semicolon: ';',
         left_shift: '<',
         equals: '=',
