@@ -143,18 +143,19 @@ var init = function(id) {
                 var uid = u.token;
                 var rid = r.id;
                 var self = {};
-                var update = function() {
-                    u.getFields(rid, function(fields) {
-                        self.fields = fields;
-                        fields.update = update;
-                        fields.comment = self.comment || {};
-                        fields.reason = 'record';
-                        fields.autoUpdate = false;
-                        views.put(rid, uid, fields);
-                        if (fields.autoUpdate) {
-                            setTimeout(function(){ fields.update(); }, 5000);
-                        }
-                    });
+
+                var setFields = function(fields) {
+                    self.fields = fields;
+                    fields.update = update;
+                    fields.comment = self.comment || {};
+                    fields.reason = 'record';
+                    fields.autoUpdate = false;
+                    views.put(rid, uid, fields);
+                    if (fields.autoUpdate) {
+                        setTimeout(function(){ fields.update(); }, 5000);
+                    }
+                };
+                var update = function() { u.getFields(rid, setFields); };
 
                 var setComment = function(comment) {
                     var fields = self.fields || u;
@@ -167,15 +168,22 @@ var init = function(id) {
                 update.comment = function() {
                     u.getCommentCount(rid, setComment);
                 };
+
                 u.comment = {};
                 u.update = update;
                 u.reason = 'initialize';
                 views.put(rid, uid, u);
-                u.update();
 
                 setters[uid] = {
+                    fields: setFields,
                     comment: setComment
                 };
+            });
+
+            users.getFields(r.id, function(fieldsList) {
+                fieldsList.forEach(function(fields) {
+                    setters[fields.token].fields(fields);
+                });
             });
 
             users.getCommentCount(r.id, function(comments) {

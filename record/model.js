@@ -39,6 +39,22 @@ Model.User = function(u) {
 Model.UserList = function(users) {
     users = users.map(function(u) { return new Model.User(u); });
 
+    users.getFields = function(rid, callback) {
+        GNN.XHR.json.retrieve({ user: api('user', {
+            report: rid, type: 'status', status: 'record', log: 1
+        }) }, function(json) {
+            var token_to_user = {};
+            json.user.forEach(function(u) { token_to_user[u.token] = u; });
+
+            var fieldsList = users.map(function(u) {
+                var fields = GNN.inherit(fields, u);
+                fields.record = (token_to_user[u.token].report||{})[rid]||{};
+                return fields;
+            });
+            callback(fieldsList);
+        }, jsonpFailure);
+    };
+
     users.getCommentCount = function(rid, callback) {
         GNN.XHR.json.retrieve({ comment: api('comment', {
             report: rid, user: users.map(function(u) { return u.token; }),
