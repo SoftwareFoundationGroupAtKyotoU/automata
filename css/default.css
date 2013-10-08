@@ -173,7 +173,7 @@ td.status.none {
    color: #999999;
 }
 
-td.status.NG, td.status.build-NG {
+td.status.NG, td.status.build-NG, td.status.check-NG {
    background-color: #eeddee ! important;
 }
 
