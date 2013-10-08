@@ -1,7 +1,6 @@
 var init = function(id) {
     var apiMaster = api('master', { year: true, token: true, admin: true });
     var apiUser   = api('user');
-    var apiRecord = api('user', { type: 'status', status: 'record', log: 1 });
     var apiScheme = api('scheme', { record: true });
     var apiTempl  = api('template', { type: 'record', links: true });
     var apiCommentConf  = api('comment', { action: 'config' });
