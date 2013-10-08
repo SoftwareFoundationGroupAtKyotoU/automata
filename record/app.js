@@ -123,9 +123,7 @@ var init = function(id) {
         var reports = json.scheme.map(function(sc) {
             return new Model.Report(sc);
         });
-        var users = json.user.map(function(u) {
-            return new Model.User(u);
-        });
+        var users = new Model.UserList(json.user);
         var rid = persistent.get('focus') || (reports[0]||{}).id;
 
         persistent.set('focus', rid);
@@ -138,6 +136,8 @@ var init = function(id) {
                     if (!p.get('selected')) p.set('selected', conf.token);
                 });
             }
+
+            var setters = {};
 
             users.forEach(function(u) {
                 var uid = u.token;
@@ -155,23 +155,33 @@ var init = function(id) {
                             setTimeout(function(){ fields.update(); }, 5000);
                         }
                     });
+
+                var setComment = function(comment) {
+                    var fields = self.fields || u;
+                    self.comment = comment;
+                    fields.comment = comment || {};
+                    fields.update = update;
+                    fields.reason = 'comment';
+                    views.put(rid, uid, fields);
                 };
                 update.comment = function() {
-                    u.getCommentCount(rid, function(comment) {
-                        var fields = self.fields || u;
-                        self.comment = comment;
-                        fields.comment = comment || {};
-                        fields.update = update;
-                        fields.reason = 'comment';
-                        views.put(rid, uid, fields);
-                    });
+                    u.getCommentCount(rid, setComment);
                 };
                 u.comment = {};
                 u.update = update;
                 u.reason = 'initialize';
                 views.put(rid, uid, u);
                 u.update();
-                u.update.comment();
+
+                setters[uid] = {
+                    comment: setComment
+                };
+            });
+
+            users.getCommentCount(r.id, function(comments) {
+                for (var uid in comments) {
+                    setters[uid].comment(comments[uid]||{});
+                }
             });
 
             selector.forEach(function(view) {

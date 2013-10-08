@@ -36,6 +36,21 @@ Model.User = function(u) {
     return u;
 };
 
+Model.UserList = function(users) {
+    users = users.map(function(u) { return new Model.User(u); });
+
+    users.getCommentCount = function(rid, callback) {
+        GNN.XHR.json.retrieve({ comment: api('comment', {
+            report: rid, user: users.map(function(u) { return u.token; }),
+            action: 'list_news'
+        }) }, function(json) {
+            callback(json.comment||{});
+        });
+    };
+
+    return users;
+};
+
 var History = function() {
     var self = {};
     var tracking = false;
