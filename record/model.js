@@ -21,7 +21,7 @@ Model.User = function(u) {
             report: rid, user: u.token,
             type: 'status', status: 'record', log: 1
         }) }, function(json) {
-            var fields = GNN.inherit(fields, u);
+            var fields = GNN.inherit({}, u);
             fields.record = (json.user[0].report||{})[rid]||{};
             callback(fields);
         }, jsonpFailure);
@@ -47,7 +47,7 @@ Model.UserList = function(users) {
             json.user.forEach(function(u) { token_to_user[u.token] = u; });
 
             var fieldsList = users.map(function(u) {
-                var fields = GNN.inherit(fields, u);
+                var fields = GNN.inherit({}, u);
                 fields.record = (token_to_user[u.token].report||{})[rid]||{};
                 return fields;
             });
