@@ -87,13 +87,13 @@ report_id = app.param(:report)
 app.error_exit(STATUS[400]) unless report_id
 
 # check the number of specified users
-if (users.length != 1)
+if users.length != 1
   app.error_exit(STATUS[403]) if action != 'list_news'
   app.error_exit(STATUS[403]) if !app.su?
 end
 
 # permission check for other users
-if (!app.su? && app.user != users[0])
+if !app.su? && app.user != users[0]
   app.error_exit(STATUS[403]) if !app.conf[:record, :open]
   app.error_exit(STATUS[403]) if action != 'get'
 end
