@@ -2,7 +2,7 @@
 
 # Usage:
 #   comment report=<report-id> user=<login> action=<action> ...
-#   comment action=list_news report=<report-id> users=<user-list> ...
+#   comment action=list_news report=<report-id> user=<user1>&user=<user2>&user=...
 #   comment action=config
 #   comment action=preview mesage=<content>
 # Actions:
@@ -74,7 +74,7 @@ end
 app.error_exit(STATUS[400]) unless config['enable']
 
 # user must be specified
-users = app.param(:users).split(',')
+users = app.params['user']
 app.error_exit(STATUS[400]) if users.empty?
 
 # resolve real login name in case user id is a token

@@ -57,7 +57,12 @@ Model.UserList = function(users) {
 
     users.getCommentCount = function(rid, callback) {
         GNN.XHR.json.retrieve({ comment: api('comment', {
-            report: rid, users: users.map(function(u) { return u.token; }),
+            report: rid,
+            /* dirty hack for concatenating query parameters for 'user' with '&' */
+            dummy: GNN.URI.encode('%') + '&' +
+                users.map(function (u) {
+                    return 'user=' + GNN.URI.encode(u.token);
+                }).join('&'),
             action: 'list_news'
         }) }, function(json) {
             callback(json.comment||{});
