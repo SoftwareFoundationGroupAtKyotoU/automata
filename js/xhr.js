@@ -159,7 +159,7 @@
         var wait = keys.concat([]);
 
         error = error || function(){};
-        var timeoutHandler = function(reason) {
+        var timeoutHandler = function(k) { return function(reason) {
             if (reason == 'timeout') {
                 if (wait.length) {
                     keys = [];
@@ -168,9 +168,11 @@
                     error(reason, xhr, wait, arguments[2]);
                 }
             } else {
-                error.apply(null, arguments);
+                var args = Array.prototype.slice.apply(arguments);
+                args.push([k]);
+                error.apply(null, args);
             }
-        };
+        } };
 
         var run = function() {
             if (keys.length > 0) {
@@ -180,7 +182,7 @@
                     wait = wait.filter(function(v){return v!=k;});
                     asyncCallback(wait, result);
                     if (!wait.length && !timedout) callback(result);
-                }, timeoutHandler, t);
+                }, timeoutHandler(k), t);
                 setTimeout(run, 0);
             }
         };
