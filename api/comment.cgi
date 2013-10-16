@@ -2,6 +2,7 @@
 
 # Usage:
 #   comment report=<report-id> user=<login> action=<action> ...
+#   comment action=list_news report=<report-id> user=<user1>&user=<user2>&user=...
 #   comment action=config
 #   comment action=preview mesage=<content>
 # Actions:
@@ -17,6 +18,9 @@
 #           コメントを既読にする
 #   news
 #           未読コメント情報を取得
+#   list_news
+#           未読コメント情報のリストを取得
+#
 # Access Control List:
 #   リストは,で区切る
 #   none   管理者および投稿者のみ閲覧可
@@ -70,19 +74,26 @@ end
 app.error_exit(STATUS[400]) unless config['enable']
 
 # user must be specified
-user = app.param(:user)
-app.error_exit(STATUS[400]) unless user
+users = app.params['user']
+app.error_exit(STATUS[400]) if users.empty?
 
 # resolve real login name in case user id is a token
-user = app.user_from_token(user)
-app.error_exit(STATUS[400]) unless user
+users = users.map {|u| app.user_from_token(u)}
+users.compact!
+app.error_exit(STATUS[400]) if users.empty?
 
 # report ID must be specified
 report_id = app.param(:report)
 app.error_exit(STATUS[400]) unless report_id
 
+# check the number of specified users
+if users.length != 1
+  app.error_exit(STATUS[403]) if action != 'list_news'
+  app.error_exit(STATUS[403]) if !app.su?
+end
+
 # permission check for other users
-if !app.su? && app.user != user
+if !app.su? && app.user != users[0]
   app.error_exit(STATUS[403]) if !app.conf[:record, :open]
   app.error_exit(STATUS[403]) if action != 'get'
 end
@@ -93,10 +104,15 @@ def convert(val, &method)
 end
 
 begin
-  group = app.su? ? :super : (app.user==user ? :user : :other)
-  dir = App::KADAI + report_id + user + 'comment'
-  FileUtils.mkdir_p(dir) unless dir.exist?
-  comment = Comment.new(app.user, group, dir, config)
+  comments = users.map do |u|
+    group = app.su? ? :super : (app.user==u ? :user : :other)
+    dir = App::KADAI + report_id + u + 'comment'
+    FileUtils.mkdir_p(dir) unless dir.exist?
+    {
+      :user    => u,
+      :comment => Comment.new(app.user, group, dir, config),
+    }
+  end
 
   case action
   when 'get'
@@ -105,7 +121,7 @@ begin
     offset = convert(app.param(:offset), &:to_i)
     limit = convert(app.param(:limit), &:to_i)
     args = { :type => type, :id => id, :offset => offset, :limit => limit }
-    content = comment.retrieve(args)
+    content = comments[0][:comment].retrieve(args)
 
     print(app.header)
     puts(app.json(content))
@@ -114,7 +130,7 @@ begin
     content = app.param(:message)
     ref = app.param(:ref)
     acl = convert(app.param(:acl)){|a| a.split(',')}
-    r = comment.add(:content => content, :ref => ref, :acl => acl)
+    r = comments[0][:comment].add(:content => content, :ref => ref, :acl => acl)
 
     print(app.cgi.header)
     puts('done')
@@ -126,7 +142,8 @@ begin
     content = app.param(:message)
     ref = app.param(:ref)
     acl = convert(app.param(:acl)){|a| a.split(',')}
-    r = comment.edit(:id => id, :content => content, :ref => ref, :acl => acl)
+    r = comments[0][:comment] \
+      .edit(:id => id, :content => content, :ref => ref, :acl => acl)
 
     print(app.cgi.header)
     puts('done')
@@ -135,7 +152,7 @@ begin
     id = convert(app.param(:id), &:to_i)
     app.error_exit(STATUS[400]) unless id
 
-    comment.delete(id)
+    comments[0][:comment].delete(id)
 
     print(app.cgi.header)
     puts('done')
@@ -144,13 +161,22 @@ begin
     id = convert(app.param(:id), &:to_i)
     app.error_exit(STATUS[400]) unless id
 
-    comment.read(id)
+    comments[0][:comment].read(id)
 
     print(app.cgi.header)
     puts('done')
 
   when 'news'
-    content = comment.news
+    content = comments[0][:comment].news
+
+    print(app.header)
+    puts(app.json(content))
+
+  when 'list_news'
+    name_to_token = Hash[*app.users.map {|u| [ u.real_login, u.token ]}.flatten]
+    content = Hash[*comments.map {|c|
+                     [ name_to_token[c[:user]], c[:comment].news ]
+                   }.flatten]
 
     print(app.header)
     puts(app.json(content))

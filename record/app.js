@@ -122,9 +122,7 @@ var init = function(id) {
         var reports = json.scheme.map(function(sc) {
             return new Model.Report(sc);
         });
-        var users = json.user.map(function(u) {
-            return new Model.User(u);
-        });
+        var users = new Model.UserList(json.user);
         var rid = persistent.get('focus') || (reports[0]||{}).id;
 
         persistent.set('focus', rid);
@@ -138,39 +136,59 @@ var init = function(id) {
                 });
             }
 
+            var setters = {};
+
             users.forEach(function(u) {
                 var uid = u.token;
                 var rid = r.id;
                 var self = {};
-                var update = function() {
-                    u.getFields(rid, function(fields) {
-                        self.fields = fields;
-                        fields.update = update;
-                        fields.comment = self.comment || {};
-                        fields.reason = 'record';
-                        fields.autoUpdate = false;
-                        views.put(rid, uid, fields);
-                        if (fields.autoUpdate) {
-                            setTimeout(function(){ fields.update(); }, 5000);
-                        }
-                    });
+
+                var setFields = function(fields) {
+                    self.fields = fields;
+                    fields.update = update;
+                    fields.comment = self.comment || {};
+                    fields.reason = 'record';
+                    fields.autoUpdate = false;
+                    views.put(rid, uid, fields);
+                    if (fields.autoUpdate) {
+                        setTimeout(function(){ fields.update(); }, 5000);
+                    }
+                };
+                var update = function() { u.getFields(rid, setFields); };
+
+                var setComment = function(comment) {
+                    var fields = self.fields || u;
+                    self.comment = comment;
+                    fields.comment = comment || {};
+                    fields.update = update;
+                    fields.reason = 'comment';
+                    views.put(rid, uid, fields);
                 };
                 update.comment = function() {
-                    u.getCommentCount(rid, function(comment) {
-                        var fields = self.fields || u;
-                        self.comment = comment;
-                        fields.comment = comment || {};
-                        fields.update = update;
-                        fields.reason = 'comment';
-                        views.put(rid, uid, fields);
-                    });
+                    u.getCommentCount(rid, setComment);
                 };
+
                 u.comment = {};
                 u.update = update;
                 u.reason = 'initialize';
                 views.put(rid, uid, u);
-                u.update();
-                u.update.comment();
+
+                setters[uid] = {
+                    fields: setFields,
+                    comment: setComment
+                };
+            });
+
+            users.getFields(r.id, function(fieldsList) {
+                fieldsList.forEach(function(fields) {
+                    setters[fields.token].fields(fields);
+                });
+            });
+
+            users.getCommentCount(r.id, function(comments) {
+                for (var uid in comments) {
+                    setters[uid].comment(comments[uid]||{});
+                }
             });
 
             selector.forEach(function(view) {

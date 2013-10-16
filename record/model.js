@@ -21,7 +21,7 @@ Model.User = function(u) {
             report: rid, user: u.token,
             type: 'status', status: 'record', log: 1
         }) }, function(json) {
-            var fields = GNN.inherit(fields, u);
+            var fields = GNN.inherit({}, u);
             fields.record = (json.user[0].report||{})[rid]||{};
             callback(fields);
         }, jsonpFailure);
@@ -34,6 +34,42 @@ Model.User = function(u) {
         });
     };
     return u;
+};
+
+Model.UserList = function(users) {
+    users = users.map(function(u) { return new Model.User(u); });
+
+    users.getFields = function(rid, callback) {
+        GNN.XHR.json.retrieve({ user: api('user', {
+            report: rid, type: 'status', status: 'record', log: 1
+        }) }, function(json) {
+            var token_to_user = {};
+            json.user.forEach(function(u) { token_to_user[u.token] = u; });
+
+            var fieldsList = users.map(function(u) {
+                var fields = GNN.inherit({}, u);
+                fields.record = (token_to_user[u.token].report||{})[rid]||{};
+                return fields;
+            });
+            callback(fieldsList);
+        }, jsonpFailure);
+    };
+
+    users.getCommentCount = function(rid, callback) {
+        GNN.XHR.json.retrieve({ comment: api('comment', {
+            report: rid,
+            /* dirty hack for concatenating query parameters for 'user' with '&' */
+            dummy: GNN.URI.encode('%') + '&' +
+                users.map(function (u) {
+                    return 'user=' + GNN.URI.encode(u.token);
+                }).join('&'),
+            action: 'list_news'
+        }) }, function(json) {
+            callback(json.comment||{});
+        });
+    };
+
+    return users;
 };
 
 var History = function() {
