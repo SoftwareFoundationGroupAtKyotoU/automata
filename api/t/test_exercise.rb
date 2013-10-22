@@ -132,6 +132,11 @@ class Compare < Test::Unit::TestCase
     @ex2_20_1_s2 =  Report::Exercise.new('Ex.2.20.1(2)')
     @ex2_20_1_s10 = Report::Exercise.new('Ex.2.20.1(10)')
 
+    @ex3_1 =   Report::Exercise.new('Ex.3.1')
+    @ex3_1_1 = Report::Exercise.new('Ex.3.1.1')
+    @ex3_a =   Report::Exercise.new('Ex.3.a')
+    @ex3_a_1 = Report::Exercise.new('Ex.3.a.1')
+
     @all =
       [
        @ex1_1,
@@ -188,6 +193,10 @@ class Compare < Test::Unit::TestCase
        @ex2_20_1_s1,
        @ex2_20_1_s2,
        @ex2_20_1_s10,
+       @ex3_1,
+       @ex3_1_1,
+       @ex3_a,
+       @ex3_a_1,
       ]
 
     @sorted =
@@ -246,6 +255,10 @@ class Compare < Test::Unit::TestCase
        'Ex.2.20.1(10)',
        'Ex.2.20.2',
        'Ex.2.21',
+       'Ex.3.1',
+       'Ex.3.1.1',
+       'Ex.3.a',
+       'Ex.3.a.1',
       ]
   end
 
@@ -269,6 +282,9 @@ class Compare < Test::Unit::TestCase
     assert_equal(0, @ex2_1_s2    <=> @ex2_1_s2)
     assert_equal(0, @ex2_3_s10   <=> @ex2_3_s10)
     assert_equal(0, @ex2_20_1_s1 <=> @ex2_20_1_s1)
+
+    assert_equal(0, @ex3_a   <=> @ex3_a)
+    assert_equal(0, @ex3_a_1 <=> @ex3_a_1)
   end
 
   def test_lt()
@@ -386,6 +402,12 @@ class Compare < Test::Unit::TestCase
     assert_equal(-1, @ex1_20_s10 <=> @ex2_3_s10)
     assert_equal(-1, @ex1_20_s10 <=> @ex2_20_s10)
     assert_equal(-1, @ex1_20_s10 <=> @ex2_20_1_s10)
+
+    assert_equal(-1, @ex3_1 <=> @ex3_a)
+    assert_equal(-1, @ex3_1 <=> @ex3_a_1)
+
+    assert_equal(-1, @ex3_1_1 <=> @ex3_a)
+    assert_equal(-1, @ex3_1_1 <=> @ex3_a_1)
   end
 
   def test_gt()
@@ -502,6 +524,12 @@ class Compare < Test::Unit::TestCase
     assert_equal(1, proc{|a,b| b <=> a}.call(@ex1_20_s10, @ex2_3_s10)   )
     assert_equal(1, proc{|a,b| b <=> a}.call(@ex1_20_s10, @ex2_20_s10)  )
     assert_equal(1, proc{|a,b| b <=> a}.call(@ex1_20_s10, @ex2_20_1_s10))
+
+    assert_equal(1, proc{|a,b| b <=> a}.call(@ex3_1, @ex3_a)  )
+    assert_equal(1, proc{|a,b| b <=> a}.call(@ex3_1, @ex3_a_1))
+
+    assert_equal(1, proc{|a,b| b <=> a}.call(@ex3_1_1, @ex3_a)  )
+    assert_equal(1, proc{|a,b| b <=> a}.call(@ex3_1_1, @ex3_a_1))
   end
 
   def test_sort()

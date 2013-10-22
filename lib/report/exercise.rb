@@ -76,7 +76,9 @@ module Report
         when [ :sep, :num ]
           return -1
         else
-          return to_val <=> other.to_val
+          return to_val.class == other.to_val.class ?
+                   to_val <=> other.to_val :
+                   to_val.to_s <=> other.to_val.to_s
         end
       end
     end
