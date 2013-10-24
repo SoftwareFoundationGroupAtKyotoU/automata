@@ -1,4 +1,5 @@
 #! /usr/bin/env ruby
+# -*- coding: utf-8 -*-
 
 # Usage: browse report=<report-id> user=<login>
 #               [type={raw|highlight}] [path=.]
@@ -21,7 +22,7 @@
 #     - type=highlightならハイライトしたHTML(text/html)
 #   - pathがバイナリファイルを指すとき: 生ファイル(適切なMIMEタイプ)
 
-$KCODE='UTF8'
+$KCODE='UTF8' if RUBY_VERSION < '1.9.0'
 
 $:.unshift('./lib')
 

@@ -1,4 +1,5 @@
 #! /usr/bin/env ruby
+# -*- coding: utf-8 -*-
 
 # Usage: master [year] [user]
 #   基本設定を取得
@@ -11,7 +12,7 @@
 KEY = []
 OPTIONAL = [ :year, :user, :admin, :token ]
 
-$KCODE='UTF8'
+$KCODE='UTF8' if RUBY_VERSION < '1.9.0'
 
 $:.unshift('./lib')
 

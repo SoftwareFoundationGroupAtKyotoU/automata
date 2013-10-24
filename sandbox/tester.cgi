@@ -1,5 +1,7 @@
 #! /usr/bin/env ruby
-$KCODE = 'UTF8'
+# -*- coding: utf-8 -*-
+
+$KCODE = 'UTF8' if RUBY_VERSION < '1.9.0'
 
 require 'tempfile'
 require 'tmpdir'

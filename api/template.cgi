@@ -1,4 +1,5 @@
 #! /usr/bin/env ruby
+# -*- coding: utf-8 -*-
 
 # Usage: template [type=<type>] [links] [requirements]
 #   template.ymlのデータを取得
@@ -10,7 +11,7 @@
 KEY = [ :institute, :title, :subtitle, ]
 OPTIONAL = [ :links, :requirements, ]
 
-$KCODE='UTF8'
+$KCODE='UTF8' if RUBY_VERSION < '1.9.0'
 
 $:.unshift('./lib')
 

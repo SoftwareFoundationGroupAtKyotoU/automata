@@ -1,4 +1,5 @@
 #! /usr/bin/env ruby
+# -*- coding: utf-8 -*-
 
 # Usage: scheme [type=<type>] [id=<id>] [record] [exercise]
 #   scheme.ymlのデータを取得
@@ -12,7 +13,7 @@ KEY = [ :id, :type, :name, :update ]
 OPTIONAL = [ :record, :exercise ]
 FILTER = [ :id, :type, ]
 
-$KCODE='UTF8'
+$KCODE='UTF8' if RUBY_VERSION < '1.9.0'
 
 $:.unshift('./lib')
 
