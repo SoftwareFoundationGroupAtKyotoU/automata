@@ -1,4 +1,5 @@
 #! /usr/bin/env ruby
+# -*- coding: utf-8 -*-
 
 # Usage:
 #   comment report=<report-id> user=<login> action=<action> ...
@@ -29,7 +30,7 @@
 # Security:
 # Response:
 
-$KCODE='UTF8'
+$KCODE='UTF8' if RUBY_VERSION < '1.9.0'
 
 $:.unshift('./lib')
 

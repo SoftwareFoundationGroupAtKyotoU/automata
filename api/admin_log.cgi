@@ -1,4 +1,5 @@
 #! /usr/bin/env ruby
+# -*- coding: utf-8 -*-
 
 # Usage: admin_log report=<report-id> user=<login> id=<log-id>
 #   ログを変更
@@ -10,7 +11,7 @@
 # Security:
 #   master.su に入っているユーザのみ実行可能
 
-$KCODE='UTF8'
+$KCODE='UTF8' if RUBY_VERSION < '1.9.0'
 
 $:.unshift('./lib')
 

@@ -1,4 +1,5 @@
 #! /usr/bin/env ruby
+# -*- coding: utf-8 -*-
 
 # Usage: test_result report=<report-id> user=<login>
 #   自動テストの結果を取得
@@ -9,7 +10,7 @@
 #   master.su に入っていないユーザに関しては user オプションによらず
 #   ログイン名が remote_user の情報のみ取得可能
 
-$KCODE='UTF8'
+$KCODE='UTF8' if RUBY_VERSION < '1.9.0'
 
 $:.unshift('./lib')
 
