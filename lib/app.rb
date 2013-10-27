@@ -3,12 +3,14 @@ require 'yaml'
 require 'time'
 require 'pathname'
 require 'strscan'
-require 'clone'
-require 'log'
-require 'conf'
 
 require 'rubygems'
+require 'bundler/setup'
 require 'json'
+
+require 'clone'
+require 'conf'
+require 'log'
 
 class Pathname
   def [](*paths)
