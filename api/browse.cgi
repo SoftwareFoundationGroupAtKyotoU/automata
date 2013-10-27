@@ -96,5 +96,7 @@ elsif path.mime.type == 'text' && 'highlight' == app.params['type'][0]
 else
   args = { 'type' => path.mime.to_s, 'length' => path.size, 'status' => 'OK' }
   print(app.cgi.header(args))
-  print(IO.read(path.to_s))
+  open_mode = RUBY_VERSION < '1.9.0' ? 'r' : 'r:utf-8'
+  file = File.open(path.to_s, open_mode)
+  print(file.read())
 end
