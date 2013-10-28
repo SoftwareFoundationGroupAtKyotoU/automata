@@ -1,0 +1,19 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    json (1.8.1)
+    kramdown (1.2.0)
+    nokogiri (1.5.10)
+    sanitize (2.0.3)
+      nokogiri (>= 1.4.4, < 1.6)
+      nokogiri (>= 1.4.4, < 1.6)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  bundler
+  json
+  kramdown
+  nokogiri (~> 1.5.10)
+  sanitize (= 2.0.3)

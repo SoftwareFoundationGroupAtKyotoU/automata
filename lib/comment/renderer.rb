@@ -1,5 +1,10 @@
 require 'cgi'
 
+require 'rubygems'
+require 'bundler/setup'
+require 'kramdown'
+require 'sanitize'
+
 class Comment
   class Renderer
     class Markdown
@@ -28,14 +33,7 @@ class Comment
     end
 
     def self.create()
-      begin
-        require 'rubygems'
-        require 'kramdown'
-        require 'sanitize'
-        return Markdown.new
-      rescue
-        return Plain.new
-      end
+      return Markdown.new
     end
   end
 end
