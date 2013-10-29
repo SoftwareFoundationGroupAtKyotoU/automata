@@ -155,13 +155,13 @@ class Comment
   end
 
   def write_content(id, content)
-    content = {
+    contents = {
       :raw  => content,
       :html => Renderer.create.render(content),
     }
-    [ :raw, :html ].each do |type|
+    contents.each do |type, content|
       open(content_file(type, id), 'w') do |io|
-        io.puts(content[type])
+        io.puts(content)
       end
     end
   end
