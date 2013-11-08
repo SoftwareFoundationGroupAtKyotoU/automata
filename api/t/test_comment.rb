@@ -23,9 +23,7 @@ class CommentTest < Test::Unit::TestCase
   end
 
   def teardown()
-    @comments[@super_user].news['comments'].times {|i|
-      @comments[@super_user].delete(i+1)
-    }
+    @comments[@super_user].delete_all()
     Comment::FILE.each_key do |key|
       path = @path + Comment::FILE[key]
       File.delete(path) if File.exists?(path)
@@ -115,13 +113,27 @@ class CommentTest < Test::Unit::TestCase
     @comments[@user].delete(1)
     check_comments([@other_comment], @user)
     # Cannot delete super user's comment.
-    @comments[@user].delete(2)
+    assert_raise(Comment::PermissionDenied) { @comments[@user].delete(2) }
     check_comments([@other_comment], @user)
-    @comments[@user].delete(4)
+    assert_raise(Comment::PermissionDenied) { @comments[@user].delete(4) }
     check_comments([@other_comment], @user)
 
-    # TODO: Fix Comment.delete to pass the following check.
-    # check_comments([@other_comment, @user2_comment], @user2)
+    check_comments([@other_comment, @user2_comment], @user2)
+  end
+
+  def test_delete_by_su()
+    add_comments()
+
+    check_comments([@user_comment, @su_comment, @other_comment, @user2_comment],
+                   @super_user)
+    @comments[@super_user].delete(1)
+    check_comments([@su_comment, @other_comment, @user2_comment], @super_user)
+    @comments[@super_user].delete(3)
+    check_comments([@su_comment, @user2_comment], @super_user)
+    @comments[@super_user].delete(4)
+    check_comments([@su_comment], @super_user)
+    @comments[@super_user].delete(2)
+    check_comments([], @super_user)
   end
 
   def test_read()

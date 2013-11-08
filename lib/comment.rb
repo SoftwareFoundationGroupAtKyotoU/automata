@@ -85,12 +85,26 @@ class Comment
   def delete(id)
     db_index.transaction do |db|
       entries = db[:entries] || []
-      entries = entries.reject do |e|
-        e['id'] == id && (@group == :super || e['user'] == @user)
-      end
+      entry = entries.find{|e| e['id'] == id}
+      raise NotFound unless entry
+      raise PermissionDenied unless @group == :super || entry['user'] == @user
+
+      entries = entries.reject {|e| e['id'] == id }
       db[:entries] = entries
 
       delete_content(id)
+    end
+  end
+
+  # Deletes all content files and the index.
+  def delete_all()
+    raise PermissionDenied unless @group == :super
+    db_index.transaction do |db|
+      entries = db[:entries] || []
+      entries.each {|e|
+        delete_content(e['id'])
+      }
+      db[:entries] = []
     end
   end
 
