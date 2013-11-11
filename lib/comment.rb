@@ -157,11 +157,8 @@ class Comment
 
     file = content_file(type, id)
     return unless file.exist?
-    if RUBY_VERSION < '1.9.0'
-      return IO.read(file)
-    else
-      return IO.read(file, :enconding => 'utf-8:utf-8')
-    end
+    open_mode = RUBY_VERSION < '1.9.0' ? 'r' : 'r:utf-8'
+    File.open(file, open_mode) {|f| f.read }
   end
 
   def content_file(type, id)
