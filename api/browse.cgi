@@ -96,5 +96,5 @@ elsif path.mime.type == 'text' && 'highlight' == app.params['type'][0]
 else
   args = { 'type' => path.mime.to_s, 'length' => path.size, 'status' => 'OK' }
   print(app.cgi.header(args))
-  print(IO.read(path.to_s))
+  File.open(path.to_s, 'rb') {|f| print(f.read) }
 end

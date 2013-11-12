@@ -70,7 +70,10 @@ class App
   end
 
   def file(name)
-    @files[name] = YAML.load_file(FILES[name]) unless @files[name]
+    open_mode = RUBY_VERSION < '1.9.0' ? 'r' : 'r:utf-8'
+    File.open(FILES[name], open_mode) do |f|
+      @files[name] = YAML.load(f) unless @files[name]
+    end
     return @files[name]
   end
 
