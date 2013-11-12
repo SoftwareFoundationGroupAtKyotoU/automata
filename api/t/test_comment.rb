@@ -17,6 +17,7 @@ class CommentTest < Test::Unit::TestCase
     @comments[@other] = Comment.new(@other, :other, @path, {})
 
     @user_comment = "comment1"
+    @user_comment2 = "comment1-2"
     @user2_comment = "comment2"
     @su_comment = "super user"
     @other_comment = "other"
@@ -35,6 +36,7 @@ class CommentTest < Test::Unit::TestCase
     @comments[@super_user].add({ :content => @su_comment, :acl => ['super'] })
     @comments[@other].add({ :content => @other_comment })
     @comments[@user2].add({ :content => @user2_comment, :acl => [] })
+    @comments[@user].add({ :content => @user_comment2, :acl => ['user'] })
   end
 
   def test_db_index()
@@ -57,22 +59,22 @@ class CommentTest < Test::Unit::TestCase
   def test_retrival()
     add_comments()
 
-    check_comments([@user_comment, @other_comment], @user)
-    check_comments([@other_comment, @user2_comment], @user2)
-    check_comments([@user_comment, @su_comment, @other_comment, @user2_comment],
-                   @super_user)
+    check_comments([@user_comment, @other_comment, @user_comment2], @user)
+    check_comments([@other_comment, @user2_comment, @user_comment2], @user2)
+    check_comments([@user_comment, @su_comment, @other_comment, @user2_comment,
+                    @user_comment2], @super_user)
     check_comments([@other_comment], @other)
   end
 
   def test_edit()
     add_comments()
 
-    # The number of comments is 4.
-    assert_raise(Comment::NotFound) { @comments[@user].edit({ :id => 5 }) }
+    # The number of comments is 5.
+    assert_raise(Comment::NotFound) { @comments[@user].edit({ :id => 6 }) }
     assert_raise(Comment::NotFound) {
-      @comments[@super_user].edit({ :id => 5 })
+      @comments[@super_user].edit({ :id => 6 })
     }
-    assert_raise(Comment::NotFound) { @comments[@other].edit({ :id => 5 }) }
+    assert_raise(Comment::NotFound) { @comments[@other].edit({ :id => 6 }) }
 
     # Cannot edit other's comments.
     2.times {|i|
@@ -88,12 +90,13 @@ class CommentTest < Test::Unit::TestCase
     }
 
     # Edit a comment.
-    check_comments([@user_comment, @other_comment], @user)
+    check_comments([@user_comment, @other_comment, @user_comment2], @user)
     @comments[@user].edit({ :id => 1, :content => "edit!" })
-    check_comments(["edit!", @other_comment], @user)
+    check_comments(["edit!", @other_comment, @user_comment2], @user)
 
     # Super user can edit any comment.
-    expected = ["edit!", @su_comment, @other_comment, @user2_comment]
+    expected = ["edit!", @su_comment, @other_comment, @user2_comment,
+                @user_comment2]
     check_comments(expected, @super_user)
     @comments[@super_user].edit({ :id => 2, :content => "edit2!" })
     expected[2-1] = "edit2!"
@@ -109,31 +112,32 @@ class CommentTest < Test::Unit::TestCase
   def test_delete_by_user()
     add_comments()
 
-    check_comments([@user_comment, @other_comment], @user)
+    check_comments([@user_comment, @other_comment, @user_comment2], @user)
     @comments[@user].delete(1)
-    check_comments([@other_comment], @user)
+    check_comments([@other_comment, @user_comment2], @user)
     # Cannot delete super user's comment.
     assert_raise(Comment::PermissionDenied) { @comments[@user].delete(2) }
-    check_comments([@other_comment], @user)
+    check_comments([@other_comment, @user_comment2], @user)
     assert_raise(Comment::PermissionDenied) { @comments[@user].delete(4) }
-    check_comments([@other_comment], @user)
+    check_comments([@other_comment, @user_comment2], @user)
 
-    check_comments([@other_comment, @user2_comment], @user2)
+    check_comments([@other_comment, @user2_comment, @user_comment2], @user2)
   end
 
   def test_delete_by_su()
     add_comments()
 
-    check_comments([@user_comment, @su_comment, @other_comment, @user2_comment],
-                   @super_user)
+    check_comments([@user_comment, @su_comment, @other_comment, @user2_comment,
+                   @user_comment2], @super_user)
     @comments[@super_user].delete(1)
-    check_comments([@su_comment, @other_comment, @user2_comment], @super_user)
+    check_comments([@su_comment, @other_comment, @user2_comment,
+                    @user_comment2], @super_user)
     @comments[@super_user].delete(3)
-    check_comments([@su_comment, @user2_comment], @super_user)
+    check_comments([@su_comment, @user2_comment, @user_comment2], @super_user)
     @comments[@super_user].delete(4)
-    check_comments([@su_comment], @super_user)
+    check_comments([@su_comment, @user_comment2], @super_user)
     @comments[@super_user].delete(2)
-    check_comments([], @super_user)
+    check_comments([@user_comment2], @super_user)
   end
 
   def test_read()
@@ -155,7 +159,7 @@ class CommentTest < Test::Unit::TestCase
     @comments[@user].read(1)
     @comments[@user2].read(4)
 
-    assert_equal({ 'unreads' => 1, 'comments' => 2 }, @comments[@user].news())
-    assert_equal({ 'unreads' => 1, 'comments' => 2 }, @comments[@user].news())
+    assert_equal({ 'unreads' => 2, 'comments' => 3 }, @comments[@user].news())
+    assert_equal({ 'unreads' => 1, 'comments' => 3 }, @comments[@user2].news())
   end
 end
