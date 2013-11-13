@@ -23,11 +23,6 @@ require 'shellwords'
 require 'app'
 
 app = App.new
-def app.error_exit(status)
-  print(cgi.header('type' => 'text/plain', 'status' => status))
-  puts(status)
-  exit
-end
 
 # reject request by normal users
 app.error_exit(STATUS[403]) unless app.su?
