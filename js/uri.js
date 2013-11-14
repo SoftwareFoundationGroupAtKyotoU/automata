@@ -35,7 +35,7 @@
                 }
             });
         } else {
-            uri.push(last)
+            uri.push(last);
         }
 
         this.scheme = sch;
@@ -77,7 +77,7 @@
     URI.prototype.constructor = URI;
 
     URI.encode = function(str, unsafe) {
-        var unsafe = unsafe || '[^\\w\\d]';
+        unsafe = unsafe || '[^\\w\\d]';
         var s = '';
         var len = str.length;
         for (var i=0; i < len; i++) {

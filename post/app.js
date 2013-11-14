@@ -141,7 +141,7 @@ var init = function() {
                 makeExerciseSelector(ul, exercises, solved, 'ex', updateReqs);
 
                 // requirements
-                reqs = $('requirements')
+                reqs = $('requirements');
                 removeAllChildren(reqs);
                 if (report.requirements) {
                     sttc = report.requirements['static'];

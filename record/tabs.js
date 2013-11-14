@@ -87,7 +87,7 @@ var LogView = function(prefix, id, admin) {
               }
           }
         }
-    ]
+    ];
 
     var ppLog = function(parent, logs, edit) {
         var r = [];
@@ -181,7 +181,7 @@ var LogView = function(prefix, id, admin) {
                     });
                 }
             }, function() {
-                    view.set('読み込み失敗')
+                view.set('読み込み失敗');
             });
         }
     };
@@ -287,7 +287,7 @@ var SolvedView = function(prefix, id, admin) {
                         });
                     }
                 }, function() {
-                    view.set('読み込み失敗')
+                    view.set('読み込み失敗');
                 });
             }
         };
@@ -429,7 +429,7 @@ var TestResultView = function(prefix, id, admin) {
 
                     view.set(list);
                 }, function() {
-                    view.set('読み込み失敗')
+                    view.set('読み込み失敗');
                 });
             }
         };
@@ -587,7 +587,7 @@ var FileBrowserView = function(prefix, id) {
                             self.view.set($text('読み込み失敗'));
                         }
                     }
-                }
+                };
                 req.send(null);
             },
             onMove: function(location) {
@@ -872,7 +872,7 @@ var CommentView = function(prefix, id, updater, admin) {
 
                 if (unreadId) view.persistent.move('#'+unreadId);
             }, function() {
-                view.set('読み込み失敗')
+                view.set('読み込み失敗');
             });
         }
     };

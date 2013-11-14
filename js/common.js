@@ -124,7 +124,7 @@ var apiPost = function(cgi, args, callback, error) {
                 error(req);
             }
         }
-    }
+    };
 
     req.send(toFormData(args));
 };

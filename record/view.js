@@ -106,7 +106,6 @@ var Field = (function() {
     };
 
     var Field = GNN.inherit(function(conf, prefix, klass, u, node) {
-        var self = {};
 
         var data = u[klass] || (u.record||{})[klass];
         if (!data && !u.record) data = loadingIcon();
@@ -362,7 +361,7 @@ var ReportView = function(parent, persistent, r, conf) {
             GNN.UI.removeAllChildren(tr);
 
             r.record.forEach(function(col) {
-                var prefix = [ VIEW_ID, r.id ].join('-')
+                var prefix = [ VIEW_ID, r.id ].join('-');
                 var klass = col.field;
                 var fld = Field.factory(prefix, klass, u);
 
@@ -852,12 +851,13 @@ var SummaryView = function(parent, persistent) {
                 var td = GNN.UI.$new('td', { klass: col.field });
                 tr.appendChild(td);
 
+                var rf;
                 if (col.field == 'name') {
                     var st = { show: function(){}, hide: function(){} };
-                    var rf = new RecordField(td, col, u, st, conf);
+                    rf = new RecordField(td, col, u, st, conf);
                     rf.show();
                 } else {
-                    var rf = new RecordField(td, col, u, status[r.id], conf);
+                    rf = new RecordField(td, col, u, status[r.id], conf);
                     GNN.UI.appendClass(td, 'selectable');
                     new GNN.UI.Observer(td, 'onclick', function(e) {
                         rf.toggle();
@@ -1127,7 +1127,7 @@ var StatusWindow = function(id, tabs, persistent) {
     );
     self.keymap = function(){ return keymap; };
 
-    (tabs||[]).forEach(function(t){ self.add(t) });
+    (tabs||[]).forEach(function(t){ self.add(t); });
 
     self.hide();
 
