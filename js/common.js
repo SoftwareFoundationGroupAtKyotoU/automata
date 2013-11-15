@@ -16,75 +16,71 @@ var api = function(name, args) {
 };
 
 var setTitle = function(template) {
-    with (GNN.UI) {
-        [ 'title', 'subtitle', 'institute' ].forEach(function(x) {
-            var node = $(x);
-            if (node) {
-                removeAllChildren(node);
-                node.appendChild($text(template[x]));
-            }
-        });
+    [ 'title', 'subtitle', 'institute' ].forEach(function(x) {
+        var node = GNN.UI.$(x);
+        if (node) {
+            GNN.UI.removeAllChildren(node);
+            node.appendChild(GNN.UI.$text(template[x]));
+        }
+    });
 
-        document.title = [
-            template.subtitle,
-            template.title
-        ].join(' - ');
-    }
+    document.title = [
+        template.subtitle,
+        template.title
+    ].join(' - ');
 };
 
 var addLinks = function(links) {
-    with (GNN.UI) {
-        links = links || [];
+    links = links || [];
 
-        var footer = $('footer');
-        if (!footer) return;
+    var footer = GNN.UI.$('footer');
+    if (!footer) return;
 
-        links.reverse().forEach(function(l) {
-            var node = $new('a', {
-                attr: { href: l.uri },
-                child: l.label
-            });
-            if (footer.firstChild) {
-                footer.insertBefore(node, footer.firstChild);
-            } else {
-                footer.appendChild(node);
-            }
+    links.reverse().forEach(function(l) {
+        var node = GNN.UI.$new('a', {
+            attr: { href: l.uri },
+            child: l.label
         });
-    }
+        if (footer.firstChild) {
+            footer.insertBefore(node, footer.firstChild);
+        } else {
+            footer.appendChild(node);
+        }
+    });
 };
 
 var reportFatalErrors = function(errors) {
-    with (GNN.UI) {
-        var toNode = function(v) {
-            if (v instanceof Array) {
-                var ul = $new('ul');
-                v.forEach(function(x) {
-                    ul.appendChild($new('li', { child: toNode(x) }));
-                });
-                return ul;
-            } else if (typeof v == 'object') {
-                var dl = $new('dl');
-                for (var k in v) {
-                    dl.appendChild($new('dt', { child: k }));
-                    dl.appendChild($new('dd', { child: toNode(v[k]) }));
-                }
-                return dl;
-            } else {
-                return $text(v+'');
+    var $new = GNN.UI.$new;
+
+    var toNode = function(v) {
+        if (v instanceof Array) {
+            var ul = $new('ul');
+            v.forEach(function(x) {
+                ul.appendChild($new('li', { child: toNode(x) }));
+            });
+            return ul;
+        } else if (typeof v == 'object') {
+            var dl = $new('dl');
+            for (var k in v) {
+                dl.appendChild($new('dt', { child: k }));
+                dl.appendChild($new('dd', { child: toNode(v[k]) }));
             }
-        };
+            return dl;
+        } else {
+            return GNN.UI.$text(v+'');
+        }
+    };
 
-        div = $('fatalerror');
-        div.appendChild($new('h3', { child: 'Error' }));
+    div = GNN.UI.$('fatalerror');
+    div.appendChild($new('h3', { child: 'Error' }));
 
-        var ul = $new('ul');
-        errors.forEach(function(e) {
-            var li = $new('li', { child: e.message + ' (' + e.reason + ')' });
-            if (e.detail) li.appendChild(toNode(e.detail));
-            ul.appendChild(li);
-        });
-        div.appendChild(ul);
-    }
+    var ul = $new('ul');
+    errors.forEach(function(e) {
+        var li = $new('li', { child: e.message + ' (' + e.reason + ')' });
+        if (e.detail) li.appendChild(toNode(e.detail));
+        ul.appendChild(li);
+    });
+    div.appendChild(ul);
 };
 
 var jsonpFailure = function(reason, jsonp, failed) {
@@ -247,12 +243,12 @@ var deepEq = function(lhs, rhs) {
             return true;
         } else {
             var keys = {};
-            for (var k in lhs) {
-                if (!deepEq(lhs[k], rhs[k])) return false;
-                keys[k] = true;
+            for (var lkey in lhs) {
+                if (!deepEq(lhs[lkey], rhs[lkey])) return false;
+                keys[lkey] = true;
             }
-            for (var k in rhs) {
-                if (!keys[k]) return false;
+            for (var rkey in rhs) {
+                if (!keys[rkey]) return false;
             }
             return true;
         }
