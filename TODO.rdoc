@@ -82,7 +82,6 @@
 
 - test_counter.rb
 - test_report.rb
-- test_user.rb
 - test_log.rb
 - test_app.rb
 - test_api_user.rb
