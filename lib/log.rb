@@ -31,10 +31,13 @@ class Log < Store::YAML
 
   def size()
     transaction do
+      return 0 if @store.roots.empty?
       return @store.roots.map{|r| (@store[r]||[]).size}.max
     end
   end
 
+  # Return the oldest entry's id.
+  # TODO: Rename or correct.
   def pop()
     transaction do
       root = @store.roots.min_by{|r| oldest_id(r)}
