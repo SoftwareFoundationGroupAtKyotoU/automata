@@ -39,12 +39,11 @@ class LogTest < Test::Unit::TestCase
 
     assert_not_equal(id1, id2)
 
-    # TODO: Rename pop().
     assert_equal(2, @log.size())
     assert_equal(id1.iso8601, @log.pop())
-    assert_equal(2, @log.size())
-    assert_equal(id1.iso8601, @log.pop())
-    assert_equal(2, @log.size())
+    assert_equal(1, @log.size())
+    assert_equal(id2.iso8601, @log.pop())
+    assert_equal(0, @log.size())
   end
 
   def test_retrieve()
