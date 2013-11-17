@@ -8,4 +8,5 @@ gem 'nokogiri', '~> 1.5.10'
 
 group :development, :test do
   gem 'rake'
+  gem 'rr', :require => false
 end

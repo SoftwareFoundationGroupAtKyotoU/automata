@@ -31,21 +31,23 @@ class Log < Store::YAML
 
   def size()
     transaction do
+      return 0 if @store.roots.empty?
       return @store.roots.map{|r| (@store[r]||[]).size}.max
     end
   end
 
   def pop()
+    popped_id = nil
     transaction do
       root = @store.roots.min_by{|r| oldest_id(r)}
       if root
-        id = oldest_id(root)
+        popped_id = oldest_id(root)
         @store.roots.each do |r|
-          @store[r] = (@store[r]||[]).reject{|x| x['id'] == id}
+          @store[r] = (@store[r]||[]).reject{|x| x['id'] == popped_id }
         end
-        return id
       end
     end
+    return popped_id
   end
 
   private
