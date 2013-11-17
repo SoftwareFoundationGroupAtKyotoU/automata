@@ -2,7 +2,7 @@ if (typeof GNN == 'undefined') var GNN={};
 (function() {
     var override = function(obj, by) {
         by = by||{};
-        for (prop in by) {
+        for (var prop in by) {
             if (obj[prop] === null
                 || typeof by[prop] != 'object'
                 || typeof obj[prop] != 'object') {

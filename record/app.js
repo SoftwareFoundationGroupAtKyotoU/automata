@@ -105,7 +105,6 @@ var init = function(id) {
             });
 
             persistent.set('focus', focus);
-            var view = persistent.get('view');
             selector.select(vid);
         }
     });

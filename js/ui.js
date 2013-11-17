@@ -12,7 +12,7 @@ if (typeof GNN.UI == 'undefined') GNN.UI = {};
         args = args || {};
         if (args.id) elm.id = args.id;
         if (args.klass) elm.className = args.klass;
-        forEach(args.style||{}, function(k,s){ elm.style[k] = s });
+        forEach(args.style||{}, function(k,s){ elm.style[k] = s; });
         if (args.attr) {
             for (var attr in args.attr) {
                 elm.setAttribute(attr, args.attr[attr]);
@@ -169,7 +169,7 @@ if (typeof GNN.UI == 'undefined') GNN.UI = {};
         var callback = function(e){ return fun.call(obj, new ns.Event(e)); };
         self.start = function() {
             if (self.node.addEventListener) {
-                if (event.indexOf('on') == 0) self.event = event.substr(2);
+                if (event.indexOf('on') === 0) self.event = event.substr(2);
                 self.node.addEventListener(self.event, callback, false);
             } else if (self.node.attachEvent) {
                 self.node.attachEvent(self.event, callback);
@@ -181,7 +181,7 @@ if (typeof GNN.UI == 'undefined') GNN.UI = {};
             } else if (self.node.detachEvent) {
                 self.node.detachEvent(self.event, callback);
             }
-        }
+        };
         self.start();
         return self;
     };

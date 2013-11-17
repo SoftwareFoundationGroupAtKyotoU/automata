@@ -113,7 +113,7 @@
                             self.error('request', req);
                         }
                     }
-                }
+                };
                 req.send(data);
             }
         };
@@ -172,7 +172,7 @@
                 args.push([k]);
                 error.apply(null, args);
             }
-        } };
+        }; };
 
         var run = function() {
             if (keys.length > 0) {
