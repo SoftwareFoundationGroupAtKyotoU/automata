@@ -21,23 +21,25 @@ STATUS = {
 
 require 'shellwords'
 require 'app'
+require 'cgi_helper'
 
-app = App.new
+helper = CGIHelper.new
+app = App.new(helper.cgi.remote_user)
 
 # reject request by normal users
-app.error_exit(STATUS[403]) unless app.su?
+helper.error_exit(STATUS[403]) unless app.su?
 
 # user must be specified
-user = app.param(:user)
-app.error_exit(STATUS[400]) unless user
+user = helper.param(:user)
+helper.error_exit(STATUS[400]) unless user
 
 # resolve real login name in case user id is a token
 user = app.user_from_token(user)
-app.error_exit(STATUS[400]) unless user
+helper.error_exit(STATUS[400]) unless user
 
 # report ID must be specified
-report_id = app.param(:report)
-app.error_exit(STATUS[400]) unless report_id
+report_id = helper.param(:report)
+helper.error_exit(STATUS[400]) unless report_id
 
 cmd =
   [ App::FILES[:test_script],
@@ -46,5 +48,5 @@ cmd =
   ].join(' ')
 system(cmd)
 
-print(app.cgi.header('status' => 'OK'))
+print(helper.cgi.header('status' => 'OK'))
 puts('done')

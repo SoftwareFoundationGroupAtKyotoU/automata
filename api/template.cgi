@@ -16,17 +16,20 @@ $KCODE='UTF8' if RUBY_VERSION < '1.9.0'
 $:.unshift('./lib')
 
 require 'app'
+require 'cgi_helper'
+
+helper = CGIHelper.new
 app = App.new
 
 temp = app.template.to_hash
 
-type = app.params[:type.to_s]
+type = helper.params[:type.to_s]
 temp = temp.merge(temp[type[0]]||{}) unless type.empty?
 
 result = {}
 keys = KEY.dup
-OPTIONAL.each{|k| keys << k unless app.params[k.to_s].empty?}
+OPTIONAL.each{|k| keys << k unless helper.params[k.to_s].empty?}
 keys.each{|k| result[k.to_s] = temp[k.to_s]}
 
-print(app.header)
-puts(app.json(result))
+print(helper.header)
+puts(helper.json(result))

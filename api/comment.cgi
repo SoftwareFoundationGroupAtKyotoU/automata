@@ -44,12 +44,14 @@ require 'fileutils'
 require 'app'
 require 'log'
 require 'comment'
+require 'cgi_helper'
 
-app = App.new
+helper = CGIHelper.new
+app = App.new(helper.cgi.remote_user)
 
 # action must be specified
-action = app.param(:action)
-app.error_exit(STATUS[400]) unless action
+action = helper.param(:action)
+helper.error_exit(STATUS[400]) unless action
 
 config = {
   'enable' => true,
@@ -60,43 +62,43 @@ config = {
 
 if action == 'config'
   config['renderer'] = Comment::Renderer.create.type
-  print(app.header)
-  puts(app.json(config))
+  print(helper.header)
+  puts(helper.json(config))
   exit
 elsif action == 'preview'
-  content = app.param(:message)
+  content = helper.param(:message)
   renderer = Comment::Renderer.create
-  print(app.cgi.header('type' => renderer.type))
+  print(helper.cgi.header('type' => renderer.type))
   puts(renderer.render(content))
   exit
 end
 
 # check if comment feature is enabled
-app.error_exit(STATUS[400]) unless config['enable']
+helper.error_exit(STATUS[400]) unless config['enable']
 
 # user must be specified
-users = app.params['user']
-app.error_exit(STATUS[400]) if users.empty?
+users = helper.params['user']
+helper.error_exit(STATUS[400]) if users.empty?
 
 # resolve real login name in case user id is a token
 users = users.map {|u| app.user_from_token(u)}
 users.compact!
-app.error_exit(STATUS[400]) if users.empty?
+helper.error_exit(STATUS[400]) if users.empty?
 
 # report ID must be specified
-report_id = app.param(:report)
-app.error_exit(STATUS[400]) unless report_id
+report_id = helper.param(:report)
+helper.error_exit(STATUS[400]) unless report_id
 
 # check the number of specified users
 if users.length != 1
-  app.error_exit(STATUS[403]) if action != 'list_news'
-  app.error_exit(STATUS[403]) if !app.su?
+  helper.error_exit(STATUS[403]) if action != 'list_news'
+  helper.error_exit(STATUS[403]) if !app.su?
 end
 
 # permission check for other users
 if !app.su? && app.user != users[0]
-  app.error_exit(STATUS[403]) if !app.conf[:record, :open]
-  app.error_exit(STATUS[403]) if action != 'get'
+  helper.error_exit(STATUS[403]) if !app.conf[:record, :open]
+  helper.error_exit(STATUS[403]) if action != 'get'
 end
 
 def convert(val, &method)
@@ -117,61 +119,61 @@ begin
 
   case action
   when 'get'
-    type = app.param(:type)
-    id = convert(app.param(:id), &:to_i)
-    offset = convert(app.param(:offset), &:to_i)
-    limit = convert(app.param(:limit), &:to_i)
+    type = helper.param(:type)
+    id = convert(helper.param(:id), &:to_i)
+    offset = convert(helper.param(:offset), &:to_i)
+    limit = convert(helper.param(:limit), &:to_i)
     args = { :type => type, :id => id, :offset => offset, :limit => limit }
     content = comments[0][:comment].retrieve(args)
 
-    print(app.header)
-    puts(app.json(content))
+    print(helper.header)
+    puts(helper.json(content))
 
   when 'post'
-    content = app.param(:message)
-    ref = app.param(:ref)
-    acl = convert(app.param(:acl)){|a| a.split(',')}
+    content = helper.param(:message)
+    ref = helper.param(:ref)
+    acl = convert(helper.param(:acl)){|a| a.split(',')}
     r = comments[0][:comment].add(:content => content, :ref => ref, :acl => acl)
 
-    print(app.cgi.header)
+    print(helper.cgi.header)
     puts('done')
 
   when 'edit'
-    id = convert(app.param(:id), &:to_i)
-    app.error_exit(STATUS[400]) unless id
+    id = convert(helper.param(:id), &:to_i)
+    helper.error_exit(STATUS[400]) unless id
 
-    content = app.param(:message)
-    ref = app.param(:ref)
-    acl = convert(app.param(:acl)){|a| a.split(',')}
+    content = helper.param(:message)
+    ref = helper.param(:ref)
+    acl = convert(helper.param(:acl)){|a| a.split(',')}
     r = comments[0][:comment] \
       .edit(:id => id, :content => content, :ref => ref, :acl => acl)
 
-    print(app.cgi.header)
+    print(helper.cgi.header)
     puts('done')
 
   when 'delete'
-    id = convert(app.param(:id), &:to_i)
-    app.error_exit(STATUS[400]) unless id
+    id = convert(helper.param(:id), &:to_i)
+    helper.error_exit(STATUS[400]) unless id
 
     comments[0][:comment].delete(id)
 
-    print(app.cgi.header)
+    print(helper.cgi.header)
     puts('done')
 
   when 'read'
-    id = convert(app.param(:id), &:to_i)
-    app.error_exit(STATUS[400]) unless id
+    id = convert(helper.param(:id), &:to_i)
+    helper.error_exit(STATUS[400]) unless id
 
     comments[0][:comment].read(id)
 
-    print(app.cgi.header)
+    print(helper.cgi.header)
     puts('done')
 
   when 'news'
     content = comments[0][:comment].news
 
-    print(app.header)
-    puts(app.json(content))
+    print(helper.header)
+    puts(helper.json(content))
 
   when 'list_news'
     name_to_token = Hash[*app.users.map {|u| [ u.real_login, u.token ]}.flatten]
@@ -179,18 +181,18 @@ begin
                      [ name_to_token[c[:user]], c[:comment].news ]
                    }.flatten]
 
-    print(app.header)
-    puts(app.json(content))
+    print(helper.header)
+    puts(helper.json(content))
   end
 
 rescue Comment::NotFound
-  app.error_exit(STATUS[400])
+  helper.error_exit(STATUS[400])
 rescue Comment::PermissionDenied
-  app.error_exit(STATUS[400])
+  helper.error_exit(STATUS[400])
 rescue Comment::SizeLimitExceeded
-  app.error_exit(STATUS[400], 'size limit exceeded')
+  helper.error_exit(STATUS[400], 'size limit exceeded')
 rescue Comment::MaxCommentsExceeded
-  app.error_exit(STATUS[400], 'max comments exceeded')
+  helper.error_exit(STATUS[400], 'max comments exceeded')
 rescue => e
-  app.error_exit(STATUS[500], [ e.to_s, e.backtrace ].join("\n"))
+  helper.error_exit(STATUS[500], [ e.to_s, e.backtrace ].join("\n"))
 end

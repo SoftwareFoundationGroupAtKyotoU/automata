@@ -19,27 +19,29 @@ STATUS = {
 require 'app'
 require 'log'
 require 'report/exercise'
+require 'cgi_helper'
 
-app = App.new
+helper = CGIHelper.new
+app = App.new(helper.cgi.remote_user)
 
 # reject request by normal users
-app.error_exit(STATUS[403]) unless app.su?
+helper.error_exit(STATUS[403]) unless app.su?
 
 # user must be specified
-user = app.param(:user)
-app.error_exit(STATUS[400]) unless user
+user = helper.param(:user)
+helper.error_exit(STATUS[400]) unless user
 
 # resolve real login name in case user id is a token
 user = app.user_from_token(user)
-app.error_exit(STATUS[400]) unless user
+helper.error_exit(STATUS[400]) unless user
 
 # report ID must be specified
-report_id = app.param(:report)
-app.error_exit(STATUS[400]) unless report_id
+report_id = helper.param(:report)
+helper.error_exit(STATUS[400]) unless report_id
 
 # exercises must be specified
-exercises = app.param(:exercise)
-app.error_exit(STATUS[400]) unless exercises
+exercises = helper.param(:exercise)
+helper.error_exit(STATUS[400]) unless exercises
 exercises = exercises.split(',').sort{|a,b| a.to_ex <=> b.to_ex}
 
 begin
@@ -48,8 +50,8 @@ begin
     log.latest(:data)['report'] = exercises
   end
 
-  print(app.cgi.header('status' => 'OK'))
+  print(helper.cgi.header('status' => 'OK'))
   puts('done')
 rescue => e
-  app.error_exit(STATUS[500])
+  helper.error_exit(STATUS[500])
 end

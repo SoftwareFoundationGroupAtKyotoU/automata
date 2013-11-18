@@ -18,16 +18,19 @@ $KCODE='UTF8' if RUBY_VERSION < '1.9.0'
 $:.unshift('./lib')
 
 require 'app'
+require 'cgi_helper'
 require 'report/exercise'
+
+helper = CGIHelper.new
 app = App.new
 
 result = []
 scheme = app.file(:scheme)
 scheme['scheme'].reject do |report|
-  !app.optional(:id).include?(report['id'])
+  !helper.optional(:id).include?(report['id'])
 end.each do |report|
   exes = []
-  unless app.params['exercise'].empty?
+  unless helper.params['exercise'].empty?
     scheme['report'][report['id']].sort do |a,b|
       a[0].to_ex <=> b[0].to_ex
     end.each do |k, v|
@@ -43,14 +46,14 @@ end.each do |report|
   end
 
   report['exercise'] = exes
-  if FILTER.all?{|k| app.optional(k).include?(report[k.to_s])}
+  if FILTER.all?{|k| helper.optional(k).include?(report[k.to_s])}
     entry = {}
     keys = KEY.dup
-    OPTIONAL.each{|k| keys << k unless app.params[k.to_s].empty?}
+    OPTIONAL.each{|k| keys << k unless helper.params[k.to_s].empty?}
     keys.each{|k| entry[k.to_s] = report[k.to_s]}
     result << entry
   end
 end
 
-print(app.header)
-puts(app.json(result))
+print(helper.header)
+puts(helper.json(result))
