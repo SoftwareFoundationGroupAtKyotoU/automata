@@ -5,7 +5,6 @@ require 'strscan'
 
 require 'rubygems'
 require 'bundler/setup'
-require 'json'
 
 require 'clone'
 require 'conf'

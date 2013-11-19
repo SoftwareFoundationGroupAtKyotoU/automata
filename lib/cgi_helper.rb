@@ -1,4 +1,8 @@
+require 'rubygems'
+require 'bundler/setup'
+
 require 'cgi'
+require 'json'
 
 class CGIHelper
   STATUS = {
@@ -22,12 +26,6 @@ class CGIHelper
     return "Content-Type: #{ctype}; charset=utf-8\r\n\r\n"
   end
 
-  def error_exit(status, message=nil)
-    print(cgi.header('type' => 'text/plain', 'status' => status))
-    puts(message ? message : status)
-    exit
-  end
-
   def bad_request(message=nil)
     error_exit(STATUS[400], message)
   end
@@ -42,9 +40,6 @@ class CGIHelper
 
   def internal_server_error(message=nil)
     error_exit(STATUS[500], message)
-  end
-
-  def Forbidden(message=nil)
   end
 
   def params() return @cgi.params end
@@ -67,5 +62,13 @@ class CGIHelper
     data = data.to_json
     data = "#{@callback}(#{data});" if @callback
     return data
+  end
+
+  private
+
+  def error_exit(status, message=nil)
+    print(cgi.header('type' => 'text/plain', 'status' => status))
+    puts(message ? message : status)
+    exit
   end
 end

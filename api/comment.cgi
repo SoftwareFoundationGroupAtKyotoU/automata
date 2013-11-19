@@ -51,7 +51,7 @@ config = {
   'enable' => true,
   'max' => 256,
   'size_limit' => 1024 * 16,
-  'acl' => app.conf[:record, :open] ? ['user', 'other' ] :  [ 'user' ],
+  'acl' => app.conf[:record, :open] ? [ 'user', 'other' ] :  [ 'user' ],
 }.merge(app.conf[:comment] || {})
 
 if action == 'config'
