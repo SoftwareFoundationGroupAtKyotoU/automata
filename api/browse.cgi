@@ -26,12 +26,6 @@ $KCODE='UTF8' if RUBY_VERSION < '1.9.0'
 
 $:.unshift('./lib')
 
-STATUS = {
-  400 => '400 Bad Request',
-  403 => '403 Forbidden',
-  404 => '404 Not Found',
-}
-
 require 'shellwords'
 require 'time'
 require 'app'
@@ -42,32 +36,32 @@ require 'cgi_helper'
 helper = CGIHelper.new
 app = App.new(helper.cgi.remote_user)
 
-helper.error_exit(STATUS[400]) if helper.params['user'].empty?
+helper.bad_request() if helper.params['user'].empty?
 user = helper.params['user'][0]
 
 # resolve real login name in case user id is a token
 user = app.user_from_token(user)
-helper.error_exit(STATUS[403]) unless user
+helper.forbidden() unless user
 
-helper.error_exit(STATUS[400]) if helper.params['report'].empty?
+helper.bad_request() if helper.params['report'].empty?
 report_id = helper.params['report'][0]
 
 path = CGI.unescape(helper.params['path'].first || '.')
 dir_user = App::KADAI + report_id + user
 log_file = dir_user + App::FILES[:log]
-helper.error_exit(STATUS[404]) unless [dir_user, log_file].all?(&:exist?)
+helper.not_found() unless [dir_user, log_file].all?(&:exist?)
 time = Log.new(log_file, true).latest(:data)['id']
 
 src = dir_user + time + 'src'
 path = (src+path).expand_path
-helper.error_exit(STATUS[403]) unless path.to_s.index(src.to_s)==0 # dir traversal
-helper.error_exit(STATUS[404]) unless [src, path].all?(&:exist?)
+helper.forbidden() unless path.to_s.index(src.to_s)==0 # dir traversal
+helper.not_found() unless [src, path].all?(&:exist?)
 
 # follow symlink
 src = src.realpath rescue nil
 path = path.realpath rescue nil
-helper.error_exit(STATUS[403]) unless src && path
-helper.error_exit(STATUS[403]) unless path.to_s.index(src.to_s)==0 # dir traversal
+helper.forbidden() unless src && path
+helper.forbidden() unless path.to_s.index(src.to_s)==0 # dir traversal
 
 if path.directory?
   Dir.chdir(path.to_s) do

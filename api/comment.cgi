@@ -34,12 +34,6 @@ $KCODE='UTF8' if RUBY_VERSION < '1.9.0'
 
 $:.unshift('./lib')
 
-STATUS = {
-  400 => '400 Bad Request',
-  403 => '403 Forbidden',
-  500 => '500 Internal Server Error',
-}
-
 require 'fileutils'
 require 'app'
 require 'log'
@@ -51,7 +45,7 @@ app = App.new(helper.cgi.remote_user)
 
 # action must be specified
 action = helper.param(:action)
-helper.error_exit(STATUS[400]) unless action
+helper.bad_request unless action
 
 config = {
   'enable' => true,
@@ -74,31 +68,29 @@ elsif action == 'preview'
 end
 
 # check if comment feature is enabled
-helper.error_exit(STATUS[400]) unless config['enable']
+helper.bad_request unless config['enable']
 
 # user must be specified
 users = helper.params['user']
-helper.error_exit(STATUS[400]) if users.empty?
+helper.bad_request if users.empty?
 
 # resolve real login name in case user id is a token
 users = users.map {|u| app.user_from_token(u)}
 users.compact!
-helper.error_exit(STATUS[400]) if users.empty?
+helper.bad_request if users.empty?
 
 # report ID must be specified
 report_id = helper.param(:report)
-helper.error_exit(STATUS[400]) unless report_id
+helper.bad_request unless report_id
 
 # check the number of specified users
 if users.length != 1
-  helper.error_exit(STATUS[403]) if action != 'list_news'
-  helper.error_exit(STATUS[403]) if !app.su?
+  helper.forbidden if action != 'list_news' || !app.su?
 end
 
 # permission check for other users
 if !app.su? && app.user != users[0]
-  helper.error_exit(STATUS[403]) if !app.conf[:record, :open]
-  helper.error_exit(STATUS[403]) if action != 'get'
+  helper.forbidden if !app.conf[:record, :open] || action != 'get'
 end
 
 def convert(val, &method)
@@ -140,7 +132,7 @@ begin
 
   when 'edit'
     id = convert(helper.param(:id), &:to_i)
-    helper.error_exit(STATUS[400]) unless id
+    helper.bad_request unless id
 
     content = helper.param(:message)
     ref = helper.param(:ref)
@@ -153,7 +145,7 @@ begin
 
   when 'delete'
     id = convert(helper.param(:id), &:to_i)
-    helper.error_exit(STATUS[400]) unless id
+    helper.bad_request unless id
 
     comments[0][:comment].delete(id)
 
@@ -162,7 +154,7 @@ begin
 
   when 'read'
     id = convert(helper.param(:id), &:to_i)
-    helper.error_exit(STATUS[400]) unless id
+    helper.bad_request unless id
 
     comments[0][:comment].read(id)
 
@@ -186,13 +178,13 @@ begin
   end
 
 rescue Comment::NotFound
-  helper.error_exit(STATUS[400])
+  helper.bad_request
 rescue Comment::PermissionDenied
-  helper.error_exit(STATUS[400])
+  helper.bad_request
 rescue Comment::SizeLimitExceeded
-  helper.error_exit(STATUS[400], 'size limit exceeded')
+  helper.bad_request('size limit exceeded')
 rescue Comment::MaxCommentsExceeded
-  helper.error_exit(STATUS[400], 'max comments exceeded')
+  helper.bad_request('max comments exceeded')
 rescue => e
-  helper.error_exit(STATUS[500], [ e.to_s, e.backtrace ].join("\n"))
+  helper.internal_server_error([ e.to_s, e.backtrace ].join("\n"))
 end

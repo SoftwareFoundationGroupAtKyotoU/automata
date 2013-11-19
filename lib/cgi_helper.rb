@@ -1,6 +1,13 @@
 require 'cgi'
 
 class CGIHelper
+  STATUS = {
+    400 => '400 Bad Request',
+    403 => '403 Forbidden',
+    404 => '404 Not Found',
+    500 => '500 Internal Server Error'
+  }
+
   def initialize()
     @cgi = CGI.new
     cb = (@cgi.params['callback'][0] || '').strip
@@ -19,6 +26,25 @@ class CGIHelper
     print(cgi.header('type' => 'text/plain', 'status' => status))
     puts(message ? message : status)
     exit
+  end
+
+  def bad_request(message=nil)
+    error_exit(STATUS[400], message)
+  end
+
+  def forbidden(message=nil)
+    error_exit(STATUS[403], message)
+  end
+
+  def not_found(message=nil)
+    error_exit(STATUS[404], message)
+  end
+
+  def internal_server_error(message=nil)
+    error_exit(STATUS[500], message)
+  end
+
+  def Forbidden(message=nil)
   end
 
   def params() return @cgi.params end
