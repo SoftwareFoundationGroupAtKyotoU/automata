@@ -16,7 +16,7 @@ class CGIHelper
     @cgi = CGI.new
     cb = (@cgi.params['callback'][0] || '').strip
     cb = nil if cb.length == 0 && cb !~ /^\$?[a-zA-Z0-9\.\_\[\]]+$/
-    @callback = nil
+    @callback = cb
   end
 
   attr_reader :cgi
