@@ -21,19 +21,19 @@ helper = CGIHelper.new
 app = App.new(helper.cgi.remote_user)
 
 # reject request by normal users
-helper.forbidden() unless app.su?
+helper.exit_with_forbidden unless app.su?
 
 # user must be specified
 user = helper.param(:user)
-helper.bad_request() unless user
+helper.exit_with_bad_request unless user
 
 # resolve real login name in case user id is a token
 user = app.user_from_token(user)
-helper.bad_request unless user
+helper.exit_with_bad_request unless user
 
 # report ID must be specified
 report_id = helper.param(:report)
-helper.bad_request unless report_id
+helper.exit_with_bad_request unless report_id
 
 cmd =
   [ App::FILES[:test_script],

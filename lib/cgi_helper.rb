@@ -26,19 +26,19 @@ class CGIHelper
     return "Content-Type: #{ctype}; charset=utf-8\r\n\r\n"
   end
 
-  def bad_request(message=nil)
+  def exit_with_bad_request(message=nil)
     error_exit(STATUS[400], message)
   end
 
-  def forbidden(message=nil)
+  def exit_with_forbidden(message=nil)
     error_exit(STATUS[403], message)
   end
 
-  def not_found(message=nil)
+  def exit_with_not_found(message=nil)
     error_exit(STATUS[404], message)
   end
 
-  def internal_server_error(message=nil)
+  def exit_with_internal_server_error(message=nil)
     error_exit(STATUS[500], message)
   end
 

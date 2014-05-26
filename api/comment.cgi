@@ -45,7 +45,7 @@ app = App.new(helper.cgi.remote_user)
 
 # action must be specified
 action = helper.param(:action)
-helper.bad_request unless action
+helper.exit_with_bad_request unless action
 
 config = {
   'enable' => true,
@@ -68,29 +68,29 @@ elsif action == 'preview'
 end
 
 # check if comment feature is enabled
-helper.bad_request unless config['enable']
+helper.exit_with_bad_request unless config['enable']
 
 # user must be specified
 users = helper.params['user']
-helper.bad_request if users.empty?
+helper.exit_with_bad_request if users.empty?
 
 # resolve real login name in case user id is a token
 users = users.map {|u| app.user_from_token(u)}
 users.compact!
-helper.bad_request if users.empty?
+helper.exit_with_bad_request if users.empty?
 
 # report ID must be specified
 report_id = helper.param(:report)
-helper.bad_request unless report_id
+helper.exit_with_bad_request unless report_id
 
 # check the number of specified users
 if users.length != 1
-  helper.forbidden if action != 'list_news' || !app.su?
+  helper.exit_with_forbidden if action != 'list_news' || !app.su?
 end
 
 # permission check for other users
 if !app.su? && app.user != users[0]
-  helper.forbidden if !app.conf[:record, :open] || action != 'get'
+  helper.exit_with_forbidden if !app.conf[:record, :open] || action != 'get'
 end
 
 def convert(val, &method)
@@ -132,7 +132,7 @@ begin
 
   when 'edit'
     id = convert(helper.param(:id), &:to_i)
-    helper.bad_request unless id
+    helper.exit_with_bad_request unless id
 
     content = helper.param(:message)
     ref = helper.param(:ref)
@@ -145,7 +145,7 @@ begin
 
   when 'delete'
     id = convert(helper.param(:id), &:to_i)
-    helper.bad_request unless id
+    helper.exit_with_bad_request unless id
 
     comments[0][:comment].delete(id)
 
@@ -154,7 +154,7 @@ begin
 
   when 'read'
     id = convert(helper.param(:id), &:to_i)
-    helper.bad_request unless id
+    helper.exit_with_bad_request unless id
 
     comments[0][:comment].read(id)
 
@@ -178,13 +178,13 @@ begin
   end
 
 rescue Comment::NotFound
-  helper.bad_request
+  helper.exit_with_bad_request
 rescue Comment::PermissionDenied
-  helper.bad_request
+  helper.exit_with_bad_request
 rescue Comment::SizeLimitExceeded
-  helper.bad_request('size limit exceeded')
+  helper.exit_with_bad_request('size limit exceeded')
 rescue Comment::MaxCommentsExceeded
-  helper.bad_request('max comments exceeded')
+  helper.exit_with_bad_request('max comments exceeded')
 rescue => e
-  helper.internal_server_error([ e.to_s, e.backtrace ].join("\n"))
+  helper.exit_with_internal_server_error([ e.to_s, e.backtrace ].join("\n"))
 end

@@ -36,32 +36,32 @@ require 'cgi_helper'
 helper = CGIHelper.new
 app = App.new(helper.cgi.remote_user)
 
-helper.bad_request() if helper.params['user'].empty?
+helper.exit_with_bad_request if helper.params['user'].empty?
 user = helper.params['user'][0]
 
 # resolve real login name in case user id is a token
 user = app.user_from_token(user)
-helper.forbidden() unless user
+helper.exit_with_forbidden unless user
 
-helper.bad_request() if helper.params['report'].empty?
+helper.exit_with_bad_request if helper.params['report'].empty?
 report_id = helper.params['report'][0]
 
 path = CGI.unescape(helper.params['path'].first || '.')
 dir_user = App::KADAI + report_id + user
 log_file = dir_user + App::FILES[:log]
-helper.not_found() unless [dir_user, log_file].all?(&:exist?)
+helper.exit_with_not_found unless [dir_user, log_file].all?(&:exist?)
 time = Log.new(log_file, true).latest(:data)['id']
 
 src = dir_user + time + 'src'
 path = (src+path).expand_path
-helper.forbidden() unless path.to_s.index(src.to_s)==0 # dir traversal
-helper.not_found() unless [src, path].all?(&:exist?)
+helper.exit_with_forbidden unless path.to_s.index(src.to_s)==0 # dir traversal
+helper.exit_with_not_found unless [src, path].all?(&:exist?)
 
 # follow symlink
 src = src.realpath rescue nil
 path = path.realpath rescue nil
-helper.forbidden() unless src && path
-helper.forbidden() unless path.to_s.index(src.to_s)==0 # dir traversal
+helper.exit_with_forbidden unless src && path
+helper.exit_with_forbidden unless path.to_s.index(src.to_s)==0 # dir traversal
 
 if path.directory?
   Dir.chdir(path.to_s) do
