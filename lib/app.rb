@@ -117,6 +117,8 @@ class App
       fname = KADAI[id, u, FILES[:log]]
       return nil unless File.exist?(fname)
       yaml = Log.new(fname, true).latest(:data)
+      # add timestamp of initial submit
+      yaml['initial_submit'] = Log.new(fname, true).oldest(:data)['timestamp']
       src = Report::Source::Post.new(yaml, optional)
     else
       yaml = file(:data) rescue {}

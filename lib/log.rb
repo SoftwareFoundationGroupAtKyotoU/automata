@@ -8,6 +8,12 @@ class Log < Store::YAML
     end
   end
 
+  def oldest(root)
+    transaction do
+      return (@store[root.to_s]||[]).sort{|a,b| b['id'] <=> a['id']}.last || {}
+    end
+  end
+
   def retrieve(root, id)
     id = id.iso8601 if id.is_a?(Time)
     transaction do
