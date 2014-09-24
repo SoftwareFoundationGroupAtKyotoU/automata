@@ -64,7 +64,7 @@ begin
     FileUtils.mkdir_p(src_dir.to_s)
     file = app.cgi.params['report_file'][0]
 
-    unless file.path then
+    if file.is_a?(StringIO) || file.path.nil? then
       tmp = Tempfile.open('report.zip')
       tmp.write(file.read)
       file = tmp
