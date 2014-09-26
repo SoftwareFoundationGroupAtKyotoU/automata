@@ -18,17 +18,20 @@ $:.unshift('./lib')
 
 require 'app'
 require 'user'
-app = App.new
+require 'cgi_helper'
 
-app.conf[:user] = app.user
+helper = CGIHelper.new
+app = App.new(helper.cgi.remote_user)
+
+app.conf[:user] = helper.cgi.remote_user
 app.conf[:admin] = app.su?
 app.conf[:token] = User.make_token(app.user)
 
 entry = {}
 keys = KEY.dup
-OPTIONAL.each{|k| keys << k unless app.params[k.to_s].empty?}
+OPTIONAL.each{|k| keys << k unless helper.params[k.to_s].empty?}
 keys.each{|k| entry[k.to_s] = app.conf[k]}
 result = entry
 
-print(app.header)
-puts(app.json(result))
+print(helper.header)
+puts(helper.json(result))

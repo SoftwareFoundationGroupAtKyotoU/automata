@@ -22,31 +22,34 @@ $KCODE='UTF8' if RUBY_VERSION < '1.9.0'
 $:.unshift('./lib')
 
 require 'app'
-app = App.new
+require 'cgi_helper'
+
+helper = CGIHelper.new
+app = App.new(helper.cgi.remote_user)
 
 users = app.users
-unless app.params['user'].empty?
+unless helper.params['user'].empty?
   users.reject! do |u|
-    !(app.params['user'].include?(u.real_login) ||
-      app.params['user'].include?(u.token))
+    !(helper.params['user'].include?(u.real_login) ||
+      helper.params['user'].include?(u.token))
   end
 end
 
-if app.params['type'][0] == 'status'
+if helper.params['type'][0] == 'status'
   schemes = app.file(:scheme)['scheme'].reject do |s|
-    !app.optional('report').include?(s['id'])
+    !helper.optional('report').include?(s['id'])
   end
 
   schemes.each do |s|
     users.each do |u|
       option = {
-        :status => app.params['status'][0],
-        :log    => !app.params['log'].empty?,
+        :status => helper.params['status'][0],
+        :log    => !helper.params['log'].empty?,
       }
       u[s['id']] = app.report(option, s['id'], u.real_login)
     end
   end
 end
 
-print(app.header)
-puts(app.json(users.map(&:to_hash)))
+print(helper.header)
+puts(helper.json(users.map(&:to_hash)))

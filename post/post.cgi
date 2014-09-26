@@ -12,6 +12,7 @@ require 'tmpdir'
 require 'time'
 require 'kconv'
 
+require 'cgi_helper'
 require 'app'
 require 'report/exercise'
 require 'log'
@@ -42,11 +43,12 @@ err = {
   # 'unable to unzip the uploaded file',
 }
 
-app = App.new
+helper = CGIHelper.new
+app = App.new(helper.cgi.remote_user)
 time = Time.now
 
 id = 'report_id'
-rep_id = app.param(id)
+rep_id = helper.param(id)
 raise ArgumentError, (err[:require] % id) unless rep_id
 
 rep_schemes = app.file(:scheme)['scheme'] || []
@@ -62,7 +64,7 @@ begin
     raise RuntimeError, err[:capacity] if File.exist?(src_dir.to_s)
 
     FileUtils.mkdir_p(src_dir.to_s)
-    file = app.cgi.params['report_file'][0]
+    file = helper.cgi.params['report_file'][0]
 
     if file.is_a?(StringIO) || file.path.nil? then
       tmp = Tempfile.open('report.zip')
@@ -105,7 +107,7 @@ begin
     src_dir.entries2utf8
 
     # solved exercises
-    exs = app.params['ex']
+    exs = helper.params['ex']
     exs = exs.map{|ex| ex.respond_to?(:read) ? ex.read : ex}
     exs = exs.sort{|a,b| a.to_ex <=> b.to_ex}
     Log.new(log_file).write(:data, time, 'status' => 'build', 'report' => exs)
@@ -130,5 +132,5 @@ begin
     Log.new(log_file).write(:data, time, entry)
   end
 ensure
-  print app.cgi.header('status' => '302 Found', 'Location' => '../record/')
+  print helper.cgi.header('status' => '302 Found', 'Location' => '../record/')
 end

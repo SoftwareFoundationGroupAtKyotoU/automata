@@ -26,46 +26,42 @@ $KCODE='UTF8' if RUBY_VERSION < '1.9.0'
 
 $:.unshift('./lib')
 
-STATUS = {
-  400 => '400 Bad Request',
-  403 => '403 Forbidden',
-  404 => '404 Not Found',
-}
-
 require 'shellwords'
 require 'time'
 require 'app'
 require 'log'
 require 'mime'
+require 'cgi_helper'
 
-app = App.new
+helper = CGIHelper.new
+app = App.new(helper.cgi.remote_user)
 
-app.error_exit(STATUS[400]) if app.params['user'].empty?
-user = app.params['user'][0]
+helper.exit_with_bad_request if helper.params['user'].empty?
+user = helper.params['user'][0]
 
 # resolve real login name in case user id is a token
 user = app.user_from_token(user)
-app.error_exit(STATUS[403]) unless user
+helper.exit_with_forbidden unless user
 
-app.error_exit(STATUS[400]) if app.params['report'].empty?
-report_id = app.params['report'][0]
+helper.exit_with_bad_request if helper.params['report'].empty?
+report_id = helper.params['report'][0]
 
-path = CGI.unescape(app.params['path'].first || '.')
+path = CGI.unescape(helper.params['path'].first || '.')
 dir_user = App::KADAI + report_id + user
 log_file = dir_user + App::FILES[:log]
-app.error_exit(STATUS[404]) unless [dir_user, log_file].all?(&:exist?)
+helper.exit_with_not_found unless [dir_user, log_file].all?(&:exist?)
 time = Log.new(log_file, true).latest(:data)['id']
 
 src = dir_user + time + 'src'
 path = (src+path).expand_path
-app.error_exit(STATUS[403]) unless path.to_s.index(src.to_s)==0 # dir traversal
-app.error_exit(STATUS[404]) unless [src, path].all?(&:exist?)
+helper.exit_with_forbidden unless path.to_s.index(src.to_s)==0 # dir traversal
+helper.exit_with_not_found unless [src, path].all?(&:exist?)
 
 # follow symlink
 src = src.realpath rescue nil
 path = path.realpath rescue nil
-app.error_exit(STATUS[403]) unless src && path
-app.error_exit(STATUS[403]) unless path.to_s.index(src.to_s)==0 # dir traversal
+helper.exit_with_forbidden unless src && path
+helper.exit_with_forbidden unless path.to_s.index(src.to_s)==0 # dir traversal
 
 if path.directory?
   Dir.chdir(path.to_s) do
@@ -78,10 +74,10 @@ if path.directory?
         'time' => f.mtime.iso8601,
       }
     end
-    print(app.header)
-    puts(app.json(files))
+    print(helper.header)
+    puts(helper.json(files))
   end
-elsif path.mime.type == 'text' && 'highlight' == app.params['type'][0]
+elsif path.mime.type == 'text' && 'highlight' == helper.params['type'][0]
   dir = File.join(File.dirname(File.expand_path($0)), 'vim')
   vimcmd =
     [ 'vim -e -s',
@@ -90,11 +86,11 @@ elsif path.mime.type == 'text' && 'highlight' == app.params['type'][0]
       "-S src2html.vim",
     ].join(' ');
   Dir.chdir(dir) do
-    print(app.cgi.header('type' => 'text/html', 'status' => 'OK'))
+    print(helper.cgi.header('type' => 'text/html', 'status' => 'OK'))
     print(`#{vimcmd} #{Shellwords.escape(path.to_s)}`)
   end
 else
   args = { 'type' => path.mime.to_s, 'length' => path.size, 'status' => 'OK' }
-  print(app.cgi.header(args))
+  print(helper.cgi.header(args))
   File.open(path.to_s, 'rb') {|f| print(f.read) }
 end

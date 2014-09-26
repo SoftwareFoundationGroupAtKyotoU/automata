@@ -16,29 +16,32 @@ $:.unshift('./lib')
 
 require 'app'
 require 'log'
-app = App.new
+require 'cgi_helper'
 
-def app.error_exit(obj)
-  print(app.header)
-  puts(app.json(obj))
+helper = CGIHelper.new
+app = App.new(helper.cgi.remote_user)
+
+def helper.error_exit(obj)
+  print(helper.header)
+  puts(helper.json(obj))
   exit
 end
 
-app.error_exit({}) if app.params['user'].empty?
-user = app.params['user'][0]
+helper.error_exit({}) if helper.params['user'].empty?
+user = helper.params['user'][0]
 
 # resolve real login name in case user id is a token
 user = app.users.inject(nil) do |r, u|
   (u.token == user || u.real_login == user) ? u.real_login : r
 end
-app.error_exit({}) unless user
+helper.error_exit({}) unless user
 
-app.error_exit({}) if app.params['report'].empty?
-report_id = app.params['report'][0]
+helper.error_exit({}) if helper.params['report'].empty?
+report_id = helper.params['report'][0]
 
 dir_user = App::KADAI + report_id + user
 log_file = dir_user + App::FILES[:log]
-app.error_exit({}) unless [dir_user, log_file].all?(&:exist?)
+helper.error_exit({}) unless [dir_user, log_file].all?(&:exist?)
 
 log = Log.new(log_file, true).latest(:data)
 result = {}
@@ -59,5 +62,5 @@ if log['test'] && (app.conf[:record, :detail] || app.su?)
   result['detail'] = detail
 end
 
-print(app.header)
-puts(app.json(result))
+print(helper.header)
+puts(helper.json(result))
