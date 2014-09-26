@@ -1,5 +1,5 @@
 build
-config
+config/*.yml
 db/data.yml
 .htaccess
 .htdigest
