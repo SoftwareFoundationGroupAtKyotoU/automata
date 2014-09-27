@@ -1,0 +1,36 @@
+su:
+  - admin
+
+authn:
+  htdigest: "path to .htdigest"
+  realm: "realm"
+  admin: "automata@example.com"
+
+record:
+  show_login: false
+  open: false
+  detail: detail
+
+comment:
+  enable: true
+
+check:
+  default:
+    test:
+      files:
+        - test.byte
+        - solved.in
+      input: solved.in
+      output: :argument
+      sandbox: "URI of tester.cgi."
+      run: # nothing
+    build:
+      ignore:
+        - \.o$
+      command: ["true"]
+  example_report:
+    build:
+      command:
+        - ./command_to_build
+      file_location:
+        - location: example_report

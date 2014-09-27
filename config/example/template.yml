@@ -1,0 +1,25 @@
+institute: "institute"
+title: "title"
+
+post:
+  subtitle: "レポート提出"
+
+record:
+  subtitle: "レポート提出状況"
+
+links:
+  - label: "講義ページに戻る"
+    uri: "http://example.com/"
+
+requirements:
+  example_report:
+    static:
+      - type: text
+        name: example
+        value: "some text"
+    dynamic:
+      - target: interface
+        default:
+          - name: example
+            type: code
+            value: "Example"
