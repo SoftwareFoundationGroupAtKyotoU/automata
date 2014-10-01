@@ -37,13 +37,10 @@ class StoreTest < Test::Unit::TestCase
   def _test_read_write(klass)
     store = klass.new(@path)
     key, value = 'key', 'value'
-    store.ro.transaction{|store| assert_nil(store[key])}
+    assert_nil(store[key])
 
-    store.transaction{|store| store[key] = value}
-    store.transaction{|store| assert_equal(value, store[key])}
-    store.ro.transaction do |store|
-      assert_raise(PStore::Error) { store[key] = 'another value' }
-    end
+    store[key] = value
+    assert_equal(value, store[key])
   end
 
   def test_read_only
@@ -56,15 +53,19 @@ class StoreTest < Test::Unit::TestCase
   def _test_read_only(klass)
     store = klass.new(@path)
     key, value = 'key', 'value'
-    store.transaction{|store| store[key] = value }
+    store[key] = value
+    assert_equal(value, store[key])
 
     # Cannot rewrite the value in read-only transaction
     store.transaction(true) do |store|
       assert_raise(PStore::Error) { store[key] = 'another value' }
     end
+    store.ro.transaction do |store|
+      assert_raise(PStore::Error) { store[key] = 'another value' }
+    end
 
     readonly_store = klass.new(@path, true)
-    readonly_store.transaction{|store| assert_equal(value, readonly_store[key])}
+    assert_equal(value, readonly_store[key])
     readonly_store.ro.transaction{|store| assert_equal(value, readonly_store[key])}
     # Cannot rewrite the value by readonly store.
     readonly_store.transaction do |store|
@@ -85,16 +86,12 @@ class StoreTest < Test::Unit::TestCase
   def _test_transaction(klass)
     store = klass.new(@path)
     key, value = 'key', 'value'
-    store.transaction{|store| store[key] = value }
-    store.ro.transaction{|store| assert_equal(value, store[key])}
+    store[key] = value
 
     readonly_store = klass.new(@path, true)
-    readonly_store.transaction do |store|
-      assert_raise(PStore::Error) { readonly_store[key] = 'another value' }
-    end
     readonly_store.transaction(false) do |store|
       readonly_store[key] = 'another value'
-      assert_equal('another value', readonly_store[key])
     end
+    assert_equal('another value', readonly_store[key])
   end
 end

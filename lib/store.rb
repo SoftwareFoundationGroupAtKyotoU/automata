@@ -20,7 +20,7 @@ class Store
     return block.call(self) if @store
 
     begin
-      @store = store_class.new(@path)
+      @store = store_class.new(@path, true)
       @store.transaction((readonly.nil? && @readonly) || readonly) do
         block.call(self)
       end
@@ -31,15 +31,15 @@ class Store
 
   def [](*keys)
     transaction do
-      return keys.inject(@store){|r,x| (r||{})[x.to_s]}
+      keys.inject(@store){|r,x| (r||{})[x.to_s]}
     end
   end
 
   def []=(key, val)
     transaction do
       @store[key.to_s] = val
-      return self
     end
+    self
   end
 
   class YAML < Store
