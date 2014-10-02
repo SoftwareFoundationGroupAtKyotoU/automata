@@ -61,6 +61,10 @@ var LogView = function(prefix, id, admin) {
           label: '提出日時',
           node: GNN.UI.$node
         },
+        { prop: 'initial_submit',
+          label: '初回提出',
+          node: GNN.UI.$node
+        },
         { prop: 'message',
           label: 'メッセージ',
           node: GNN.UI.$node,

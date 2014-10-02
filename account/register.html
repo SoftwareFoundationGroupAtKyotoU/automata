@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+                      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja">
+<head>
+  <script type="text/javascript" src="../js/compatibility.js"></script>
+  <script type="text/javascript" src="../js/util.js"></script>
+  <script type="text/javascript" src="../js/uri.js"></script>
+  <script type="text/javascript" src="../js/xhr.js"></script>
+  <script type="text/javascript" src="../js/ui.js"></script>
+  <script type="text/javascript" src="../js/common.js"></script>
+  <script type="text/javascript" src="./register_msg.js"></script>
+  <link rel="stylesheet" type="text/css" href="../css/default.css" />
+  <title>Account</title>
+</head>
+<body onload="init()">
+  <form method="POST" action="register.cgi">
+    <fieldset>
+      <legend>新規登録</legend>
+      <input type="text" name="name" placeholder="名前" required /> <br>
+      <input type="text" name="ruby" placeholder="ふりがな" required /> <br>
+      <label><input type="text" name="login" placeholder="学籍番号" pattern="^[0-9]{10}$" required /> ※数字は半角、ハイフンなしの10桁 </label><br>
+      <input type="email" name="email" placeholder="電子メールアドレス" required /> <br>
+      <input type="submit" />
+    </fieldset>
+  </form>
+  <div id="msg"></div>
+  <div id="footer">
+    <a href="../">提出システム トップページ</a>
+    <a href="./">戻る</a>
+  </div>
+</body>
