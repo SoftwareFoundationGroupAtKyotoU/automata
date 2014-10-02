@@ -2,24 +2,26 @@ require 'pstore'
 require 'yaml/store'
 
 class Store
-  def initialize(file, readonly=false)
-    @file = file.to_s
+  def initialize(path, readonly=false)
+    @path = path.to_s
     @store = nil
     @readonly = readonly
   end
 
-  def store_class() return PStore end
+  attr_reader :path
 
-  def path() return @file end
+  def store_class() PStore end
 
-  def ro() return self.class.new(@file, true) end
+  def ro() self.class.new(@path, true) end
 
+  # If the argument 'readonly' is false, the transaction is always writable
+  # regardless whether @readonly is 'set to true' or not.
   def transaction(readonly=nil, &block)
     return block.call(self) if @store
 
     begin
-      @store = store_class.new(@file)
-      @store.transaction((readonly==nil && @readonly) || readonly) do
+      @store = store_class.new(@path, true)
+      @store.transaction((readonly.nil? && @readonly) || readonly) do
         block.call(self)
       end
     ensure
@@ -29,18 +31,18 @@ class Store
 
   def [](*keys)
     transaction do
-      return keys.inject(@store){|r,x| (r||{})[x.to_s]}
+      keys.inject(@store){|r,x| (r||{})[x.to_s]}
     end
   end
 
   def []=(key, val)
     transaction do
       @store[key.to_s] = val
-      return self
     end
+    self
   end
 
   class YAML < Store
-    def store_class() return ::YAML::Store end
+    def store_class() ::YAML::Store end
   end
 end
