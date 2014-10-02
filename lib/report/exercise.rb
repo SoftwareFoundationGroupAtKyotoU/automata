@@ -9,7 +9,7 @@ module Report
 
     def match(other)
       return false unless to_a.length <= other.to_a.length
-      return to_a.zip(other.to_a).all?{|x,y| x.match(y)}
+      return to_a.zip(other.to_a).all?{|x,y| x.start_with?(y)}
     end
 
     def <=>(other)
@@ -30,7 +30,7 @@ module Report
 
     class Token
       CHAR_CLASS = {
-        :num => 'a-zA-Z0-9',
+        :num => 'a-zA-Z0-9_',
         :par => PAREN.map{|k,v| "\\#{k}\\#{v}"}.join(''),
       }
 
@@ -104,6 +104,12 @@ module Report
         return sub.zip(other.sub).all?{|x,y| x.match(y)}
       end
 
+      # To make Exercise.Sub compatible with String
+      # because Exercise.match calls start_with? method of String or Exercise.Sub
+      def start_with?(other)
+        self.match(other)
+      end
+
       def <=>(other)
         return -1 unless other.is_a?(self.class)
         ret = (par <=> other.par)
@@ -149,7 +155,7 @@ module Report
           sub = self.match_paren(tok.to_s, tokens)
           parsed << Sub.new(tok, self.parse(sub))
         else
-          parsed << tok
+          parsed << tok.to_s
         end
       end
 
