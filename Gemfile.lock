@@ -6,6 +6,7 @@ GEM
     nokogiri (1.5.10)
     rake (10.1.0)
     rr (1.1.2)
+    rubyzip (1.1.6)
     sanitize (2.0.3)
       nokogiri (>= 1.4.4, < 1.6)
       nokogiri (>= 1.4.4, < 1.6)
@@ -20,4 +21,5 @@ DEPENDENCIES
   nokogiri (~> 1.5.10)
   rake
   rr
+  rubyzip
   sanitize (= 2.0.3)

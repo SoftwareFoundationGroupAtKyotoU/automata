@@ -1,11 +1,14 @@
 #! /usr/bin/env ruby
+# -*- coding: utf-8 -*-
 
 Dir.chdir(File.dirname(File.expand_path($0)))
 $:.unshift('./lib')
 
+require 'rubygems'
 require 'fileutils'
 require 'yaml'
 require 'time'
+require 'zip'
 
 require 'app'
 require 'conf'
@@ -75,9 +78,11 @@ begin
   result = Dir.chdir(dir[:test].to_s) do
     check =
       [ proc{ File.exist?(ZIP) && FileUtils.rm(ZIP); true },
-        proc{ fs.all?{|x| File.exist?(x)} },
-        ([ "zip #{ZIP}" ] + fs.map{|x|'"'+x+'"'}).join(' '),
-      ].all?(&proc{|x| (x.is_a?(String)&&system(x))||(x.is_a?(Proc)&&x.call)})
+        proc{ fs.all?{|x| !(Dir.glob(x).empty?) }},
+        proc{ Zip::File.open(ZIP, Zip::File::CREATE) do |zf|
+            fs.map{|x| Dir.glob(x).map{|x| zf.add(x,x) }}
+          end; true }
+      ].all?(&proc{|x| x.call})
 
     result = nil
     result = `#{cmd}` if check
