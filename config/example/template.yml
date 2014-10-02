@@ -1,6 +1,26 @@
 institute: "institute"
 title: "title"
 
+passwd_issue:
+  subject: "Password Issue"
+  body: |+
+    %{name}さん,
+
+    演習システムのパスワードを発行しました．
+    パスワードは，
+      %{passwd}
+    です．
+
+passwd_reset:
+  subject: "Password Reset"
+  body: |+
+    %{name}さん,
+
+    演習システムのパスワード再発行を受け付けました．
+    新しいパスワードは，
+      %{passwd}
+    です．
+
 post:
   subtitle: "レポート提出"
 
