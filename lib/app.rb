@@ -91,7 +91,7 @@ class App
       user_store = Store::YAML.new(FILES[:data])
       user_store.ro.transaction do |store|
         @users = store['data'].map{|u| User.new(u)}
-        @users.reject{|u| u.login != user} unless conf[:record, :open] || su?
+        @users.reject!{|u| u.login != user} unless conf[:record, :open] || su?
         unless conf[:record, :show_login]
           # Override User#login to hide user login name
           @users.each{|u| def u.login() return token end}
