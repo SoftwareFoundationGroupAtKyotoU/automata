@@ -20,6 +20,7 @@ check:
       files:
         - test.byte
         - solved.in
+        - "*.ml"
       input: solved.in
       output: :argument
       sandbox: "URI of tester.cgi."
