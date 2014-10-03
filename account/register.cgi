@@ -5,6 +5,7 @@ $KCODE = 'UTF8' if RUBY_VERSION < "1.9"
 $:.unshift('./lib')
 
 require 'rubygems'
+require 'bundler/setup'
 require 'mail'
 require 'webrick'
 
