@@ -18,6 +18,9 @@ app = App.new(helper.cgi.remote_user)
 def app.su?() return true end
 
 class AlreadyRegistered < Exception; end
+class InvalidArguments < Exception; end
+
+URL = '../account/register.html'
 
 begin
   email = helper.param(:email)
@@ -25,6 +28,12 @@ begin
   ruby = helper.param(:ruby)
   login = helper.param(:login).to_s
 
+  # Validates arguments.
+  if email.empty? || name.empty? || ruby.empty? || login !~ /[0-9]{10}/ then
+    raise InvalidArguments
+  end
+
+  # Checks whether the email address or the login are already used or not.
   found = app.users.any? {|u| u.email == email || u.login == login}
   raise AlreadyRegistered if found
 
@@ -32,9 +41,11 @@ begin
 
   app.reset(email, :passwd_issue)
 
-  print helper.cgi.header('status' => '303 See Other', 'Location' => '../account/register.html#done')
+  helper.exit_with_redirect(URL + '#done')
 rescue AlreadyRegistered
-  print helper.cgi.header('status' => '303 See Other', 'Location' => '../account/register.html#alreadyregistered')
+  helper.exit_with_redirect(URL + '#alreadyregistered')
+rescue InvalidArguments
+  helper.exit_with_redirect(URL + '#invalidarguments')
 rescue => e
- print helper.cgi.header('status' => '303 See Other', 'Location' => '../account/register.html#failed')
+  helper.exit_with_redirect(URL + '#failed')
 end

@@ -6,6 +6,7 @@ require 'json'
 
 class CGIHelper
   STATUS = {
+    303 => '303 See Other',
     400 => '400 Bad Request',
     403 => '403 Forbidden',
     404 => '404 Not Found',
@@ -40,6 +41,11 @@ class CGIHelper
 
   def exit_with_internal_server_error(message=nil)
     error_exit(STATUS[500], message)
+  end
+
+  def exit_with_redirect(location)
+    print(cgi.header('status' => STATUS[303], 'Location' => location))
+    exit
   end
 
   def params() return @cgi.params end
