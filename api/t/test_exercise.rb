@@ -6,6 +6,7 @@ class Parse < Test::Unit::TestCase
     @single = Report::Exercise.new('single')
     @sequence = Report::Exercise.new('Ex.4.1.3')
     @sub = Report::Exercise.new('Ex.6.4(5)')
+    @underline = Report::Exercise.new('Ex.6.5_1')
   end
 
   def test_single()
@@ -69,6 +70,26 @@ class Parse < Test::Unit::TestCase
     assert_kind_of(Report::Exercise::Token, @sub.to_a[5].sub.to_a[0])
     assert_equal(:num,  @sub.to_a[5].sub.to_a[0].to_sym)
     assert_equal(5,  @sub.to_a[5].sub.to_a[0].to_val)
+  end
+
+  def test_underline()
+    assert_not_nil(@underline.to_a)
+    assert_equal(5, @underline.to_a.length)
+    assert_kind_of(Report::Exercise::Token, @underline.to_a[0])
+    assert_kind_of(Report::Exercise::Token, @underline.to_a[1])
+    assert_kind_of(Report::Exercise::Token, @underline.to_a[2])
+    assert_kind_of(Report::Exercise::Token, @underline.to_a[3])
+    assert_kind_of(Report::Exercise::Token, @underline.to_a[4])
+    assert_equal(:num, @underline.to_a[0].to_sym)
+    assert_equal(:sep, @underline.to_a[1].to_sym)
+    assert_equal(:num, @underline.to_a[2].to_sym)
+    assert_equal(:sep, @underline.to_a[3].to_sym)
+    assert_equal(:num, @underline.to_a[4].to_sym)
+    assert_equal('Ex',  @underline.to_a[0].to_val)
+    assert_equal('.',   @underline.to_a[1].to_val)
+    assert_equal(6,     @underline.to_a[2].to_val)
+    assert_equal('.',   @underline.to_a[3].to_val)
+    assert_equal('5_1', @underline.to_a[4].to_val)
   end
 end
 
@@ -136,6 +157,8 @@ class Compare < Test::Unit::TestCase
     @ex3_1_1 = Report::Exercise.new('Ex.3.1.1')
     @ex3_a =   Report::Exercise.new('Ex.3.a')
     @ex3_a_1 = Report::Exercise.new('Ex.3.a.1')
+    @ex3_a_1_2 = Report::Exercise.new('Ex.3.a.1_2')
+    @ex5_3_a_1_2 = Report::Exercise.new('Ex.5.3.a.1_2')
 
     @all =
       [
@@ -197,6 +220,8 @@ class Compare < Test::Unit::TestCase
        @ex3_1_1,
        @ex3_a,
        @ex3_a_1,
+       @ex3_a_1_2,
+       @ex5_3_a_1_2
       ]
 
     @sorted =
@@ -259,6 +284,8 @@ class Compare < Test::Unit::TestCase
        'Ex.3.1.1',
        'Ex.3.a',
        'Ex.3.a.1',
+       'Ex.3.a.1_2',
+       'Ex.5.3.a.1_2'
       ]
   end
 
@@ -552,11 +579,15 @@ class Compare < Test::Unit::TestCase
 
     assert(@ex1_1_s1.match(@ex1_1_s1))
     assert(@ex1_1_s2.match(@ex1_1_s2))
+
+    assert(@ex3_a_1_2.match(@ex3_a_1))
+    assert(@ex3_a_1_2.match(@ex3_a_1_2))
   end
 
   def test_not_match()
     assert_equal(false, @ex1_1.match(@ex1_2_1))
     assert_equal(false, @ex1_1.match(@ex2_1_1))
     assert_equal(false, @ex1_1_s2.match(@ex1_1_s1))
+    assert_equal(false, @ex5_3_a_1_2.match(@ex3_a_1_2))
   end
 end
