@@ -67,6 +67,11 @@ module Report
         return (self <=> other) == 0
       end
 
+      # Token#start_with? is called in Exercise#match.
+      def start_with?(other)
+        self.to_s.start_with?(other.to_s)
+      end
+
       def <=>(other)
         return 1 unless other.is_a?(self.class)
 
@@ -155,7 +160,7 @@ module Report
           sub = self.match_paren(tok.to_s, tokens)
           parsed << Sub.new(tok, self.parse(sub))
         else
-          parsed << tok.to_s
+          parsed << tok
         end
       end
 
