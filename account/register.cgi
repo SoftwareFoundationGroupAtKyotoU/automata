@@ -35,7 +35,7 @@ begin
   end
 
   # Checks whether the email address or the login are already used or not.
-  found = app.users.any? {|u| u.email == email || u.login == login}
+  found = app.users.any? {|u| u.email == email || u.real_login == login}
   raise AlreadyRegistered if found
 
   app.add_user(name, ruby, login, email)
