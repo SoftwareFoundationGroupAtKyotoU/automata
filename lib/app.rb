@@ -11,6 +11,8 @@ require 'conf'
 require 'log'
 require 'store'
 
+require 'logger'
+
 class Pathname
   def [](*paths)
     loc = self
@@ -44,12 +46,26 @@ class App
     :test_script => SCRIPT['test'],
   }
 
+  LOGGER_LEVEL = {
+    "FATAL" => Logger::FATAL,
+    "ERROR" => Logger::ERROR,
+    "WARN"  => Logger::WARN,
+    "INFO"  => Logger::INFO,
+    "DEBUG" => Logger::DEBUG,
+  }
+
+  attr_accessor :logger
+
   def initialize(remote_user=nil)
     @remote_user = remote_user
     @files = {}
     @conf = nil
     @user = nil
     @users = nil
+
+    # config を app から分離したときは logger も分離すること
+    @logger = Logger.new(conf[:logger, :path])
+    @logger.level = LOGGER_LEVEL[conf[:logger, :level]]
   end
 
   def file(name)
