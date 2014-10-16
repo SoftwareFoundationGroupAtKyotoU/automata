@@ -1,3 +1,7 @@
+logger:
+  path: "path to log file"
+  level: DEBUG
+
 su:
   - admin
 
