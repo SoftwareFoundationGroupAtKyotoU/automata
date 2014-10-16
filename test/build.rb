@@ -38,12 +38,6 @@ files.each{|name, file| yml[name] = YAML.load_file(file)||{} rescue {} }
 master = App::Conf.new(yml[:master])
 local = App::Conf.new(yml[:local])
 
-conf = { :test => {} }
-[ :default, report_id ].each do |k|
-  ks = [ :check, k, :test ]
-  conf[:test].merge!((master[*ks]||{}).to_hash.merge((local[*ks]||{}).to_hash))
-end
-
 conf = {}
 [ :build, :test ].each do |k|
   conf[k] = {}
