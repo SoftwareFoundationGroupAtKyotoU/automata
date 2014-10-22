@@ -1,4 +1,5 @@
 #! /usr/bin/env ruby
+# -*- coding: utf-8 -*-
 
 oldwd = Dir.pwd
 Dir.chdir(File.dirname(File.expand_path($0)))

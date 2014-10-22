@@ -1,4 +1,5 @@
 #! /usr/bin/env ruby
+# -*- coding: utf-8 -*-
 
 Dir.chdir(File.dirname(File.expand_path($0)))
 $:.unshift('./lib')
