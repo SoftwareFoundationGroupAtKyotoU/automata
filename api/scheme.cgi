@@ -32,8 +32,8 @@ end.each do |report|
   exes = []
   unless helper.params['exercise'].empty?
     scheme['report'][report['id']].sort do |a,b|
-      [a[1]['priority'].to_i, a[0].to_ex] <=>
-      [b[1]['priority'].to_i, b[0].to_ex]
+      [(a[1] || {})['priority'].to_i, a[0].to_ex] <=>
+      [(b[1] || {})['priority'].to_i, b[0].to_ex]
     end.each do |k, v|
       parent = exes.find{|ex,opt| ex.to_ex.match(k.to_ex)}
       if parent
