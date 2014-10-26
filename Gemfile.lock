@@ -2,17 +2,19 @@ GEM
   remote: https://rubygems.org/
   specs:
     json (1.8.1)
-    kramdown (1.2.0)
+    kramdown (1.5.0)
     mail (2.6.1)
       mime-types (>= 1.16, < 3)
-    mime-types (2.3)
-    nokogiri (1.5.10)
-    rake (10.1.0)
+    mime-types (2.4.3)
+    nokogiri (1.5.11)
+    power_assert (0.1.4)
+    rake (10.3.2)
     rr (1.1.2)
     rubyzip (1.1.6)
     sanitize (2.0.3)
       nokogiri (>= 1.4.4, < 1.6)
-      nokogiri (>= 1.4.4, < 1.6)
+    test-unit (3.0.2)
+      power_assert
 
 PLATFORMS
   ruby
@@ -27,3 +29,4 @@ DEPENDENCIES
   rr
   rubyzip
   sanitize (= 2.0.3)
+  test-unit
