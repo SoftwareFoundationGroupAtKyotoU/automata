@@ -30,7 +30,7 @@ require 'shellwords'
 require 'time'
 require 'app'
 require 'log'
-require 'mime'
+require 'mime_extension'
 require 'cgi_helper'
 
 helper = CGIHelper.new
