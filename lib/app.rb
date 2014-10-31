@@ -106,7 +106,7 @@ class App
       require 'user'
       user_store = Store::YAML.new(FILES[:data])
       user_store.ro.transaction do |store|
-        @users = store['data'].map{|u| User.new(u)}
+        @users = (store['data'] || []).map{|u| User.new(u)}
         @users.reject!{|u| u.login != user} unless conf[:record, :open] || su?
         unless conf[:record, :show_login]
           # Override User#login to hide user login name
@@ -120,7 +120,7 @@ class App
   def add_user(name, ruby, login, email)
     user_store = Store::YAML.new(FILES[:data])
     user_store.transaction do |store|
-      users = store['data']
+      users = (store['data'] || [])
       users << {'name' => name, 'ruby' => ruby, 'login' => login, 'email' => email}
       store['data'] = users
       @users = nil
