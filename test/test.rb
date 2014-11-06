@@ -31,8 +31,6 @@ dir[:test]   = dir[:user] + 'test'
 
 files = {
   :log    => dir[:user][App::FILES[:log]],
-  :master => App::FILES[:master],
-  :local  => App::FILES[:local],
   :scheme => App::FILES[:scheme],
 }
 
@@ -41,15 +39,11 @@ files.each do |name, file|
   yml[name] = YAML.load_file(file)||{} rescue {}
 end
 
-master = App::Conf.new(yml[:master])
-local = App::Conf.new(yml[:local])
-
 conf = {}
-[ :test ].each do |k|
+[:test].each do |k|
   conf[k] = {}
-  [ :default, report_id ].each do |l|
-    ks = [ :check, l, k ]
-    conf[k].merge!((master[*ks]||{}).to_hash.merge((local[*ks]||{}).to_hash))
+  [:default, report_id].each do |l|
+    conf[k].merge!((App.new.conf[:check, l, :test] || {}).to_hash)
   end
 end
 
