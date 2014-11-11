@@ -109,8 +109,8 @@ class App
     return @template
   end
 
-  def user(u=nil)
-    @user = u || conf[:user] || @remote_user || ENV['USER'] unless @user
+  def user()
+    @user = conf[:user] || @remote_user || ENV['USER'] unless @user
     return @user
   end
 
