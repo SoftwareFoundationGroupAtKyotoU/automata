@@ -27,9 +27,6 @@ require 'webrick'
 require 'string/random'
 require 'app'
 
-master = YAML.load_file(App::FILES[:master])
-local_file = App::FILES[:local]
-master = master.merge(YAML.load_file(local_file)) if File.exist?(local_file)
 data = YAML.load_file(App::FILES[:data])['data']
 raise 'No user information in db/data.yml' unless data
 
@@ -38,7 +35,7 @@ realm = $argv[:realm]
 include WEBrick
 htd = HTTPAuth::Htdigest.new($argv[:file])
 File.open('passwd', 'a') do |raw|
-  users = (master['su']||[]) + data.map{|d| d['login']}
+  users = (App.new.conf['su']||[]) + data.map{|d| d['login']}
   users.uniq.map{|u| [ u, String.random(8) ]}.each do |u, pass|
     unless htd.get_passwd(realm, u, false)
       raw.puts([ u, pass ].join(':'))

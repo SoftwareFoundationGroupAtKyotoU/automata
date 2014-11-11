@@ -10,6 +10,7 @@ require 'clone'
 require 'conf'
 require 'log'
 require 'store'
+require 'kwalify'
 
 require 'logger'
 
@@ -28,6 +29,7 @@ class App
   end
 
   CONFIG = find_base(:config)
+  SCHEMA = CONFIG + 'schema'
   DB     = find_base(:db)
   KADAI  = DB + 'kadai'
   BUILD  = find_base(:build)
@@ -35,15 +37,17 @@ class App
   SCRIPT = find_base(:script)
 
   FILES = {
-    :master      => CONFIG['master.yml'],
-    :local       => CONFIG['local.yml'],
-    :scheme      => CONFIG['scheme.yml'],
-    :template    => CONFIG['template.yml'],
-    :data        => DB['data.yml'],
-    :log         => 'log.yml',
-    :build       => TESTER['build.rb'],
-    :sandbox     => TESTER['test.rb'],
-    :test_script => SCRIPT['test'],
+    :master          => CONFIG['master.yml'],
+    :master_schema   => SCHEMA['master.yml'],
+    :local           => CONFIG['local.yml'],
+    :local_schema    => SCHEMA['local.yml'],
+    :scheme          => CONFIG['scheme.yml'],
+    :template        => CONFIG['template.yml'],
+    :data            => DB['data.yml'],
+    :log             => 'log.yml',
+    :build           => TESTER['build.rb'],
+    :sandbox         => TESTER['test.rb'],
+    :test_script     => SCRIPT['test'],
   }
 
   LOGGER_LEVEL = {
@@ -76,9 +80,22 @@ class App
     return @files[name]
   end
 
+  def verify_yml(s)
+    def check(e, f)
+      raise e.inject("config file error: '#{f}'\n"){|a, e|
+        a += "[#{e.path}] #{e.message}\n"
+      } if e && !e.empty?
+    end
+    schema = (s.to_s + "_schema").intern
+    schema_file = file(schema)
+    check(Kwalify::MetaValidator.instance.validate(schema_file), schema)
+    check(Kwalify::Validator.new(schema_file).validate(file(s)), s)
+  end
+
   def conf()
     unless @conf
       require 'conf'
+      verify_yml(:master)
       @conf = Conf.new(file(:master), (file(:local) rescue nil))
     end
     return @conf

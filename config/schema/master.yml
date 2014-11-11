@@ -1,0 +1,125 @@
+# The schema of a master config file.
+type: map
+mapping:
+  "logger":
+    type: map
+    required: yes
+    mapping:
+      "path":
+        type: str
+        required: yes
+      "level":
+        type: str
+        required: yes
+        enum: [FATAL, ERROR, WARN, INFO, DEBUG]
+
+  "su":
+    type: seq
+    required: yes
+    sequence:
+      - type: str
+
+  "authn":
+    type: map
+    required: yes
+    mapping:
+      "htdigest":
+        type: str
+        required: yes
+      "realm":
+        type: str
+        required: yes
+      "admin":
+        type: str
+        required: yes
+
+  "record":
+    type: map
+    required: yes
+    mapping:
+      "show_login":
+        type: bool
+        required: yes
+      "open":
+        type: bool
+        required: yes
+      "detail":
+        type: str
+        required: yes
+
+  "comment":
+    type: map
+    required: yes
+    mapping:
+      "enable":
+        type: bool
+        required: yes
+
+  "check":
+    type: map
+    required: yes
+    mapping:
+      "default":
+        type: map
+        required: yes
+        mapping:
+          "test":
+            type: map
+            required: yes
+            mapping:
+              "files":
+                type: seq
+                required: yes
+                sequence:
+                  - type: str
+              "input":
+                type: str
+                required: yes
+              "output":
+                type: any # TODO: specify as symbol or str
+                required: yes
+              "sandbox":
+                type: str
+                required: yes
+              "run":
+                type: str
+                required: yes
+          "build":
+            type: map
+            required: yes
+            mapping:
+              "ignore": &ignore
+                type: seq
+                sequence:
+                  - type: str
+              "command": &command
+                type: seq
+                sequence:
+                  - type: str
+              "file_location": &file_location
+                type: seq
+                sequence:
+                  - type: map
+                    mapping:
+                      "exercise":
+                        type: seq
+                        sequence:
+                          - type: str
+                            required: yes
+                      "location":
+                        type: str
+                        required: yes
+      =:
+        type: map
+        mapping:
+          "test":
+            type: map
+            mapping:
+              "run":
+                type: str
+          "build":
+            type: map
+            mapping:
+              "ignore": *ignore
+              "command": *command
+              "file_location": *file_location
