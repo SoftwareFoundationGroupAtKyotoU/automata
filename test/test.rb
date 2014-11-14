@@ -30,7 +30,7 @@ dir[:user]   = App::KADAI + report_id + user
 dir[:test]   = dir[:user] + 'test'
 
 files = {
-  :log    => dir[:user][App::FILES[:log]],
+  :log    => dir[:user] + App::FILES[:log],
   :scheme => App::FILES[:scheme],
 }
 

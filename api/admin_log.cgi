@@ -56,7 +56,7 @@ begin
   data['log'] = data_log
 
   unless data.empty?
-    log_file = (App::KADAI + report_id + user)[App::FILES[:log]]
+    log_file = App::KADAI + report_id + user + App::FILES[:log]
     Log.new(log_file).transaction do |log|
       helper.exit_with_bad_request if log.latest(:data)['id'] != log_id
       log.update(:data, log_id, data)

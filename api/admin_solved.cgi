@@ -39,7 +39,7 @@ helper.exit_with_bad_request unless exercises
 exercises = exercises.split(',').sort{|a,b| a.to_ex <=> b.to_ex}
 
 begin
-  log_file = (App::KADAI + report_id + user)[App::FILES[:log]]
+  log_file = App::KADAI + report_id + user + App::FILES[:log]
   Log.new(log_file).transaction do |log|
     log.latest(:data)['report'] = exercises
   end
