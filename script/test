@@ -38,7 +38,7 @@ dir[:test]   = dir[:user] + 'test'
 # sudo su www-data -c "command args..."
 Dir.chdir(oldwd){ Permission.ensure_writable(dir[:user].to_s) }
 
-log_file = dir[:user][App::FILES[:log]]
+log_file = dir[:user] + App::FILES[:log]
 log = if $argv[:id]
         Log.new(log_file, true).retrieve(:data, $argv[:id])
       else
@@ -50,7 +50,7 @@ cmd = {}
 
 # ../test/build.rb report_id user post
 cmd[:build] = "#{App::FILES[:build]} '#{report_id}' '#{user}' '#{time}'"
-cmd[:build] = "#{cmd[:build]} > /dev/null 2>#{dir[:user]['build_fatal.log']}"
+cmd[:build] = "#{cmd[:build]} > /dev/null 2>#{dir[:user] + 'build_fatal.log'}"
 
 # ../test/test.rb report_id user post
 cmd[:test] = "#{App::FILES[:sandbox]} '#{report_id}' '#{user}' '#{time}'"

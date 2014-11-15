@@ -56,7 +56,7 @@ rep_defined = rep_schemes.any?{|r| r['id'] == rep_id}
 raise ArgumentError, (err[:invalid] % rep_id) unless rep_defined
 
 USER_DIR = app.user_dir(rep_id)
-log_file = USER_DIR[App::FILES[:log]]
+log_file = USER_DIR + App::FILES[:log]
 
 begin
   begin

@@ -14,14 +14,6 @@ require 'kwalify'
 
 require 'logger'
 
-class Pathname
-  def [](*paths)
-    loc = self
-    loc = loc + paths.shift() while paths.length > 0
-    return loc.to_s
-  end
-end
-
 class App
   def self.find_base(dir)
     e = Pathname($0).expand_path.parent.to_enum(:ascend)
@@ -37,17 +29,17 @@ class App
   SCRIPT = find_base(:script)
 
   FILES = {
-    :master          => CONFIG['master.yml'],
-    :master_schema   => SCHEMA['master.yml'],
-    :local           => CONFIG['local.yml'],
-    :local_schema    => SCHEMA['local.yml'],
-    :scheme          => CONFIG['scheme.yml'],
-    :template        => CONFIG['template.yml'],
-    :data            => DB['data.yml'],
-    :log             => 'log.yml',
-    :build           => TESTER['build.rb'],
-    :sandbox         => TESTER['test.rb'],
-    :test_script     => SCRIPT['test'],
+    :master        => CONFIG + 'master.yml',
+    :master_schema => SCHEMA + 'master.yml',
+    :local         => CONFIG + 'local.yml',
+    :local_schema  => SCHEMA + 'local.yml',
+    :scheme        => CONFIG + 'scheme.yml',
+    :template      => CONFIG + 'template.yml',
+    :data          => DB + 'data.yml',
+    :log           => 'log.yml',
+    :build         => TESTER + 'build.rb',
+    :sandbox       => TESTER + 'test.rb',
+    :test_script   => SCRIPT + 'test',
   }
 
   LOGGER_LEVEL = {
@@ -161,7 +153,7 @@ class App
     optional << :log if option[:log]
 
     if (file(:scheme)['scheme'].find{|r| r['id']==id} || {})['type'] == 'post'
-      fname = KADAI[id, u, FILES[:log]]
+      fname = KADAI + id + u + FILES[:log]
       return nil unless File.exist?(fname)
       yaml = Log.new(fname, true).latest(:data)
       # add timestamp of initial submit
@@ -195,7 +187,7 @@ class App
       :size => proc{ StringScanner.new(`du -sk "#{dir}"`).scan(/\d+/).to_i },
       :entries => proc do
         if (dir+App::FILES[:log]).exist?
-          Log.new(dir[App::FILES[:log]]).size
+          Log.new(dir + App::FILES[:log]).size
         else
           Pathname.new(dir).children.select(&:directory?).size
         end
