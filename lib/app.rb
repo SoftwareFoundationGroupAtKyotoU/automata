@@ -1,18 +1,17 @@
-require 'yaml'
-require 'time'
+require 'logger'
 require 'pathname'
 require 'strscan'
+require 'yaml'
 
 require 'rubygems'
 require 'bundler/setup'
 
 require 'clone'
 require 'conf'
+require 'kwalify'
 require 'log'
 require 'store'
-require 'kwalify'
-
-require 'logger'
+require 'user'
 
 class App
   def self.find_base(dir)
@@ -50,26 +49,24 @@ class App
     "DEBUG" => Logger::DEBUG,
   }
 
-  attr_accessor :logger
-
   def initialize(remote_user=nil)
     @remote_user = remote_user
-    @files = {}
-    @conf = nil
-    @user = nil
-    @users = nil
-
-    # config を app から分離したときは logger も分離すること
-    @logger = Logger.new(conf[:logger, :path])
-    @logger.level = LOGGER_LEVEL[conf[:logger, :level]]
   end
 
   def file(name)
-    open_mode = RUBY_VERSION < '1.9.0' ? 'r' : 'r:utf-8'
-    File.open(FILES[name], open_mode) do |f|
-      @files[name] = YAML.load(f) unless @files[name]
+    @files ||= Hash.new do |h, k|
+      open_mode = RUBY_VERSION < '1.9.0' ? 'r' : 'r:utf-8'
+      File.open(FILES[k], open_mode){|f| h[k] = YAML.load(f) }
     end
     return @files[name]
+  end
+
+  def logger()
+    unless @logger
+      @logger = Logger.new(conf[:logger, :path])
+      @logger.level = LOGGER_LEVEL[conf[:logger, :level]]
+    end
+    return @logger
   end
 
   def verify_yml(s)
@@ -86,7 +83,6 @@ class App
 
   def conf()
     unless @conf
-      require 'conf'
       verify_yml(:master)
       @conf = Conf.new(file(:master), (file(:local) rescue nil))
     end
@@ -94,25 +90,25 @@ class App
   end
 
   def template()
-    unless @template
-      require 'conf'
-      @template = Conf.new(file(:template), (file(:local) rescue nil))
-    end
+    @template ||= Conf.new(file(:template), (file(:local) rescue nil))
     return @template
   end
 
   def user()
-    @user = conf[:user] || @remote_user || ENV['USER'] unless @user
+    @user ||= conf[:user] || @remote_user || ENV['USER']
     return @user
   end
 
-  def su?(u=nil) return conf[:su].include?(u||user) end
+  def su?(u=nil)
+    return conf[:su].include?(u || user)
+  end
 
-  def user_dir(r) return KADAI + r + user end
+  def user_dir(r)
+    return KADAI + r + user
+  end
 
   def users()
     unless @users
-      require 'user'
       user_store = Store::YAML.new(FILES[:data])
       user_store.ro.transaction do |store|
         @users = (store['data'] || []).map{|u| User.new(u)}
@@ -186,7 +182,7 @@ class App
     checkers = {
       :size => proc{ StringScanner.new(`du -sk "#{dir}"`).scan(/\d+/).to_i },
       :entries => proc do
-        if (dir+App::FILES[:log]).exist?
+        if (dir + App::FILES[:log]).exist?
           Log.new(dir + App::FILES[:log]).size
         else
           Pathname.new(dir).children.select(&:directory?).size
