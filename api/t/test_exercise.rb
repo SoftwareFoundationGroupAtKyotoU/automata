@@ -139,6 +139,7 @@ class Compare < Test::Unit::TestCase
     @ex1_20_s1 =    Report::Exercise.new('Ex.1.20(1)')
     @ex1_20_s2 =    Report::Exercise.new('Ex.1.20(2)')
     @ex1_20_s10 =   Report::Exercise.new('Ex.1.20(10)')
+    @ex1_20_1 = Report::Exercise.new('Ex.1.20.1')
     @ex1_20_1_s1 =  Report::Exercise.new('Ex.1.20.1(1)')
     @ex1_20_1_s2 =  Report::Exercise.new('Ex.1.20.1(2)')
     @ex1_20_1_s10 = Report::Exercise.new('Ex.1.20.1(10)')
@@ -580,14 +581,21 @@ class Compare < Test::Unit::TestCase
     assert(@ex1_1_s1.match(@ex1_1_s1))
     assert(@ex1_1_s2.match(@ex1_1_s2))
 
-    assert(@ex3_a_1_2.match(@ex3_a_1))
     assert(@ex3_a_1_2.match(@ex3_a_1_2))
+
+    assert(@ex1_20_1.match(@ex1_20_1_s1))
+    assert(@ex1_20_1.match(@ex1_20_1_s2))
+    assert(@ex1_20_1.match(@ex1_20_1_s10))
   end
 
   def test_not_match()
     assert_equal(false, @ex1_1.match(@ex1_2_1))
     assert_equal(false, @ex1_1.match(@ex2_1_1))
     assert_equal(false, @ex1_1_s2.match(@ex1_1_s1))
+    # 'Ex.3.a.1_2' isn't a child of 'Ex.3.a.1'
+    assert_equal(false, @ex3_a_1_2.match(@ex3_a_1))
+    # 'Ex.3.a.1' isn't a child of 'Ex.3.a.1_2'
+    assert_equal(false, @ex3_a_1.match(@ex3_a_1_2))
     assert_equal(false, @ex5_3_a_1_2.match(@ex3_a_1_2))
   end
 end
