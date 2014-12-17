@@ -7,9 +7,10 @@ module Report
       @arr = arg
     end
 
+    # TODO: Rename this method to 'child?'
     def match(other)
       return false unless to_a.length <= other.to_a.length
-      return to_a.zip(other.to_a).all?{|x,y| x.start_with?(y)}
+      return to_a.zip(other.to_a).all?{|x,y| x.to_s === y.to_s}
     end
 
     def <=>(other)
@@ -65,11 +66,6 @@ module Report
 
       def match(other)
         return (self <=> other) == 0
-      end
-
-      # Token#start_with? is called in Exercise#match.
-      def start_with?(other)
-        self.to_s.start_with?(other.to_s)
       end
 
       def <=>(other)
