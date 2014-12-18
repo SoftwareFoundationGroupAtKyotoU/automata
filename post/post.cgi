@@ -37,6 +37,8 @@ err = {
   # 'parameter "%s" is required',
   :invalid  => '不正なパラメータ "%s" が指定されました',
   # 'invalid parameter "%s"',
+  :closed => '提出期限の過ぎた課題 "%s" が指定されました',
+  # 'closed report "%s"',
   :capacity => '頻度が高すぎるためリクエストを拒否しました',
   # 'over capacity',
   :unzip    => 'アップロードされたファイルの展開に失敗しました',
@@ -52,8 +54,10 @@ rep_id = helper.param(id)
 raise ArgumentError, (err[:require] % id) unless rep_id
 
 rep_schemes = app.file(:scheme)['scheme'] || []
-rep_defined = rep_schemes.any?{|r| r['id'] == rep_id}
-raise ArgumentError, (err[:invalid] % rep_id) unless rep_defined
+rep_scheme_data = rep_schemes.find{|r| r['id'] == rep_id}
+raise ArgumentError, (err[:invalid] % rep_id) unless rep_scheme_data
+raise ArgumentError, (err[:closed] % rep_id) if rep_scheme_data['type'] == 'closed'
+
 
 USER_DIR = app.user_dir(rep_id)
 log_file = USER_DIR + App::FILES[:log]

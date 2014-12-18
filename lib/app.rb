@@ -148,7 +148,9 @@ class App
     optional = []
     optional << :log if option[:log]
 
-    if (file(:scheme)['scheme'].find{|r| r['id']==id} || {})['type'] == 'post'
+    type = (file(:scheme)['scheme'].find{|r| r['id']==id} || {})['type']
+
+    if (type == 'post') or (type == 'closed')
       fname = KADAI + id + u + FILES[:log]
       return nil unless File.exist?(fname)
       yaml = Log.new(fname, true).latest(:data)
