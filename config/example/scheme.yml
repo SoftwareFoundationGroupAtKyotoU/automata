@@ -10,6 +10,17 @@ scheme:
         label: "Report"
       - field: unsolved
         label: "Unsolved"
+  - id: closed_report
+    type: closed
+    update: auto
+    name: "Report2"
+    record:
+      - field: name
+        label: "Name"
+      - field: status
+        label: "Report"
+      - field: unsolved
+        label: "Unsolved"
 
 report:
   example_report:
@@ -19,3 +30,5 @@ report:
     Ex.1.4: { priority: 0 } # Empty priority is the same as 0
     Ex.1.5: { priority: 1 } # A LOWER number is prior
     Ex.1.6: { priority: 2 }
+  closed_report:
+    Ex.2.1: { required: 1 }
