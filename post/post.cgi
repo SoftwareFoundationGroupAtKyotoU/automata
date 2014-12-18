@@ -52,8 +52,10 @@ rep_id = helper.param(id)
 raise ArgumentError, (err[:require] % id) unless rep_id
 
 rep_schemes = app.file(:scheme)['scheme'] || []
-rep_defined = rep_schemes.any?{|r| r['id'] == rep_id}
-raise ArgumentError, (err[:invalid] % rep_id) unless rep_defined
+rep_scheme_data = rep_schemes.find{|r| r['id'] == rep_id}
+raise ArgumentError, (err[:invalid] % rep_id) unless
+  rep_scheme_data  and rep_scheme_data['type'] == 'post'
+
 
 USER_DIR = app.user_dir(rep_id)
 log_file = USER_DIR + App::FILES[:log]
