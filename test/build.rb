@@ -81,9 +81,11 @@ Dir.each_leaf(dir[:target].to_s, File::FNM_DOTMATCH) do |f|
 end
 
 # make input file
-input = dir[:test] + conf[:test]['input']
-FileUtils.rm(input) if File.exist?(input)
-open(input, 'w'){|io| exes.each{|x| io.puts(x)}}
+if !conf[:test].empty?
+  input = dir[:test] + conf[:test]['input']
+  FileUtils.rm(input) if File.exist?(input)
+  open(input, 'w'){|io| exes.each{|x| io.puts(x)}}
+end
 
 # build
 info = Dir.chdir(dir[:test].to_s) do

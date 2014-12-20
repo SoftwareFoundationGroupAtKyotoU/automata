@@ -48,9 +48,9 @@ begin
     raise RuntimeError, "'#{dir[:test]}' not found"
   end
 
-  run = conf[:test]['run']
-  exit unless run
+  exit if conf[:test].empty?
 
+  run = conf[:test]['run']
   fs = conf[:test]['files']
   output = conf[:test]['output']
   output = output.is_a?(Symbol) ? ':'+output.to_s : output
