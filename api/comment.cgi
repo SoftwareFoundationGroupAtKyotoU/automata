@@ -117,6 +117,11 @@ begin
     limit = convert(helper.param(:limit), &:to_i)
     args = { :type => type, :id => id, :offset => offset, :limit => limit }
     content = comments[0][:comment].retrieve(args)
+    # Get user names
+    user_names = app.user_names_from_tokens(content.map {|entry| entry['user']})
+    content = content.map {|entry|
+      entry.merge({ :user_name => user_names[entry['user']] })
+    }
 
     print(helper.header)
     puts(helper.json(content))

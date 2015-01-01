@@ -1,3 +1,4 @@
+# coding: utf-8
 require 'logger'
 require 'pathname'
 require 'strscan'
@@ -107,12 +108,12 @@ class App
     return KADAI + r + user
   end
 
-  def users()
-    unless @users
+  def users(all = false)
+    if @users.nil? || all
       user_store = Store::YAML.new(FILES[:data])
       user_store.ro.transaction do |store|
         @users = (store['data'] || []).map{|u| User.new(u)}
-        @users.reject!{|u| u.login != user} unless conf[:record, :open] || su?
+        @users.reject!{|u| u.login != user} unless conf[:record, :open] || su? || all
         unless conf[:record, :show_login]
           # Override User#login to hide user login name
           @users.each{|u| def u.login() return token end}
@@ -135,6 +136,17 @@ class App
   def user_from_token(token)
     return users.inject(nil) do |r, u|
       (u.token == token || u.real_login == token) ? u.real_login : r
+    end
+  end
+
+  # Returns user names correspond to tokens.
+  # @param [Array<String>] tokens an array of tokens
+  # @param [Hash<String, String>] a hash represents relation between
+  # tokens and names.
+  def user_names_from_tokens(tokens)
+    users(true).inject(Hash.new) do |r, u|
+      token = tokens.find {|t| u.token == t || u.real_login == t}
+      token.nil? ? r : r.merge({ token => u.name })
     end
   end
 

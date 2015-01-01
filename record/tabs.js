@@ -797,7 +797,7 @@ var CommentView = function(prefix, id, updater, admin) {
 
                     var edit_tools = $new('p', { klass: 'edit' });
                     var meta = $new('div', { klass: 'meta', child: [
-                        $new('p', { klass: 'author', child: e.user }),
+                        $new('p', { klass: 'author', child: e.user_name }),
                         edit_tools,
                         $new('p', { klass: 'acl', child: acl2text(e.acl) }),
                         $new('p', { klass: 'date', child: e.create })
