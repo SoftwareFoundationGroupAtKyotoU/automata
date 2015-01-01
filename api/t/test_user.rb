@@ -8,22 +8,15 @@ class UserTest < Test::Unit::TestCase
     @users = []
     (0..5).each do |idx|
       login = 'user' + idx.to_s
-      @users.push(create_user(idx, login, login + ' name', login + ' ruby'))
+      @users.push(create_user(login, login + ' name', login + ' ruby'))
     end
   end
 
   # auxiliary method for creating an instance of User.
-  def create_user(number, login, name, ruby)
-    User.new({'number' => number,
-              'login' => login,
+  def create_user(login, name, ruby)
+    User.new({'login' => login,
               'name' => name,
               'ruby' => ruby })
-  end
-
-  def test_number()
-    @users.each_with_index do |user, i|
-      assert_equal(i, user.number())
-    end
   end
 
   def test_real_login()
@@ -100,4 +93,3 @@ class UserTest < Test::Unit::TestCase
     assert_equal(content_of_r2, hash['report']['report2'])
   end
 end
-

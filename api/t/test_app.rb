@@ -8,15 +8,13 @@ class AppText < Test::Unit::TestCase
     class <<@app
       def users(all = false)
         [User.new(
-          { 'number' => 1234567890,
-            'login'  => 'login-id1',
+          { 'login'  => 'login-id1',
             'name'   => 'user name1',
             'ruby'   => 'user ruby1',
             'email'  => '1a@b.c'
           }),
          User.new(
-           { 'number' => 1234567892,
-             'login'  => 'login-id2',
+           { 'login'  => 'login-id2',
              'name'   => 'user name2',
              'ruby'   => 'user ruby2',
              'email'  => '2a@b.c'

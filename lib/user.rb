@@ -11,7 +11,6 @@ class User
     @report = {}
   end
 
-  def number() return @user['number'] end
   def real_login() return @user['login'] end
   def token() return self.class.make_token(real_login) end
   def login() return real_login end
@@ -22,7 +21,6 @@ class User
 
   def to_hash()
     hash = {
-      'number'   => number,
       'login'    => login,
       'token'    => token,
       'name'     => name,
