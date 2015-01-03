@@ -46,8 +46,16 @@ begin
   file.close
 
   # extract archive file
-  res = system("env 7z x -o#{dir} #{path} > /dev/null 2>&1")
-  raise RuntimeError, :unzip unless res
+  begin
+    Zip::File.open(path) do |zip_file|
+      zip_file.each do |entry|
+        entry.extract("#{src_dir}/#{entry.name}")
+      end
+    end
+  rescue => e
+    app.logger.error("tester.cgi failed to unzip \"#{path}\" with \"#{e.to_s}\"")
+    raise RuntimeError, :unzip unless res
+  end
 
   # command line argument
   args = []
