@@ -21,7 +21,7 @@ helper = CGIHelper.new
 app = App.new
 
 result = []
-scheme = app.file(:scheme)
+scheme = app.conf[:scheme]
 scheme['scheme'].reject do |report|
   !helper.optional(:id).include?(report['id'])
 end.each do |report|

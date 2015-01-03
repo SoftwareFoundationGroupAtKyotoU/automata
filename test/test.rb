@@ -30,19 +30,15 @@ dir[:test]   = dir[:user] + 'test'
 
 files = {
   log:    dir[:user] + App::FILES[:log],
-  scheme: App::FILES[:scheme]
 }
 
-yml = {}
-files.each do |name, file|
-  yml[name] = YAML.load_file(file)||{} rescue {}
-end
+app = App.new
 
 conf = {}
 [:test].each do |k|
   conf[k] = {}
   [:default, report_id].each do |l|
-    conf[k].merge!((App.new.conf[:check, l, :test] || {}).to_hash)
+    conf[k].merge!((app.conf[:master, :check, l, :test] || {}).to_hash)
   end
 end
 
@@ -104,7 +100,7 @@ begin
       ng_exs[r['ex']] = true unless result_ok?(r)
     end
 
-    counter = Report::Counter.new((yml[:scheme]['report'] || [])[report_id] || {})
+    counter = Report::Counter.new(app.conf[:scheme, :report, report_id] || {})
     result.map {|r| r['ex']}.uniq.each do |ex|
       counter.vote(ex.to_ex) unless ng_exs.has_key?(ex)
     end

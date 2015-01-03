@@ -37,7 +37,7 @@ conf = {}
 [:build, :test].each do |k|
   conf[k] = {}
   [:default, report_id].each do |l|
-    conf[k].merge!((App.new.conf[:check, l, k] || {}).to_hash)
+    conf[k].merge!((App.new.conf[:master, :check, l, k] || {}).to_hash)
   end
 end
 

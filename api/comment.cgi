@@ -47,8 +47,8 @@ config = {
   'enable' => true,
   'max' => 256,
   'size_limit' => 1024 * 16,
-  'acl' => app.conf[:record, :open] ? [ 'user', 'other' ] :  [ 'user' ],
-}.merge(app.conf[:comment] || {})
+  'acl' => app.conf[:master, :record, :open] ? [ 'user', 'other' ] :  [ 'user' ],
+}.merge(app.conf[:master, :comment] || {})
 
 if action == 'config'
   config['renderer'] = Comment::Renderer.create.type
@@ -86,7 +86,7 @@ end
 
 # permission check for other users
 if !app.su? && app.user != users[0]
-  helper.exit_with_forbidden if !app.conf[:record, :open] || action != 'get'
+  helper.exit_with_forbidden if !app.conf[:master, :record, :open] || action != 'get'
 end
 
 def convert(val, &method)

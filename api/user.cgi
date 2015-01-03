@@ -32,7 +32,7 @@ unless helper.params['user'].empty?
 end
 
 if helper.params['type'][0] == 'status'
-  schemes = app.file(:scheme)['scheme'].reject do |s|
+  schemes = app.conf[:scheme, :scheme].reject do |s|
     !helper.optional('report').include?(s['id'])
   end
 
