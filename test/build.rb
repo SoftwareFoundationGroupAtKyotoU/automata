@@ -2,17 +2,16 @@
 # -*- coding: utf-8 -*-
 
 Dir.chdir(File.dirname(File.expand_path($0)))
-$:.unshift('./lib')
 
 require 'fileutils'
 require 'yaml'
 require 'time'
 require 'dir/each_leaf'
 
-require 'app'
-require 'conf'
-require 'log'
-require 'report/exercise'
+require_relative '../lib/app'
+require_relative '../lib/conf'
+require_relative '../lib/log'
+require_relative '../lib/report/exercise'
 
 report_id = $*.shift
 user      = $*.shift

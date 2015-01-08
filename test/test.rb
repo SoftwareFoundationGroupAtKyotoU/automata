@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 Dir.chdir(File.dirname(File.expand_path($0)))
-$:.unshift('./lib')
 
 require 'rubygems'
 require 'fileutils'
@@ -10,10 +9,10 @@ require 'yaml'
 require 'time'
 require 'zip'
 
-require 'app'
-require 'conf'
-require 'log'
-require 'report/counter'
+require_relative '../lib/app'
+require_relative '../lib/conf'
+require_relative '../lib/log'
+require_relative '../lib/report/counter'
 
 report_id = $*.shift
 user      = $*.shift

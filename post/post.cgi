@@ -3,20 +3,19 @@
 
 $KCODE = 'UTF8' if RUBY_VERSION < '1.9.0'
 
-$:.unshift('./lib')
-
 require 'fileutils'
 require 'pathname'
 require 'tempfile'
 require 'tmpdir'
 require 'time'
 require 'kconv'
-
-require 'cgi_helper'
-require 'app'
-require 'report/exercise'
-require 'log'
 require 'zip'
+
+require_relative '../lib/cgi_helper'
+require_relative '../lib/app'
+require_relative '../lib/report/exercise'
+require_relative '../lib/log'
+
 
 class Pathname
   def toutf8() return to_s.toutf8 end

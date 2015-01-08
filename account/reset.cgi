@@ -2,18 +2,15 @@
 # -*- coding: utf-8 -*-
 $KCODE = 'UTF8' if RUBY_VERSION < "1.9"
 
-$:.unshift('./lib')
-
 require 'rubygems'
 require 'bundler/setup'
 require 'mail'
 require 'webrick'
 
-require 'app'
-require 'cgi_helper'
-require 'string/random'
-
-require 'reset'
+require_relative '../lib/app'
+require_relative '../lib/cgi_helper'
+require_relative '../lib/string/random'
+require_relative '../lib/reset'
 
 helper = CGIHelper.new
 app = App.new(helper.cgi.remote_user)

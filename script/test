@@ -3,13 +3,12 @@
 
 oldwd = Dir.pwd
 Dir.chdir(File.dirname(File.expand_path($0)))
-$:.unshift('./lib')
 
 require 'time'
 
-require 'app'
-require 'permission'
-require 'log'
+require_relative '../lib/app'
+require_relative '../lib/permission'
+require_relative '../lib/log'
 
 err = {
   :build => '自動コンパイルチェックに失敗しました; 提出要件を満たしているか確認して下さい',

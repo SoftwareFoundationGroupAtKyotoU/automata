@@ -14,11 +14,9 @@ OPTIONAL = [ :year, :user, :admin, :token ]
 
 $KCODE='UTF8' if RUBY_VERSION < '1.9.0'
 
-$:.unshift('./lib')
-
-require 'app'
-require 'user'
-require 'cgi_helper'
+require_relative '../lib/app'
+require_relative '../lib/user'
+require_relative '../lib/cgi_helper'
 
 helper = CGIHelper.new
 app = App.new(helper.cgi.remote_user)

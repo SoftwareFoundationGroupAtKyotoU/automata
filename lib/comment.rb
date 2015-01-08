@@ -1,8 +1,8 @@
 require 'pathname'
-require 'store'
+require_relative 'store'
 require 'time'
 require 'fileutils'
-require 'comment/renderer'
+require_relative 'comment/renderer'
 
 class Comment
   class NotFound < Exception; end
