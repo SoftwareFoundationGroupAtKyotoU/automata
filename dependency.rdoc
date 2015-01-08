@@ -2,13 +2,7 @@
 
 == rubygems
 
-- json (or apt:libjson-ruby)
-- kramdown
-  - for comment tab
-- sanitize
-  - for comment tab
-- nokogiri
-  - for sanitize
+See Gemfile.
 
 == apt (binary)
 
@@ -20,7 +14,6 @@
 - (du)
 - curl (curl)
 - zip (zip)
-- p7zip-full (7z)
 - apache2
 - ruby-dev
   - for nokogiri
@@ -35,4 +28,3 @@
   - for file browser
 
 = Optional
-

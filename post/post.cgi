@@ -16,6 +16,7 @@ require 'cgi_helper'
 require 'app'
 require 'report/exercise'
 require 'log'
+require 'zip'
 
 class Pathname
   def toutf8() return to_s.toutf8 end
@@ -79,8 +80,16 @@ begin
     file.close
 
     # extract archive file
-    res = system("env 7z x -o#{src_dir} #{path} > /dev/null 2>&1")
-    raise RuntimeError, err[:unzip] unless res
+    begin
+      Zip::File.open(path) do |zip_file|
+        zip_file.each do |entry|
+          entry.extract("#{src_dir}/#{entry.name}")
+        end
+      end
+    rescue => e
+      app.logger.error("post.cgi failed to unzip \"#{path}\" with \"#{e.to_s}\"")
+      raise RuntimeError, err[:unzip] unless res
+    end
 
     entries = Dir.glob("#{src_dir}/*")
 
