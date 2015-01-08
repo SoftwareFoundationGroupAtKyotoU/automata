@@ -5,9 +5,9 @@ require 'bundler/setup'
 require 'mail'
 require 'webrick'
 
-require 'app'
-require 'cgi_helper'
-require 'string/random'
+require_relative 'app'
+require_relative 'cgi_helper'
+require_relative 'string/random'
 
 class App
 

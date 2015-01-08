@@ -1,4 +1,4 @@
-require 'store'
+require_relative 'store'
 require 'time'
 
 class Log < Store::YAML

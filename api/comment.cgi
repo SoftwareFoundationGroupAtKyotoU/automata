@@ -32,13 +32,11 @@
 
 $KCODE='UTF8' if RUBY_VERSION < '1.9.0'
 
-$:.unshift('./lib')
-
 require 'fileutils'
-require 'app'
-require 'log'
-require 'comment'
-require 'cgi_helper'
+require_relative '../lib/app'
+require_relative '../lib/log'
+require_relative '../lib/comment'
+require_relative '../lib/cgi_helper'
 
 helper = CGIHelper.new
 app = App.new(helper.cgi.remote_user)

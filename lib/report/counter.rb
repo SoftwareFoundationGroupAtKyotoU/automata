@@ -1,5 +1,5 @@
-require 'clone'
-require 'report/exercise'
+require_relative '../clone'
+require_relative 'exercise'
 
 module Report
   class Counter

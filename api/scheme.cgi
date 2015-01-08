@@ -15,11 +15,9 @@ FILTER = [ :id, :type, ]
 
 $KCODE='UTF8' if RUBY_VERSION < '1.9.0'
 
-$:.unshift('./lib')
-
-require 'app'
-require 'cgi_helper'
-require 'report/exercise'
+require_relative '../lib/app'
+require_relative '../lib/cgi_helper'
+require_relative '../lib/report/exercise'
 
 helper = CGIHelper.new
 app = App.new

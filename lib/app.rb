@@ -7,12 +7,12 @@ require 'yaml'
 require 'rubygems'
 require 'bundler/setup'
 
-require 'clone'
-require 'conf'
+require_relative 'clone'
+require_relative 'conf'
 require 'kwalify'
-require 'log'
-require 'store'
-require 'user'
+require_relative 'log'
+require_relative 'store'
+require_relative 'user'
 
 class App
   def self.find_base(dir)
@@ -151,7 +151,7 @@ class App
   end
 
   def report(option, id, u)
-    require 'report'
+    require_relative 'report'
 
     status = option[:status]
     log = option[:log]

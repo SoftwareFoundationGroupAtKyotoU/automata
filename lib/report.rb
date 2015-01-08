@@ -1,4 +1,4 @@
-require 'report/counter'
+require_relative 'report/counter'
 
 module Report
   class Source
