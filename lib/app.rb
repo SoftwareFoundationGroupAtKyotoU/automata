@@ -16,8 +16,8 @@ require_relative 'user'
 
 class App
   def self.find_base(dir)
-    e = Pathname($0).expand_path.parent.to_enum(:ascend)
-    return e.map{|x| x+dir.to_s }.find{|x| x.directory?}
+    e = Pathname.new(__FILE__).expand_path.parent.to_enum(:ascend)
+    e.map { |x| x + dir.to_s }.find(&:directory?)
   end
 
   CONFIG = find_base(:config)
