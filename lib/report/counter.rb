@@ -7,7 +7,7 @@ module Report
 
     def initialize(report)
       @report = report.deep_copy
-      @report = @report.map{|k,v| [ k, { :spec => v, :ex => k.to_ex } ]}
+      @report = @report.map{|k,v| [ k, { spec: v, ex: k.to_ex } ]}
       @report = Hash[*@report.flatten]
 
       sorted = @report.sort{|a,b| a[1][:ex] <=> b[1][:ex]}

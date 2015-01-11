@@ -11,8 +11,8 @@ class Comment
   class MaxCommentsExceeded < Exception; end
 
   FILE = {
-    :index   => 'index.db',
-    :read    => 'read.db',
+    index: 'index.db',
+    read:  'read.db'
   }
 
   def initialize(user, group, path, config)
@@ -163,8 +163,8 @@ class Comment
 
   def write_content(id, content)
     contents = {
-      :raw  => content,
-      :html => Renderer.create.render(content),
+      raw:  content,
+      html: Renderer.create.render(content)
     }
     contents.each do |type, content|
       open(content_file(type, id), 'w') do |io|

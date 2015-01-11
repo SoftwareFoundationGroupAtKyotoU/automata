@@ -19,8 +19,8 @@ user      = $*.shift
 post_tz   = $*.shift
 
 err = {
-  :fatal => '自動テストを実行できませんでした; TAに問い合わせて下さい',
-  :fail  => '自動テストがうまく実行されませんでした; 実装を確認して下さい',
+  fatal: '自動テストを実行できませんでした; TAに問い合わせて下さい',
+  fail:  '自動テストがうまく実行されませんでした; 実装を確認して下さい'
 }
 ZIP = 'test.zip'
 
@@ -29,8 +29,8 @@ dir[:user]   = App::KADAI + report_id + user
 dir[:test]   = dir[:user] + 'test'
 
 files = {
-  :log    => dir[:user] + App::FILES[:log],
-  :scheme => App::FILES[:scheme],
+  log:    dir[:user] + App::FILES[:log],
+  scheme: App::FILES[:scheme]
 }
 
 yml = {}

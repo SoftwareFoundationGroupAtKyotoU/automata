@@ -10,6 +10,6 @@ gem 'kwalify'
 
 group :development, :test do
   gem 'rake'
-  gem 'rr', :require => false
+  gem 'rr', require: false
   gem 'test-unit'
 end
