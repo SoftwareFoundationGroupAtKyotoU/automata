@@ -117,19 +117,16 @@ class Comment
     end
   end
 
-  def news()
+  def news
     raise PermissionDenied unless @group == :super || @group == :user
 
     db_read.ro.transaction do |r|
       max = r[@user] || 0
       db_index.ro.transaction do |db|
-        entries = db[:entries] || []
-        entries = filter_forbidden(entries)
-        size = entries.size
-        entries = entries.drop_while{|e| e['id'] <= max}
+        entries = filter_forbidden(db[:entries] || [])
         return {
-          'unreads'  => entries.size,
-          'comments' => size,
+          'unreads'  => entries.count { |e| e['id'] > max },
+          'comments' => entries.size
         }
       end
     end
