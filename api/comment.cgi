@@ -30,8 +30,6 @@
 # Security:
 # Response:
 
-$KCODE='UTF8' if RUBY_VERSION < '1.9.0'
-
 require 'fileutils'
 require_relative '../lib/app'
 require_relative '../lib/log'

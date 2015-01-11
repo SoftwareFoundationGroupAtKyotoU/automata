@@ -22,8 +22,6 @@
 #     - type=highlightならハイライトしたHTML(text/html)
 #   - pathがバイナリファイルを指すとき: 生ファイル(適切なMIMEタイプ)
 
-$KCODE='UTF8' if RUBY_VERSION < '1.9.0'
-
 require 'shellwords'
 require_relative '../lib/time'
 require_relative '../lib/app'

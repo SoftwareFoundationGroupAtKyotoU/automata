@@ -1,8 +1,6 @@
 #! /usr/bin/env ruby
 # -*- coding: utf-8 -*-
 
-$KCODE = 'UTF8' if RUBY_VERSION < '1.9.0'
-
 require 'fileutils'
 require 'pathname'
 require 'tempfile'

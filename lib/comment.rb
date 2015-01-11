@@ -154,8 +154,7 @@ class Comment
 
     file = content_file(type, id)
     return unless file.exist?
-    open_mode = RUBY_VERSION < '1.9.0' ? 'r' : 'r:utf-8'
-    File.open(file, open_mode) {|f| f.read }
+    File.open(file, 'r:utf-8') {|f| f.read }
   end
 
   def content_file(type, id)

@@ -17,8 +17,6 @@
 #   master.su に入っていないユーザに関しては user オプションによらず
 #   ログイン名が remote_user の情報のみ取得可能
 
-$KCODE='UTF8' if RUBY_VERSION < '1.9.0'
-
 require_relative '../lib/app'
 require_relative '../lib/cgi_helper'
 

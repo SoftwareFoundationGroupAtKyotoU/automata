@@ -56,8 +56,7 @@ class App
 
   def file(name)
     @files ||= Hash.new do |h, k|
-      open_mode = RUBY_VERSION < '1.9.0' ? 'r' : 'r:utf-8'
-      File.open(FILES[k], open_mode){|f| h[k] = YAML.load(f) }
+      File.open(FILES[k], 'r:utf-8'){|f| h[k] = YAML.load(f) }
     end
     return @files[name]
   end
