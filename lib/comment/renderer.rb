@@ -9,31 +9,31 @@ class Comment
   class Renderer
     class Markdown
       MD_OPTIONS = {
-        :auto_id => false,
+        auto_id: false
       }
 
       def render(text)
         html = Kramdown::Document.new(text, MD_OPTIONS).to_html
-        return Sanitize.clean(html, Sanitize::Config::RELAXED)
+        Sanitize.clean(html, Sanitize::Config::RELAXED)
       end
 
-      def type()
-        return 'text/html'
+      def type
+        'text/html'
       end
     end
 
     class Plain
       def render(text)
-        return CGI.escapeHTML(text)
+        CGI.escapeHTML(text)
       end
 
-      def type()
-        return 'text/plain'
+      def type
+        'text/plain'
       end
     end
 
-    def self.create()
-      return Markdown.new
+    def self.create
+      Markdown.new
     end
   end
 end
