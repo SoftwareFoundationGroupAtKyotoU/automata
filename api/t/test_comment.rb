@@ -27,7 +27,7 @@ class CommentTest < Test::Unit::TestCase
     @comments[@super_user].delete_all()
     Comment::FILE.each_key do |key|
       path = @path + Comment::FILE[key]
-      File.delete(path) if File.exists?(path)
+      File.delete(path) if File.exist?(path)
     end
   end
 
