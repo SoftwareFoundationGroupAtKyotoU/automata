@@ -11,8 +11,8 @@ require_relative '../lib/permission'
 require_relative '../lib/log'
 
 err = {
-  :build => '自動コンパイルチェックに失敗しました; 提出要件を満たしているか確認して下さい',
-  :build_fatal => '自動コンパイルチェックに失敗しました; TAに問い合わせて下さい',
+  build: '自動コンパイルチェックに失敗しました; 提出要件を満たしているか確認して下さい',
+  build_fatal: '自動コンパイルチェックに失敗しました; TAに問い合わせて下さい',
 }
 
 args = $*.dup

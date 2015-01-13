@@ -1,6 +1,6 @@
 #! /usr/bin/env ruby
 
-$argv = { :realm => 'isle4fp' }; arg=nil
+$argv = { realm: 'isle4fp' }; arg=nil
 $argv[:help] = %w'-h --help'.any?{|x| $*.delete(x)}
 $argv[:realm] = $*.reject!{|x|x=~/^--realm=(.*)$/&&arg=$1}&&arg||$argv[:realm]
 $argv[:file] = $*[0]

@@ -11,8 +11,6 @@
 # Security:
 #   master.su に入っているユーザのみ実行可能
 
-$KCODE='UTF8' if RUBY_VERSION < '1.9.0'
-
 LOGKEYS = [ 'message', 'error', 'reason' ]
 
 require_relative '../lib/app'

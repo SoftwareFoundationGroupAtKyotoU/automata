@@ -32,8 +32,8 @@ class App
     htd.flush
 
     data = {
-      :name => user.name,
-      :passwd => passwd,
+      name: user.name,
+      passwd: passwd
     }
 
     this = self

@@ -27,7 +27,7 @@ dir[:target] = dir[:test] + 'src'
 dir[:build]  = App::BUILD
 
 files = {
-  :log    => dir[:user] + App::FILES[:log],
+  log: dir[:user] + App::FILES[:log]
 }
 
 yml = {}
@@ -43,8 +43,8 @@ end
 
 build_commands = conf[:build]['command']
 status_code = {
-  :failure  => 'NG',
-  :complete => 'OK',
+  failure:  'NG',
+  complete: 'OK'
 }
 
 file_loc = nil

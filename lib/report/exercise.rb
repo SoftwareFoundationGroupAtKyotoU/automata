@@ -31,8 +31,8 @@ module Report
 
     class Token
       CHAR_CLASS = {
-        :num => 'a-zA-Z0-9_',
-        :par => PAREN.map{|k,v| "\\#{k}\\#{v}"}.join(''),
+        num: 'a-zA-Z0-9_',
+        par: PAREN.map{|k,v| "\\#{k}\\#{v}"}.join('')
       }
 
       PATTERN = { # must be exhaustive

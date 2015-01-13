@@ -29,17 +29,17 @@ class App
   SCRIPT = find_base(:script)
 
   FILES = {
-    :master        => CONFIG + 'master.yml',
-    :master_schema => SCHEMA + 'master.yml',
-    :local         => CONFIG + 'local.yml',
-    :local_schema  => SCHEMA + 'local.yml',
-    :scheme        => CONFIG + 'scheme.yml',
-    :template      => CONFIG + 'template.yml',
-    :data          => DB + 'data.yml',
-    :log           => 'log.yml',
-    :build         => TESTER + 'build.rb',
-    :sandbox       => TESTER + 'test.rb',
-    :test_script   => SCRIPT + 'test',
+    master:        CONFIG + 'master.yml',
+    master_schema: SCHEMA + 'master.yml',
+    local:         CONFIG + 'local.yml',
+    local_schema:  SCHEMA + 'local.yml',
+    scheme:        CONFIG + 'scheme.yml',
+    template:      CONFIG + 'template.yml',
+    data:          DB + 'data.yml',
+    log:           'log.yml',
+    build:         TESTER + 'build.rb',
+    sandbox:       TESTER + 'test.rb',
+    test_script:   SCRIPT + 'test'
   }
 
   LOGGER_LEVEL = {
@@ -56,8 +56,7 @@ class App
 
   def file(name)
     @files ||= Hash.new do |h, k|
-      open_mode = RUBY_VERSION < '1.9.0' ? 'r' : 'r:utf-8'
-      File.open(FILES[k], open_mode){|f| h[k] = YAML.load(f) }
+      File.open(FILES[k], 'r:utf-8'){|f| h[k] = YAML.load(f) }
     end
     return @files[name]
   end
@@ -194,8 +193,8 @@ class App
     dir = Pathname.new(dir.to_s) unless dir.is_a?(Pathname)
 
     checkers = {
-      :size => proc{ StringScanner.new(`du -sk "#{dir}"`).scan(/\d+/).to_i },
-      :entries => proc do
+      size: proc{ StringScanner.new(`du -sk "#{dir}"`).scan(/\d+/).to_i },
+      entries: proc do
         if (dir + App::FILES[:log]).exist?
           Log.new(dir + App::FILES[:log]).size
         else

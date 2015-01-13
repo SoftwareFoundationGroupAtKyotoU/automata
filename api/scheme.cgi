@@ -13,8 +13,6 @@ KEY = [ :id, :type, :name, :update ]
 OPTIONAL = [ :record, :exercise ]
 FILTER = [ :id, :type, ]
 
-$KCODE='UTF8' if RUBY_VERSION < '1.9.0'
-
 require_relative '../lib/app'
 require_relative '../lib/cgi_helper'
 require_relative '../lib/report/exercise'

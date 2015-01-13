@@ -12,8 +12,6 @@
 KEY = []
 OPTIONAL = [ :year, :user, :admin, :token ]
 
-$KCODE='UTF8' if RUBY_VERSION < '1.9.0'
-
 require_relative '../lib/app'
 require_relative '../lib/user'
 require_relative '../lib/cgi_helper'

@@ -17,8 +17,6 @@
 #   master.su に入っていないユーザに関しては user オプションによらず
 #   ログイン名が remote_user の情報のみ取得可能
 
-$KCODE='UTF8' if RUBY_VERSION < '1.9.0'
-
 require_relative '../lib/app'
 require_relative '../lib/cgi_helper'
 
@@ -41,8 +39,8 @@ if helper.params['type'][0] == 'status'
   schemes.each do |s|
     users.each do |u|
       option = {
-        :status => helper.params['status'][0],
-        :log    => !helper.params['log'].empty?,
+        status: helper.params['status'][0],
+        log:    !helper.params['log'].empty?
       }
       u[s['id']] = app.report(option, s['id'], u.real_login)
     end

@@ -32,11 +32,11 @@ class CommentTest < Test::Unit::TestCase
   end
 
   def add_comments()
-    @comments[@user].add({ :content => @user_comment, :acl => [] })
-    @comments[@super_user].add({ :content => @su_comment, :acl => ['super'] })
-    @comments[@other].add({ :content => @other_comment })
-    @comments[@user2].add({ :content => @user2_comment, :acl => [] })
-    @comments[@user].add({ :content => @user_comment2, :acl => ['user'] })
+    @comments[@user].add({ content: @user_comment, acl: [] })
+    @comments[@super_user].add({ content: @su_comment, acl: ['super'] })
+    @comments[@other].add({ content: @other_comment })
+    @comments[@user2].add({ content: @user2_comment, acl: [] })
+    @comments[@user].add({ content: @user_comment2, acl: ['user'] })
   end
 
   def test_db_index()
@@ -48,7 +48,7 @@ class CommentTest < Test::Unit::TestCase
   end
 
   def check_comments(expected, user)
-    comments = @comments[user].retrieve({ :type => 'raw' })
+    comments = @comments[user].retrieve({ type: 'raw' })
     assert_not_nil(comments)
     assert_equal(expected.length, comments.length)
     expected.length.times {|i|
@@ -70,41 +70,41 @@ class CommentTest < Test::Unit::TestCase
     add_comments()
 
     # The number of comments is 5.
-    assert_raise(Comment::NotFound) { @comments[@user].edit({ :id => 6 }) }
+    assert_raise(Comment::NotFound) { @comments[@user].edit({ id: 6 }) }
     assert_raise(Comment::NotFound) {
-      @comments[@super_user].edit({ :id => 6 })
+      @comments[@super_user].edit({ id: 6 })
     }
-    assert_raise(Comment::NotFound) { @comments[@other].edit({ :id => 6 }) }
+    assert_raise(Comment::NotFound) { @comments[@other].edit({ id: 6 }) }
 
     # Cannot edit other's comments.
     2.times {|i|
        assert_raise(Comment::PermissionDenied) {
-         @comments[@user2].edit({ :id => i+1 })
+         @comments[@user2].edit({ id: i+1 })
        }
        assert_raise(Comment::PermissionDenied) {
-         @comments[@other].edit({ :id => i+1 })
+         @comments[@other].edit({ id: i+1 })
        }
      }
     assert_raise(Comment::PermissionDenied) {
-      @comments[@user].edit({ :id => 4 })
+      @comments[@user].edit({ id: 4 })
     }
 
     # Edit a comment.
     check_comments([@user_comment, @other_comment, @user_comment2], @user)
-    @comments[@user].edit({ :id => 1, :content => "edit!" })
+    @comments[@user].edit({ id: 1, content: "edit!" })
     check_comments(["edit!", @other_comment, @user_comment2], @user)
 
     # Super user can edit any comment.
     expected = ["edit!", @su_comment, @other_comment, @user2_comment,
                 @user_comment2]
     check_comments(expected, @super_user)
-    @comments[@super_user].edit({ :id => 2, :content => "edit2!" })
+    @comments[@super_user].edit({ id: 2, content: "edit2!" })
     expected[2-1] = "edit2!"
     check_comments(expected, @super_user)
-    @comments[@super_user].edit({ :id => 1, :content => "edit3!" })
+    @comments[@super_user].edit({ id: 1, content: "edit3!" })
     expected[1-1] = "edit3!"
     check_comments(expected, @super_user)
-    @comments[@super_user].edit({ :id => 3, :content => "edit4!" })
+    @comments[@super_user].edit({ id: 3, content: "edit4!" })
     expected[3-1] = "edit4!"
     check_comments(expected, @super_user)
   end
