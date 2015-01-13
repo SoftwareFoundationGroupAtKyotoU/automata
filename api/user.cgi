@@ -39,8 +39,8 @@ if helper.params['type'][0] == 'status'
   schemes.each do |s|
     users.each do |u|
       option = {
-        :status => helper.params['status'][0],
-        :log    => !helper.params['log'].empty?,
+        status: helper.params['status'][0],
+        log:    !helper.params['log'].empty?
       }
       u[s['id']] = app.report(option, s['id'], u.real_login)
     end

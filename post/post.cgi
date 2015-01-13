@@ -31,15 +31,15 @@ class Pathname
 end
 
 err = {
-  :require  => '必須なパラメータ "%s" が指定されませんでした',
+  require:  '必須なパラメータ "%s" が指定されませんでした',
   # 'parameter "%s" is required',
-  :invalid  => '不正なパラメータ "%s" が指定されました',
+  invalid:  '不正なパラメータ "%s" が指定されました',
   # 'invalid parameter "%s"',
-  :closed => '提出期限の過ぎた課題 "%s" が指定されました',
+  closed: '提出期限の過ぎた課題 "%s" が指定されました',
   # 'closed report "%s"',
-  :capacity => '頻度が高すぎるためリクエストを拒否しました',
+  capacity: '頻度が高すぎるためリクエストを拒否しました',
   # 'over capacity',
-  :unzip    => 'アップロードされたファイルの展開に失敗しました',
+  unzip:    'アップロードされたファイルの展開に失敗しました'
   # 'unable to unzip the uploaded file',
 }
 

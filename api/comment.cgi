@@ -100,8 +100,8 @@ begin
     dir = App::KADAI + report_id + u + 'comment'
     FileUtils.mkdir_p(dir) unless dir.exist?
     {
-      :user    => u,
-      :comment => Comment.new(app.user, group, dir, config),
+      user:    u,
+      comment: Comment.new(app.user, group, dir, config)
     }
   end
 
@@ -111,12 +111,12 @@ begin
     id = convert(helper.param(:id), &:to_i)
     offset = convert(helper.param(:offset), &:to_i)
     limit = convert(helper.param(:limit), &:to_i)
-    args = { :type => type, :id => id, :offset => offset, :limit => limit }
+    args = { type: type, id: id, offset: offset, limit: limit }
     content = comments[0][:comment].retrieve(args)
     # Get user names
     user_names = app.user_names_from_tokens(content.map {|entry| entry['user']})
     content = content.map {|entry|
-      entry.merge({ :user_name => user_names[entry['user']] })
+      entry.merge({ user_name: user_names[entry['user']] })
     }
 
     print(helper.header)
@@ -126,7 +126,7 @@ begin
     content = helper.param(:message)
     ref = helper.param(:ref)
     acl = convert(helper.param(:acl)){|a| a.split(',')}
-    r = comments[0][:comment].add(:content => content, :ref => ref, :acl => acl)
+    r = comments[0][:comment].add(content: content, ref: ref, acl: acl)
 
     print(helper.cgi.header)
     puts('done')
@@ -139,7 +139,7 @@ begin
     ref = helper.param(:ref)
     acl = convert(helper.param(:acl)){|a| a.split(',')}
     r = comments[0][:comment] \
-      .edit(:id => id, :content => content, :ref => ref, :acl => acl)
+      .edit(id: id, content: content, ref: ref, acl: acl)
 
     print(helper.cgi.header)
     puts('done')
