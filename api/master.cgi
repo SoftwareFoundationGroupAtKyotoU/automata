@@ -19,14 +19,15 @@ require_relative '../lib/cgi_helper'
 helper = CGIHelper.new
 app = App.new(helper.cgi.remote_user)
 
-app.conf[:user] = helper.cgi.remote_user
-app.conf[:admin] = app.su?
-app.conf[:token] = User.make_token(app.user)
+conf = app.conf[:master]
+conf[:user] = helper.cgi.remote_user
+conf[:admin] = app.su?
+conf[:token] = User.make_token(app.user)
 
 entry = {}
 keys = KEY.dup
 OPTIONAL.each{|k| keys << k unless helper.params[k.to_s].empty?}
-keys.each{|k| entry[k.to_s] = app.conf[k]}
+keys.each{|k| entry[k.to_s] = conf[k]}
 result = entry
 
 print(helper.header)

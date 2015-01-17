@@ -24,8 +24,8 @@ class App
 
     passwd = String.random(8)
 
-    htdigest = conf[:authn, :htdigest]
-    realm = conf[:authn, :realm]
+    htdigest = conf[:master, :authn, :htdigest]
+    realm = conf[:master, :authn, :realm]
 
     htd = HTTPAuth::Htdigest.new(htdigest)
     htd.set_passwd(realm, user.real_login, passwd)
@@ -38,10 +38,10 @@ class App
 
     this = self
     Mail.deliver do
-      from    this.conf[:authn, :admin]
+      from    this.conf[:master, :authn, :admin]
       to      email
-      subject this.template[tmpl, :subject].gsub(/%\{([a-z]+)\}/) { data[$1.to_sym] }
-      body    this.template[tmpl, :body].gsub(/%\{([a-z]+)\}/) { data[$1.to_sym] }
+      subject this.conf[:template, tmpl, :subject].gsub(/%\{([a-z]+)\}/) { data[$1.to_sym] }
+      body    this.conf[:template, tmpl, :body].gsub(/%\{([a-z]+)\}/) { data[$1.to_sym] }
     end
   end
 end

@@ -48,10 +48,10 @@ if log['log'] && log['log']['test']
   result['number'] = t['number']
 end
 
-if log['test'] && (app.conf[:record, :detail] || app.su?)
+if log['test'] && (app.conf[:master, :record, :detail] || app.su?)
   detail = log['test']
 
-  if app.conf[:record, :detail] == 'brief' && !app.su?
+  if app.conf[:master, :record, :detail] == 'brief' && !app.su?
     detail = detail.map{|x| { 'name' => x['name'], 'result' => x['result'] }}
   end
 

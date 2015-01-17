@@ -51,7 +51,7 @@ id = 'report_id'
 rep_id = helper.param(id)
 raise ArgumentError, (err[:require] % id) unless rep_id
 
-rep_schemes = app.file(:scheme)['scheme'] || []
+rep_schemes = app.conf[:scheme, :scheme] || []
 rep_scheme_data = rep_schemes.find{|r| r['id'] == rep_id}
 raise ArgumentError, (err[:invalid] % rep_id) unless rep_scheme_data
 raise ArgumentError, (err[:closed] % rep_id) if rep_scheme_data['type'] == 'closed'
