@@ -4,15 +4,10 @@ require 'yaml'
 
 require 'bundler/setup'
 require 'kwalify'
+require_relative 'util'
 
 class Conf
-  # same as for app.rb ...
-  def self.find_base(dir)
-    e = Pathname.new(__FILE__).expand_path.parent.to_enum(:ascend)
-    e.map { |x| x + dir.to_s }.find(&:directory?)
-  end
-
-  CONFIG = find_base(:config)
+  CONFIG = Util.find_base(__FILE__, :config)
   SCHEMA = CONFIG + 'schema'
   FILES = {
     master:        CONFIG + 'master.yml',

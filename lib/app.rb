@@ -7,6 +7,7 @@ require 'yaml'
 require 'rubygems'
 require 'bundler/setup'
 
+require_relative 'util'
 require_relative 'clone'
 require_relative 'conf'
 require_relative 'log'
@@ -14,16 +15,11 @@ require_relative 'store'
 require_relative 'user'
 
 class App
-  def self.find_base(dir)
-    e = Pathname.new(__FILE__).expand_path.parent.to_enum(:ascend)
-    e.map { |x| x + dir.to_s }.find(&:directory?)
-  end
-
-  DB     = find_base(:db)
+  DB     = Util.find_base(__FILE__, :db)
   KADAI  = DB + 'kadai'
-  BUILD  = find_base(:build)
-  TESTER = find_base(:test)
-  SCRIPT = find_base(:script)
+  BUILD  = Util.find_base(__FILE__, :build)
+  TESTER = Util.find_base(__FILE__, :test)
+  SCRIPT = Util.find_base(__FILE__, :script)
 
   FILES = {
     data:          DB + 'data.yml',
