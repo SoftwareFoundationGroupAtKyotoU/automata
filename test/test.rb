@@ -7,12 +7,12 @@ require 'rubygems'
 require 'fileutils'
 require 'yaml'
 require 'time'
-require 'zip'
 
 require_relative '../lib/app'
 require_relative '../lib/conf'
 require_relative '../lib/log'
 require_relative '../lib/report/counter'
+require 'zip'
 
 report_id = $*.shift
 user      = $*.shift
