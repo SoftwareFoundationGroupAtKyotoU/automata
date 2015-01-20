@@ -1,6 +1,5 @@
 require 'cgi'
 
-require 'rubygems'
 require 'bundler/setup'
 require 'kramdown'
 require 'sanitize'

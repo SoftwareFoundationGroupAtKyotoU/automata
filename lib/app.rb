@@ -4,7 +4,6 @@ require 'pathname'
 require 'strscan'
 require 'yaml'
 
-require 'rubygems'
 require 'bundler/setup'
 
 require_relative 'util'

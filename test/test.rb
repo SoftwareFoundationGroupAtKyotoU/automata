@@ -3,7 +3,6 @@
 
 Dir.chdir(File.dirname(File.expand_path($0)))
 
-require 'rubygems'
 require 'fileutils'
 require 'yaml'
 require 'time'
