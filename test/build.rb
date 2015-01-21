@@ -6,9 +6,9 @@ Dir.chdir(File.dirname(File.expand_path($0)))
 require 'fileutils'
 require 'yaml'
 require 'time'
-require 'dir/each_leaf'
 
 require_relative '../lib/app'
+require_relative '../lib/dir/each_leaf'
 require_relative '../lib/conf'
 require_relative '../lib/log'
 require_relative '../lib/report/exercise'
