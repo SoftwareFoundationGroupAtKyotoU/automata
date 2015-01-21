@@ -83,12 +83,16 @@ var LogView = function(prefix, id, admin) {
         { prop: 'test',
           label: 'テスト通過率',
           node: function(test) {
-              var rate = GNN.UI.$node(test.passed+'/'+test.number);
-              if (test.passed == test.number) {
-                  return rate;
+              var rate;
+              if (test === null) {
+                  rate = GNN.UI.$node('0/0');
               } else {
-                  return GNN.UI.$new('em', { child: rate });
+                  rate = GNN.UI.$node(test.passed+'/'+test.number);
+                  if (test.passed !== test.number) {
+                      rate = GNN.UI.$new('em', { child: rate });
+                  }
               }
+              return rate;
           }
         }
     ];

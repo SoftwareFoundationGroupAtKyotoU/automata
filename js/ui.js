@@ -109,7 +109,7 @@ if (typeof GNN.UI == 'undefined') GNN.UI = {};
     ns.getMousePosition = function(pos) {
         if (navigator.userAgent.indexOf('Chrome/') != -1 &&
             navigator.userAgent.indexOf('Safari') > -1 &&
-            navigator.userAgent.indexOf('Version/' < 0)) {
+            navigator.userAgent.indexOf('Version/') < 0) {
             return { x: pos.clientX, y: pos.clientY };
         } else {
             var scroll = {}; var de = ns.doc().documentElement;
