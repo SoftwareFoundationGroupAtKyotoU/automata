@@ -71,7 +71,7 @@ var reportFatalErrors = function(errors) {
         }
     };
 
-    div = GNN.UI.$('fatalerror');
+    var div = GNN.UI.$('fatalerror');
     div.appendChild($new('h3', { child: 'Error' }));
 
     var ul = $new('ul');
@@ -84,7 +84,7 @@ var reportFatalErrors = function(errors) {
 };
 
 var jsonpFailure = function(reason, jsonp, failed) {
-    failedURIs = {};
+    var failedURIs = {};
     var none = { uri: 'preparing for request' };
     failed.forEach(function(k){ failedURIs[k]=(jsonp[k]||none).uri; });
 

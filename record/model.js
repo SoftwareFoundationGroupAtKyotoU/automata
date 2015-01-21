@@ -4,7 +4,7 @@ Model.Config = function(json) {
     var conf = json.master || {};
     conf.comment = json.comment || {};
     if (conf.comment.enable) {
-        conf.comment.enable = (conf.comment.enable != 'admin' || conf.admin);
+        conf.comment.enable = (conf.comment.enable !== 'admin' || conf.admin);
     }
     conf.openAlways = (json.user.length == 1);
     return conf;

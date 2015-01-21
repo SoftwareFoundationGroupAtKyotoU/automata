@@ -81,7 +81,7 @@ if (!Array.prototype.reduce) {
     Array.prototype.reduce = function(fun, initial) {
         var len = this.length;
         if (typeof fun != 'function') {
-            throw TypeError('reduce: not a function ');
+            throw new TypeError('reduce: not a function ');
         }
         var i = 0;
         var prev;
