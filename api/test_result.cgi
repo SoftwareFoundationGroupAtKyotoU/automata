@@ -18,8 +18,8 @@ helper = CGIHelper.new
 app = App.new(helper.cgi.remote_user)
 
 def helper.error_exit(obj)
-  print(helper.header)
-  puts(helper.json(obj))
+  print(self.header)
+  puts(self.json(obj))
   exit
 end
 
