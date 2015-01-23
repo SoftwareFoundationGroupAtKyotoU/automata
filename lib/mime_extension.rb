@@ -2,6 +2,8 @@ require 'shellwords'
 
 class MIME
   class Type
+    attr_reader :encoding
+
     def initialize(type, encoding='')
       @major, @minor = type.split('/')
       @encoding = encoding
@@ -14,7 +16,6 @@ class MIME
     def to_s() return content_type end
     def type() return @major end
     def subtype() return @minor end
-    def encoding() return @encoding end
   end
 end
 

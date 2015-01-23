@@ -36,6 +36,8 @@ class App
     "DEBUG" => Logger::DEBUG,
   }
 
+  attr_reader :conf
+
   def initialize(remote_user=nil)
     @remote_user = remote_user
     @conf = Conf.new
@@ -54,10 +56,6 @@ class App
       @logger.level = LOGGER_LEVEL[conf[:master, :logger, :level]]
     end
     return @logger
-  end
-
-  def conf()
-    return @conf
   end
 
   def user()
