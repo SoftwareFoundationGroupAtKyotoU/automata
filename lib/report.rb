@@ -4,6 +4,7 @@ module Report
   class Source
     class Manual
       attr_reader :data
+      alias_method :solved, :data
 
       def initialize(data, optional, timestamp)
         @data = data || []
@@ -12,8 +13,6 @@ module Report
       end
 
       def status?() return !@data.empty? end
-
-      def solved() return @data end
 
       def optional(key) return nil end
 
