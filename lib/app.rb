@@ -2,7 +2,9 @@
 require 'logger'
 require 'pathname'
 require 'strscan'
+require 'time'
 require 'yaml'
+require 'webrick'
 
 require 'bundler/setup'
 
@@ -77,7 +79,7 @@ class App
       user_store.ro.transaction do |store|
         @users = (store['data'] || []).map{|u| User.new(u)}
         @users.reject!{|u| u.login != user} unless conf[:master, :record, :open] || su? || all
-        unless conf[:master, :record, :show_login]
+        unless conf[:master, :record, :show_login] || su?
           # Override User#login to hide user login name
           @users.each{|u| def u.login() return token end}
         end
@@ -94,6 +96,33 @@ class App
       store['data'] = users
       @users = nil
     end
+  end
+
+  def delete_user(id)
+    backup_dir = DB + 'backup' + Time.new.iso8601
+    raise RuntimeError, '頻度が高すぎるためリクエストを拒否しました' if File.exist?(backup_dir)
+    FileUtils.mkdir_p(backup_dir)
+    # remove and backup user directories
+    Pathname.glob(KADAI + '*').each {|path|
+      src = path + id
+      if File.exist?(src)
+        dst = backup_dir + path.basename
+        FileUtils.mv(src, dst)
+      end
+    }
+    # remove user data
+    user_store = Store::YAML.new(App::FILES[:data])
+    user_store.transaction {|store|
+      users = (store['data'] || [])
+      users.reject! {|user| user['login'] == id}
+      store['data'] = users
+    }
+    # remove user passwd
+    htdigest = conf[:master, :authn, :htdigest]
+    realm = conf[:master, :authn, :realm]
+    htd = WEBrick::HTTPAuth::Htdigest.new(htdigest)
+    htd.delete_passwd(realm, id)
+    htd.flush
   end
 
   def user_from_token(token)
