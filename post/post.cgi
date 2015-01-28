@@ -7,13 +7,12 @@ require 'tempfile'
 require 'tmpdir'
 require 'time'
 require 'kconv'
-require 'zip'
 
 require_relative '../lib/cgi_helper'
 require_relative '../lib/app'
 require_relative '../lib/report/exercise'
 require_relative '../lib/log'
-
+require 'zip'
 
 class Pathname
   def toutf8() return to_s.toutf8 end
