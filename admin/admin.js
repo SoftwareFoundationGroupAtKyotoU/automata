@@ -1,6 +1,6 @@
 $(function() {
     function load_users() {
-        $.get("../api/user.cgi", function(data) {
+        $.get("../api/user.cgi?email=true", function(data) {
             for (var i = 0; i < data.length; ++i) {
                 var user = data[i];
                 var button = $("<button>del</button>");
