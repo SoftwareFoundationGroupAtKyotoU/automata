@@ -8,6 +8,7 @@
 #   user           ログイン名が<login>のユーザの情報のみ取得
 #   type   info    ユーザ情報のみ取得(デフォルト)
 #          status  提出状況も取得
+#   email          ユーザ情報にメールアドレスを含める
 #   status なし    レポートの提出状況のみ取得
 #          solved  解いた問題のリストを取得
 #          record  レコード表示用に分類された解答済/未解答の問題のリストを取得
@@ -47,5 +48,8 @@ if helper.params['type'][0] == 'status'
   end
 end
 
+users.map!(&:to_hash)
+users.each { |u| u.delete('email') } if helper.params['email'].empty?
+
 print(helper.header)
-puts(helper.json(users.map(&:to_hash)))
+puts(helper.json(users))
