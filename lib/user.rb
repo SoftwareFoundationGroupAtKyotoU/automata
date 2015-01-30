@@ -25,6 +25,7 @@ class User
       'token'    => token,
       'name'     => name,
       'ruby'     => ruby,
+      'email'    => email,
     }
     hash['report'] = {} unless report.empty?
     report.each{|k,v| hash['report'][k] = v.to_hash}
