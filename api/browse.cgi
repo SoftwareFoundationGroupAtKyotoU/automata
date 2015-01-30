@@ -23,7 +23,7 @@
 #   - pathがバイナリファイルを指すとき: 生ファイル(適切なMIMEタイプ)
 
 require 'shellwords'
-require_relative '../lib/time'
+require 'time'
 require_relative '../lib/app'
 require_relative '../lib/log'
 require_relative '../lib/mime_extension'
