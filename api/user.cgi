@@ -49,7 +49,10 @@ if helper.params['type'][0] == 'status'
 end
 
 users.map!(&:to_hash)
-users.each { |u| u.delete('email') } if helper.params['email'].empty?
+
+if !app.su? || helper.params['email'].empty?
+  users.each { |u| u.delete('email') }
+end
 
 print(helper.header)
 puts(helper.json(users))
