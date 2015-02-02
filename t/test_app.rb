@@ -3,6 +3,12 @@ require 'rr'
 
 require 'app'
 
+class App
+  def initialize(remote_user=nil)
+    @remote_user = remote_user
+  end
+end
+
 class AppText < Test::Unit::TestCase
   def setup
     @app = App.new
