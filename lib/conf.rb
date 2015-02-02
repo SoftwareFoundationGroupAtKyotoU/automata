@@ -6,7 +6,42 @@ require 'bundler/setup'
 require 'kwalify'
 require_relative 'util'
 
+#
+# Provides access to configurations of master.yml, scheme.yml, and template.yml.
+# Validation is executed when config files are loaded.
+#
 class Conf
+  # Load config files and validate configs.
+  def initialize
+    reload
+  end
+
+  # Reload config files and validate configs.
+  def reload
+    local = begin load_yaml(FILES[:local]) rescue {} end
+    @conf = {
+      'master' => load_yaml(FILES[:master], FILES[:master_schema]).merge(local),
+      'scheme' => load_yaml(FILES[:scheme]),
+      'template' => load_yaml(FILES[:template]).merge(local)
+    }
+  end
+
+  # Access to configs.
+  # @param [Array<Symbol>] keys symbols describe the path to a config
+  # @example
+  #   # logger.path in master.yml
+  #   logger_path = conf[:master, :logger, :path]
+  # @raise [RuntimeError] if the config file is neither master, scheme, nor
+  #   template
+  def [](*keys)
+    unless [:master, :scheme, :template].member? keys[0]
+      fail "Unknown config files: #{keys[0]}"
+    end
+    keys.inject(@conf) { |acc, key| (acc || {})[key.to_s] }
+  end
+
+  private
+
   CONFIG = Util.find_base(__FILE__, :config)
   SCHEMA = CONFIG + 'schema'
   FILES = {
@@ -17,49 +52,31 @@ class Conf
     master_schema: SCHEMA + 'master.yml'
   }
 
-  # Access to configs.
-  # @param [Array<Symbol>] symbols describe the path to a config
-  # @example
-  #   # logger.path in master.yml
-  #   conf[:master, :logger, :path]
-  def [](*keys)
-    @hash ||= Hash.new{|h, k|
-      case k
-      when 'master'
-        yml = load_yaml(FILES[:master])
-        verify_conf(yml, :master_schema)
-        h[k] = yml.merge(begin load_yaml(FILES[:local]) rescue {} end)
-      when 'scheme'
-        h[k] = load_yaml(FILES[:scheme])
-      when 'template'
-        yml = load_yaml(FILES[:template])
-        h[k] = yml.merge(begin load_yaml(FILES[:local]) rescue {} end)
-      else
-        raise "unknown config file: #{k}"
-      end
-    }
-    return keys.inject(@hash){|acc, key| (acc || {})[key.to_s]}
+  # Raise errors if errors is not empty.
+  # @param [String] message header message of errors
+  # @param [Array<Error>] errors invoked by Kwalify
+  # @raise [RuntimeError] if errors is not empty
+  def invoke_errors(errors, message)
+    message += "\n" + errors.map { |e| "[#{e.path}] #{e.message}" }.join("\n")
+    fail message if errors && !errors.empty?
   end
 
-  private
-  def load_yaml(pathname)
-    return File.open(pathname, 'r:utf-8'){|f| YAML.load(f,pathname)}
-  end
-
-  # Verify a config file.
-  # @param [Hash] a YAML object of a config file
-  # @param [Symbol] a config name
-  # @raise [RuntimeError] if schema or config files are malformed
-  def verify_conf(yml, name)
-    def check(e, msg)
-      raise e.inject(msg){|acc, e|
-        acc += "[#{e.path}] #{e.message}\n"
-      } if e && !e.empty?
+  # Load yaml files and if schema is given validate the yaml.
+  # @param [Pathname] pathname
+  # @param [Pathname] schema
+  def load_yaml(pathname, schema = nil)
+    yml = File.open(pathname, 'r:utf-8') { |f| YAML.load(f, pathname) }
+    if schema
+      schema_yml = load_yaml(schema)
+      invoke_errors(
+        Kwalify::MetaValidator.instance.validate(schema_yml),
+        "Internal error: schema '#{schema_yml}'"
+      )
+      invoke_errors(
+        Kwalify::Validator.new(schema_yml).validate(yml),
+        "Config file error: '#{pathname}'"
+      )
     end
-    schema = load_yaml(FILES[name])
-    check(Kwalify::MetaValidator.instance.validate(schema),
-          "Internal error: schema '#{name}'\n")
-    check(Kwalify::Validator.new(schema).validate(yml),
-          "Config file error: '#{name}'\n")
+    yml
   end
 end
