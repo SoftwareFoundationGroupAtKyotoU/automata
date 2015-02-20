@@ -1,5 +1,6 @@
 class Object
+  # Return a deep copy of an object. 
   def deep_copy()
-    return Marshal.load(Marshal.dump(self))
+    Marshal.load(Marshal.dump(self))
   end
 end
