@@ -147,11 +147,7 @@ var init = function(id) {
                     fields.update = update;
                     fields.comment = self.comment || {};
                     fields.reason = 'record';
-                    fields.autoUpdate = false;
                     views.put(rid, uid, fields);
-                    if (fields.autoUpdate) {
-                        setTimeout(function(){ fields.update(); }, 5000);
-                    }
                 };
                 var update = function() { u.getFields(rid, setFields); };
 
