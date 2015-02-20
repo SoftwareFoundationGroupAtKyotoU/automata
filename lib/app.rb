@@ -19,14 +19,13 @@ class App
   DB     = Util.find_base(__FILE__, :db)
   KADAI  = DB + 'kadai'
   BUILD  = Util.find_base(__FILE__, :build)
-  TESTER = Util.find_base(__FILE__, :test)
   SCRIPT = Util.find_base(__FILE__, :script)
 
   FILES = {
     data:          DB + 'data.yml',
     log:           'log.yml',
-    build:         TESTER + 'build.rb',
-    sandbox:       TESTER + 'test.rb',
+    build:         SCRIPT + 'build.rb',
+    sandbox:       SCRIPT + 'test.rb',
     test_script:   SCRIPT + 'test'
   }
 

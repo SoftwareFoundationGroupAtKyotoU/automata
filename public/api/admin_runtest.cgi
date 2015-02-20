@@ -10,8 +10,8 @@
 #   master.su に入っているユーザのみ実行可能
 
 require 'shellwords'
-require_relative '../lib/app'
-require_relative '../lib/cgi_helper'
+require_relative '../../lib/app'
+require_relative '../../lib/cgi_helper'
 
 helper = CGIHelper.new
 app = App.new(helper.cgi.remote_user)

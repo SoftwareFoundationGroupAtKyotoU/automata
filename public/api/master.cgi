@@ -12,9 +12,9 @@
 KEY = []
 OPTIONAL = [ :year, :user, :admin, :token ]
 
-require_relative '../lib/app'
-require_relative '../lib/user'
-require_relative '../lib/cgi_helper'
+require_relative '../../lib/app'
+require_relative '../../lib/user'
+require_relative '../../lib/cgi_helper'
 
 helper = CGIHelper.new
 app = App.new(helper.cgi.remote_user)

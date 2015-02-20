@@ -8,10 +8,10 @@ require 'tmpdir'
 require 'time'
 require 'kconv'
 
-require_relative '../lib/cgi_helper'
-require_relative '../lib/app'
-require_relative '../lib/report/exercise'
-require_relative '../lib/log'
+require_relative '../../lib/cgi_helper'
+require_relative '../../lib/app'
+require_relative '../../lib/report/exercise'
+require_relative '../../lib/log'
 require 'zip'
 
 class Pathname
