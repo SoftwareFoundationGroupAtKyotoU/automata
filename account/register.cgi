@@ -3,7 +3,6 @@
 
 require 'bundler/setup'
 require 'mail'
-require 'webrick'
 
 require_relative '../lib/app'
 require_relative '../lib/cgi_helper'

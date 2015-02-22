@@ -2,7 +2,6 @@
 
 require 'bundler/setup'
 require 'mail'
-require 'webrick'
 
 require_relative 'app'
 require_relative 'cgi_helper'
@@ -12,24 +11,15 @@ class App
 
   class UserNotFound < Exception; end
 
-  include WEBrick
-
-  # 新しくパスワードを発行する
-  # @param [String] email
-  # @param [Symbol] tmpl メール本文に使うテンプレート (:passwd_issue or :passwd_reset)
+  # Issue a new password.
+  # @param [String] email email address of a user
+  # @param [Symbol] tmpl template used in mail body (:passwd_issue or :passwd_reset)
   def reset(email, tmpl)
     user = users.find {|u| u.email == email}
     raise UserNotFound unless user
 
     passwd = String.random(8)
-
-    htdigest = conf[:master, :authn, :htdigest]
-    realm = conf[:master, :authn, :realm]
-
-    htd = HTTPAuth::Htdigest.new(htdigest)
-    htd.set_passwd(realm, user.real_login, passwd)
-    htd.flush
-
+    set_passwd(user.real_login, passwd)
     data = {
       name: user.name,
       passwd: passwd

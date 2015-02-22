@@ -98,6 +98,18 @@ class App
     end
   end
 
+  # Set a password for a user.
+  # @param [String] real_login
+  # @param [String] passwd
+  def set_passwd(real_login, passwd)
+    htdigest = conf[:master, :authn, :htdigest]
+    realm = conf[:master, :authn, :realm]
+
+    htd = WEBrick::HTTPAuth::Htdigest.new(htdigest)
+    htd.set_passwd(realm, real_login, passwd)
+    htd.flush
+  end
+
   def delete_user(id)
     backup_dir = DB + 'backup' + Time.new.iso8601
     raise RuntimeError, '頻度が高すぎるためリクエストを拒否しました' if File.exist?(backup_dir)
