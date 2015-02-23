@@ -3,7 +3,6 @@
 
 require 'bundler/setup'
 require 'mail'
-require 'webrick'
 
 require_relative '../lib/app'
 require_relative '../lib/cgi_helper'
@@ -34,7 +33,12 @@ begin
   found = app.users.any? {|u| u.email == email || u.real_login == login}
   raise AlreadyRegistered if found
 
-  app.add_user(name, ruby, login, email)
+  app.add_user({
+    'name'  => name,
+    'ruby'  => ruby,
+    'login' => login,
+    'email' => email
+  })
 
   app.reset(email, :passwd_issue)
 
