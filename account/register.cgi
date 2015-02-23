@@ -33,7 +33,12 @@ begin
   found = app.users.any? {|u| u.email == email || u.real_login == login}
   raise AlreadyRegistered if found
 
-  app.add_user(name, ruby, login, email)
+  app.add_user({
+    'name'  => name,
+    'ruby'  => ruby,
+    'login' => login,
+    'email' => email
+  })
 
   app.reset(email, :passwd_issue)
 

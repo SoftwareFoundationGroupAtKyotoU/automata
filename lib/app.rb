@@ -88,13 +88,28 @@ class App
     return @users
   end
 
-  def add_user(name, ruby, login, email)
+  # Add a user to the database.
+  # @param [Hash{String => String}] info contains name, ruby, login, and email
+  # @example
+  #   app.add_user({
+  #     'name' => 'Alice',
+  #     'ruby' => 'Alice',
+  #     'login' => 'alice',
+  #     'email' => 'alice@wonderland.net'
+  #   })
+  # @return [User] the added user or nil if the person is already added
+  def add_user(info)
+    return nil if users.any? do |u|
+      u.email == info['email'] || u.real_login == info['login']
+    end
+    FileUtils.touch FILES[:data]
     user_store = Store::YAML.new(FILES[:data])
     user_store.transaction do |store|
-      users = (store['data'] || [])
-      users << {'name' => name, 'ruby' => ruby, 'login' => login, 'email' => email}
-      store['data'] = users
-      @users = nil
+      store['data'] = (store['data'] || []) + [info]
+    end
+    @users = nil
+    users.find do |u|
+      u.email == info['email'] && u.real_login == info['login']
     end
   end
 
