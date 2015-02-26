@@ -2,6 +2,7 @@
 
 require 'rake/testtask'
 require_relative 'lib/app'
+require_relative 'lib/conf'
 
 Rake::TestTask.new do |t|
   t.pattern = 't/**/test*.rb'
@@ -35,4 +36,17 @@ task 'dummy' do
   app.add_user_with_passwd('Li Mei Kung', '', 'kung', 'LiMeiKung@example.com')
   app.add_user_with_passwd('William M. Mickle', '', 'fuleat', 'WilliamMMickle@example.com')
   app.add_user_with_passwd('Kate J. Roberts', '', 'Somrat', 'KateJRoberts@example.com')
+end
+
+task 'htaccess' do
+  conf = Conf.new
+  ['admin', 'api', 'post', 'record'].each do |dir|
+    puts("add public/#{dir}/.htaccess")
+    open("public/#{dir}/.htaccess", 'a').write <<EOF
+AuthType Digest
+AuthUserFile "#{conf[:master, :authn, :htdigest]}"
+AuthName "#{conf[:master, :authn, :realm]}"
+Require valid-user
+EOF
+  end
 end
