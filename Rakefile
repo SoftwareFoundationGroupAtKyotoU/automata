@@ -40,7 +40,7 @@ end
 
 task 'htaccess' do
   conf = Conf.new
-  ['admin', 'api', 'post', 'record'].each do |dir|
+  ['api'].each do |dir|
     puts("add public/#{dir}/.htaccess")
     open("public/#{dir}/.htaccess", 'a').write <<EOF
 AuthType Digest
