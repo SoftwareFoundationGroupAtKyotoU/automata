@@ -74,7 +74,7 @@ if path.directory?
     puts(helper.json(files))
   end
 elsif path.mime.type == 'text' && 'highlight' == helper.params['type'][0]
-  dir = File.join(File.dirname(File.expand_path($0)), 'vim')
+  dir = File.join(File.dirname(File.expand_path($0)), '../../script/vim')
   vimcmd =
     [ 'vim -e -s',
       "--cmd 'set runtimepath+=.'",
