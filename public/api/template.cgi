@@ -11,8 +11,8 @@
 KEY = [ :institute, :title, :subtitle, ]
 OPTIONAL = [ :links, :requirements, ]
 
-require_relative '../lib/app'
-require_relative '../lib/cgi_helper'
+require_relative '../../lib/app'
+require_relative '../../lib/cgi_helper'
 
 helper = CGIHelper.new
 app = App.new

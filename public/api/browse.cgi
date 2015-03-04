@@ -24,10 +24,10 @@
 
 require 'shellwords'
 require 'time'
-require_relative '../lib/app'
-require_relative '../lib/log'
-require_relative '../lib/mime_extension'
-require_relative '../lib/cgi_helper'
+require_relative '../../lib/app'
+require_relative '../../lib/log'
+require_relative '../../lib/mime_extension'
+require_relative '../../lib/cgi_helper'
 
 helper = CGIHelper.new
 app = App.new(helper.cgi.remote_user)
@@ -74,7 +74,7 @@ if path.directory?
     puts(helper.json(files))
   end
 elsif path.mime.type == 'text' && 'highlight' == helper.params['type'][0]
-  dir = File.join(File.dirname(File.expand_path($0)), 'vim')
+  dir = File.join(File.dirname(File.expand_path($0)), '../../script/vim')
   vimcmd =
     [ 'vim -e -s',
       "--cmd 'set runtimepath+=.'",

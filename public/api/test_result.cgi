@@ -10,9 +10,9 @@
 #   master.su に入っていないユーザに関しては user オプションによらず
 #   ログイン名が remote_user の情報のみ取得可能
 
-require_relative '../lib/app'
-require_relative '../lib/log'
-require_relative '../lib/cgi_helper'
+require_relative '../../lib/app'
+require_relative '../../lib/log'
+require_relative '../../lib/cgi_helper'
 
 helper = CGIHelper.new
 app = App.new(helper.cgi.remote_user)

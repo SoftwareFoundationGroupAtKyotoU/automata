@@ -13,9 +13,9 @@ KEY = [ :id, :type, :name, :update ]
 OPTIONAL = [ :record, :exercise ]
 FILTER = [ :id, :type, ]
 
-require_relative '../lib/app'
-require_relative '../lib/cgi_helper'
-require_relative '../lib/report/exercise'
+require_relative '../../lib/app'
+require_relative '../../lib/cgi_helper'
+require_relative '../../lib/report/exercise'
 
 helper = CGIHelper.new
 app = App.new
