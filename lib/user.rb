@@ -17,6 +17,7 @@ class User
   def name() return @user['name'] end
   def ruby() return @user['ruby'] end
   def email() return @user['email'] end
+  def assigned() return @user['assigned'] end
   def []=(k, rep) @report[k] = rep if rep end
 
   def to_hash()
