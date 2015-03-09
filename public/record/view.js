@@ -390,7 +390,6 @@ var ReportView = function(parent, persistent, r, conf) {
                     }
 
                     if (fld.data == 'check' && r.update == 'auto') {
-                        u.autoUpdate = true;
                         var node = fld.node;
                         node.insertBefore(loadingIcon(), node.firstChild);
                     }
@@ -763,7 +762,6 @@ var SummaryView = function(parent, persistent) {
                 }
 
                 if (fld.data == 'check' && r.update == 'auto') {
-                    u.autoUpdate = true;
                     var node = fld.node;
                     node.insertBefore(loadingIcon(), node.firstChild);
                 }
