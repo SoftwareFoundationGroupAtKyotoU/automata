@@ -3,6 +3,7 @@
 
 # Usage: user [user=<login>] [type={info|status}]
 #             [status={solved|record}] [log] [report=<report-id>]
+#             [filter=<assined_TA>]
 #   ユーザごとの情報を表示
 # Options:
 #   user           ログイン名が<login>のユーザの情報のみ取得
@@ -14,6 +15,7 @@
 #          record  レコード表示用に分類された解答済/未解答の問題のリストを取得
 #   log            提出ステータスの詳細ログを取得
 #   report         <report-id>のレポートに関する情報のみ取得
+#   filter         <assined_TA>の担当学生の情報のみ取得
 # Security:
 #   master.su に入っていないユーザに関しては user オプションによらず
 #   ログイン名が remote_user の情報のみ取得可能
@@ -25,10 +27,14 @@ helper = CGIHelper.new
 app = App.new(helper.cgi.remote_user)
 
 users = app.users
-unless helper.params['user'].empty?
-  users.reject! do |u|
-    !(helper.params['user'].include?(u.real_login) ||
+if !helper.params['user'].empty?
+  users.select! do |u|
+    (helper.params['user'].include?(u.real_login) ||
       helper.params['user'].include?(u.token))
+  end
+elsif !helper.params['filter'].empty?
+  users.select! do |u|
+    helper.params['filter'][0] == u.assigned
   end
 end
 
