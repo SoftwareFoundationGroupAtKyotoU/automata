@@ -63,6 +63,10 @@ mapping:
         type: map
         required: yes
         mapping:
+          "require": &require
+            type: seq
+            sequence:
+              - type: str
           "test":
             type: map
             mapping:
@@ -111,6 +115,7 @@ mapping:
       =:
         type: map
         mapping:
+          "require": *require
           "test":
             type: map
             mapping:
