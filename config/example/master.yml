@@ -20,6 +20,9 @@ comment:
 
 check:
   default:
+    require: # prerequisite files
+      - report.txt
+      - image.png
     test:
       files:
         - test.byte

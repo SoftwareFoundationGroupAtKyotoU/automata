@@ -38,8 +38,10 @@ err = {
   # 'closed report "%s"',
   capacity: '頻度が高すぎるためリクエストを拒否しました',
   # 'over capacity',
-  unzip:    'アップロードされたファイルの展開に失敗しました'
+  unzip:    'アップロードされたファイルの展開に失敗しました',
   # 'unable to unzip the uploaded file',
+  prerequisite: '提出ファイルの要件を満たしていません'
+  # 'unfilled prerequisistes for files',
 }
 
 helper = CGIHelper.new
@@ -110,6 +112,17 @@ begin
         FileUtils.rmdir(entries_dir)
         FileUtils.mv(Dir.glob("#{tmpdir}/*"), src_dir.to_s)
       end
+    end
+
+    # check requirements
+    files = Dir.glob("#{src_dir}/*").map{|x| File.basename(x)}
+    check = app.conf[:master, :check] || {}
+    reqs = ((check['default'] || {})['require']) ||
+           ((check[rep_id] || {})['require']) ||
+           []
+    unless reqs.all?{|r| files.include?(r)}
+      FileUtils.rm_rf(src_dir.parent.to_s)
+      raise RuntimeError, (err[:prerequisite])
     end
 
     # convert file names to utf8
