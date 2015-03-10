@@ -65,7 +65,7 @@ if path.directory?
       "#{a.directory? ? 0 : 1}#{a.to_s}" <=> "#{b.directory? ? 0 : 1}#{b.to_s}"
     end.map do |f|
       { 'name' => f.to_s,
-        'type' => f.directory? ? 'dir' : (f.mime.type=='text' ? 'txt' : 'bin'),
+        'type' => f.directory? ? 'dir' : (f.mime.media_type=='text' ? 'txt' : 'bin'),
         'size' => f.size,
         'time' => f.mtime.iso8601,
       }
@@ -73,7 +73,7 @@ if path.directory?
     print(helper.header)
     puts(helper.json(files))
   end
-elsif path.mime.type == 'text' && 'highlight' == helper.params['type'][0]
+elsif path.mime.media_type == 'text' && 'highlight' == helper.params['type'][0]
   dir = File.join(File.dirname(File.expand_path($0)), '../../script/vim')
   vimcmd =
     [ 'vim -e -s',
