@@ -16,7 +16,7 @@ class App
       'login' => login,
       'email' => email
     })
-    set_passwd(name, name)
+    set_passwd(login, login)
   end
 end
 
