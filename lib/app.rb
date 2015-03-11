@@ -14,6 +14,7 @@ require_relative 'conf'
 require_relative 'log'
 require_relative 'store'
 require_relative 'user'
+require_relative 'logger_ext'
 
 class App
   DB     = Util.find_base(__FILE__, :db)
