@@ -85,6 +85,27 @@ elsif path.mime.type == 'text' && 'highlight' == helper.params['type'][0]
     print(helper.cgi.header('type' => 'text/html', 'status' => 'OK'))
     print(`#{vimcmd} #{Shellwords.escape(path.to_s)}`)
   end
+elsif '.class' == path.extname && 'highlight' == helper.params['type'][0] 
+  # return html including applet tag when .class file is selected
+  print(helper.cgi.header('type' => 'text/html', 'status' => 'OK'))
+  applet_html = <<"APPLET"
+<?xml version="1.0" encoding="EUC-JP"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<body>
+	<pre>
+    <applet code="#{File.basename(path.to_s,".*")}"
+	codebase="../browse/#{User.make_token(user)}/#{report_id}/"
+	archive="../../../jar/objectdrawV1.1.2.jar"
+	     width="800"
+	     height="300"
+	     >
+	  </applet>
+    </pre>
+  </body>
+</html>
+APPLET
+  print applet_html
 else
   args = { 'type' => path.mime.to_s, 'length' => path.size, 'status' => 'OK' }
   print(helper.cgi.header(args))
