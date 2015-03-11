@@ -4,7 +4,7 @@ var User = React.createClass({
     render: function() {
         return (
                 <div>
-                <SummaryList token={this.getParams().token} admin={this.props.admin}/>
+                <SummaryList token={this.getParams().token} report={this.getParams().report} admin={this.props.admin}/>
                 <RouteHandler token={this.getParams().token} report={this.getParams().report} admin={this.props.admin}/>
                 </div>
         );

@@ -10,7 +10,7 @@ var SummaryList = React.createClass({
                   this.setState({
                       users: this.state.users.map(function(user) {
                           if (user.token === token) {
-                              user.report[report] = result[0].report[report];
+                              user.report[report].status = result[0].report[report].status;
                           }
                           return user;
                       })
@@ -21,7 +21,9 @@ var SummaryList = React.createClass({
     getInitialState: function() {
         return {
             scheme: [],
+            scheme_init: false,
             users: [],
+            users_init: false,
         };
     },
 
@@ -45,7 +47,8 @@ var SummaryList = React.createClass({
                       };
                   });
                   this.setState({
-                      scheme: scheme
+                      scheme: scheme,
+                      scheme_init: true,
                   });
 
                   var data = { type: 'status' };
@@ -74,7 +77,8 @@ var SummaryList = React.createClass({
                                             user['report'][s.id]['comment'] = result[key];
                                         }, this);
                                         this.setState({
-                                            users: users
+                                            users: users,
+                                            users_init: true,
                                         });
                                     }.bind(this),
                                     traditional: true
@@ -85,6 +89,11 @@ var SummaryList = React.createClass({
     },
 
     render: function() {
+        if (!this.state.scheme_init || !this.state.users_init) {
+            return (
+                    <div><img src="./loading.gif"/></div>
+            );
+        }
         var ths = this.state.scheme.map(function(s) {
             return (
                     <th>{s.label}</th>
@@ -97,7 +106,7 @@ var SummaryList = React.createClass({
                     if (!r[k]) r[k] = {};
                     return r[k];
                 }, user);
-                return (<StatusCell user={user} report={s.id} isButton={true} admin={this.props.admin} updateStatus={this.updateStatus} unRead={unreads}/>);
+                return (<StatusCell user={user} report={s.id} isButton={true} admin={this.props.admin} updateStatus={this.updateStatus} unRead={unreads} isSelected={this.props.report === s.id}/>);
             }.bind(this));
             return (
                     <tr key={user.token}><td className="name">{user.name}</td>{kadais}</tr>
@@ -105,8 +114,12 @@ var SummaryList = React.createClass({
         }.bind(this));
         return (
                 <table className="record">
+                <thead>
                 <tr>{ths}</tr>
+                </thead>
+                <tbody>
                 {users}
+                </tbody>
                 </table>
         );
     }

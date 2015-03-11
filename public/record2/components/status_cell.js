@@ -67,6 +67,9 @@ var StatusCell = React.createClass({
         var props = {
             className: 'status ' + status.replace(/:/g, '-')
         };
+        if (this.props.isSelected) {
+            props.className += ' selected';
+        }
         if (this.props.isButton) {
             var transTo = function() {
                 this.transitionTo('user', {

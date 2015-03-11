@@ -60,6 +60,7 @@ var ReportList = React.createClass({
     getInitialState: function() {
         return {
             users: [],
+            users_init: false,
         };
     },
 
@@ -92,7 +93,8 @@ var ReportList = React.createClass({
                               user['report'][this.props.scheme.id]['comment'] = comments[key];
                           }, this);
                           this.setState({
-                              users: users
+                              users: users,
+                              users_init: true,
                           });
                       }.bind(this),
                       traditional: true
@@ -162,10 +164,19 @@ var ReportList = React.createClass({
                     <tr className="selectable" onClick={transTo}>{tds}</tr>
             );
         }.bind(this));
+        if (!this.state.users_init) {
+            users = (
+                    <tr><td colSpan={ths.length}><img src="./loading.gif"/></td></tr>
+            );
+        }
         return (
                 <table className="record">
+                <thead>
                 <tr>{ths}</tr>
+                </thead>
+                <tbody>
                 {users}
+                </tbody>
                 </table>
         );
     }
@@ -175,6 +186,7 @@ var DetailList = React.createClass({
     getInitialState: function() {
         return {
             scheme: [],
+            scheme_init: false,
         };
     },
 
@@ -185,12 +197,18 @@ var DetailList = React.createClass({
               },
               function(result) {
                   this.setState({
-                      scheme: result
+                      scheme: result,
+                      scheme_init: true,
                   });
               }.bind(this));
     },
 
     render: function() {
+        if (!this.state.scheme_init) {
+            return (
+                    <div><img src="./loading.gif"/></div>
+            );
+        }
         var reports = this.state.scheme.map(function(s) {
             return (
                     <ReportList scheme={s} admin={this.props.admin}/>
