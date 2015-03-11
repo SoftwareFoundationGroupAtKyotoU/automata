@@ -1,12 +1,12 @@
 var gulp = require('gulp');
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
+var browserify = require('browserify');
+var source = require('vinyl-source-stream');
 
 module.exports = function() {
-    var jsFiles = ['js/jquery-1.11.2.min.js', 'js/jquery.blockUI.min.js',
-                  'js/admin/admin.js'];
-    gulp.src(jsFiles)
-        .pipe(concat('bundle.js'))
-        .pipe(uglify())
+    browserify({'entries': ['js/admin/admin.js']})
+        .bundle()
+        .pipe(source('bundle.js'))
         .pipe(gulp.dest('public/admin'));
 };

@@ -1,4 +1,8 @@
-$(function() {
+var $ = require('jquery')(window);
+window.$ = window.jQuery = require('jquery');
+require('blockui');
+
+jQuery(function($) {
     function load_users() {
         $.get("../api/user.cgi?email=true", function(data) {
             for (var i = 0; i < data.length; ++i) {
