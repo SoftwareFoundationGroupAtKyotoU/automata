@@ -23,6 +23,10 @@ check:
     require: # prerequisite files
       - report.txt
       - image.png
+    applet:
+      java_library: ["objectdrawV1.1.2.jar"]
+      width: 800
+      height: 400
     test:
       files:
         - test.byte
