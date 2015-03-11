@@ -6,7 +6,7 @@ See Gemfile.
 
 == apt (binary)
 
-- file (file)
+- shared-mime-info
   - for file browser
 - vim (vim)
   - for file browser

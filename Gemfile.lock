@@ -21,6 +21,7 @@ GEM
       crass (~> 1.0.1)
       nokogiri (>= 1.4.4)
       nokogumbo (= 1.2.0)
+    shared-mime-info (0.2.5)
     test-unit (3.0.9)
       power_assert
 
@@ -37,4 +38,5 @@ DEPENDENCIES
   rr
   rubyzip
   sanitize (~> 3.1)
+  shared-mime-info
   test-unit

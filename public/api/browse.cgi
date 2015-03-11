@@ -24,9 +24,9 @@
 
 require 'shellwords'
 require 'time'
+require 'shared-mime-info'
 require_relative '../../lib/app'
 require_relative '../../lib/log'
-require_relative '../../lib/mime_extension'
 require_relative '../../lib/cgi_helper'
 
 helper = CGIHelper.new
@@ -74,7 +74,7 @@ if path.directory?
       "#{a.directory? ? 0 : 1}#{a.to_s}" <=> "#{b.directory? ? 0 : 1}#{b.to_s}"
     end.map do |f|
       { 'name' => f.to_s,
-        'type' => f.directory? ? 'dir' : (f.mime.type=='text' ? 'txt' : 'bin'),
+        'type' => f.directory? ? 'dir' : (MIME.check(f.to_s).media_type=='text' ? 'txt' : 'bin'),
         'size' => f.size,
         'time' => f.mtime.iso8601,
       }
@@ -82,7 +82,7 @@ if path.directory?
     print(helper.header)
     puts(helper.json(files))
   end
-elsif path.mime.type == 'text' && 'highlight' == helper.params['type'][0]
+elsif MIME.check(path.to_s).media_type == 'text' && 'highlight' == helper.params['type'][0]
   dir = File.join(File.dirname(File.expand_path($0)), '../../script/vim')
   vimcmd =
     [ 'vim -e -s',
@@ -117,7 +117,7 @@ elsif '.class' == path.extname && 'highlight' == helper.params['type'][0]
 APPLET
   print applet_html
 else
-  args = { 'type' => path.mime.to_s, 'length' => path.size, 'status' => 'OK' }
+  args = { 'type' => MIME.check(path.to_s).to_s, 'length' => path.size, 'status' => 'OK' }
   print(helper.cgi.header(args))
   File.open(path.to_s, 'rb') {|f| print(f.read) }
 end
