@@ -73,7 +73,7 @@ if path.directory?
     print(helper.header)
     puts(helper.json(files))
   end
-elsif MIME.check(path.to_m).media_type == 'text' && 'highlight' == helper.params['type'][0]
+elsif MIME.check(path.to_s).media_type == 'text' && 'highlight' == helper.params['type'][0]
   dir = File.join(File.dirname(File.expand_path($0)), '../../script/vim')
   vimcmd =
     [ 'vim -e -s',
