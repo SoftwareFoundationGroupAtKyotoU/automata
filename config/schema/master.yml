@@ -67,6 +67,18 @@ mapping:
             type: seq
             sequence:
               - type: str
+          "applet":
+            type: map
+            mapping:
+              "java_library":
+                type: seq
+                required: yes
+                sequence:
+                  - type: str
+              "width":
+                type: int
+              "height":
+                type: int
           "test":
             type: map
             mapping:

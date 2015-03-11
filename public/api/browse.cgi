@@ -59,6 +59,15 @@ path = path.realpath rescue nil
 helper.exit_with_forbidden unless src && path
 helper.exit_with_forbidden unless path.to_s.index(src.to_s)==0 # dir traversal
 
+applet_code = File.basename(path.to_s,".*")
+relpath = path.parent.relative_path_from(src)
+applet_codebase = "../browse/#{User.make_token(user)}/#{report_id}/#{relpath}"
+jar_path = src.relative_path_from(path) + Pathname("../../jar/")
+libs = app.conf[:master, :check, :default, :applet, :java_library]
+applet_archive = libs.map{|item| jar_path + item}.join(",")
+applet_width = app.conf[:master, :check, :default, :applet, :width]
+applet_height = app.conf[:master, :check, :default, :applet, :height]
+
 if path.directory?
   Dir.chdir(path.to_s) do
     files = path.entries.reject{|f| f.to_s =~ /^\.+$/}.sort do |a,b|
@@ -85,6 +94,28 @@ elsif path.mime.type == 'text' && 'highlight' == helper.params['type'][0]
     print(helper.cgi.header('type' => 'text/html', 'status' => 'OK'))
     print(`#{vimcmd} #{Shellwords.escape(path.to_s)}`)
   end
+elsif '.class' == path.extname && 'highlight' == helper.params['type'][0] 
+  # return html including applet tag when .class file is selected
+  print(helper.cgi.header('type' => 'text/html', 'status' => 'OK'))
+  applet_html = <<"APPLET"
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <body>
+	<pre>
+      <applet code="#{applet_code}"
+			  codebase="#{applet_codebase}"
+			  archive="#{applet_archive}"
+			  width="#{applet_width}"
+			  height="#{applet_height}"
+			  >
+        Note: This demo requires a Java enabled browser.  If you see this message then your browser either doesn't support Java or has had Java disabled.
+	  </applet>
+    </pre>
+  </body>
+</html>
+APPLET
+  print applet_html
 else
   args = { 'type' => path.mime.to_s, 'length' => path.size, 'status' => 'OK' }
   print(helper.cgi.header(args))

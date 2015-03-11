@@ -126,7 +126,7 @@ var FileBrowser = (function(klass) {
                         attr: { href: handler.path(l) },
                         child: $text(f.name + (f.type=='dir' ? '/' : ''))
                     });
-                    if (f.type != 'bin') {
+                    if (f.type != 'bin' || f.name.indexOf('.class') > 0 ) {
                         new GNN.UI.Observer(a, 'onclick', function(e) {
                             e.stop();
                             self.onMove(l);
