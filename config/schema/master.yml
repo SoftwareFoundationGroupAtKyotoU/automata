@@ -67,6 +67,11 @@ mapping:
             type: seq
             sequence:
               - type: str
+          "java_library":
+            type: seq
+            required: yes
+            sequence:
+              - type: str
           "test":
             type: map
             mapping:

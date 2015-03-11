@@ -59,6 +59,13 @@ path = path.realpath rescue nil
 helper.exit_with_forbidden unless src && path
 helper.exit_with_forbidden unless path.to_s.index(src.to_s)==0 # dir traversal
 
+applet_code = File.basename(path.to_s,".*")
+relpath = path.parent.relative_path_from(src)
+applet_codebase = "../browse/#{User.make_token(user)}/#{report_id}/#{relpath}"
+jar_path = src.relative_path_from(path) + Pathname("../../jar/")
+libs = app.conf[:master, :check, :default, :java_library]
+applet_archive = libs.map{|item| jar_path + item}.join(",")
+
 if path.directory?
   Dir.chdir(path.to_s) do
     files = path.entries.reject{|f| f.to_s =~ /^\.+$/}.sort do |a,b|
@@ -94,9 +101,9 @@ elsif '.class' == path.extname && 'highlight' == helper.params['type'][0]
 <html xmlns="http://www.w3.org/1999/xhtml">
 <body>
 	<pre>
-    <applet code="#{File.basename(path.to_s,".*")}"
-	codebase="../browse/#{User.make_token(user)}/#{report_id}/"
-	archive="../../../jar/objectdrawV1.1.2.jar"
+    <applet code="#{applet_code}"
+	codebase="#{applet_codebase}"
+	archive="#{applet_archive}"
 	     width="800"
 	     height="300"
 	     >
