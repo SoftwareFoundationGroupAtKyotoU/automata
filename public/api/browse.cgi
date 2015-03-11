@@ -63,8 +63,10 @@ applet_code = File.basename(path.to_s,".*")
 relpath = path.parent.relative_path_from(src)
 applet_codebase = "../browse/#{User.make_token(user)}/#{report_id}/#{relpath}"
 jar_path = src.relative_path_from(path) + Pathname("../../jar/")
-libs = app.conf[:master, :check, :default, :java_library]
+libs = app.conf[:master, :check, :default, :applet, :java_library]
 applet_archive = libs.map{|item| jar_path + item}.join(",")
+applet_width = app.conf[:master, :check, :default, :applet, :width]
+applet_height = app.conf[:master, :check, :default, :applet, :height]
 
 if path.directory?
   Dir.chdir(path.to_s) do
@@ -104,8 +106,8 @@ elsif '.class' == path.extname && 'highlight' == helper.params['type'][0]
     <applet code="#{applet_code}"
 	codebase="#{applet_codebase}"
 	archive="#{applet_archive}"
-	     width="800"
-	     height="300"
+	     width="#{applet_width}"
+	     height="#{applet_height}"
 	     >
 	  </applet>
     </pre>
