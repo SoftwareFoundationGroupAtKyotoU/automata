@@ -20,7 +20,9 @@
 #   - pathがテキストファイルを指すとき:
 #     - type=rawならそのファイルそのもの(text/**)
 #     - type=highlightならハイライトしたHTML(text/html)
-#   - pathがバイナリファイルを指すとき: 生ファイル(適切なMIMEタイプ)
+#   - pathがバイナリファイルを指すとき: 
+#     - 拡張子が.classならapplet表示用HTML(text/html)
+#     - その他なら生ファイル(適切なMIMEタイプ)
 
 require 'shellwords'
 require 'time'
