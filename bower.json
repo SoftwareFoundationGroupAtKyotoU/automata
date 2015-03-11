@@ -1,0 +1,12 @@
+{
+  "name": "automata",
+  "version": "0.0.0",
+  "moduleType": [
+    "node"
+  ],
+  "private": true,
+  "dependencies": {
+      "jquery": "*",
+      "blockui": "*"
+  }
+}
