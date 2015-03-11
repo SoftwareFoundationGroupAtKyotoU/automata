@@ -7,6 +7,7 @@ var RouteHandler = Router.RouteHandler;
 var Record = React.createClass({
     getInitialState: function() {
         return {
+            admin: false,
             template: {
                 institute: 'institute',
                 title: 'title',
@@ -19,10 +20,19 @@ var Record = React.createClass({
     },
 
     componentDidMount: function() {
+        $.get('../api/master.cgi',
+              {
+                  admin: true
+              },
+              function(result) {
+                  this.setState({
+                      admin: result.admin
+                  });
+              }.bind(this));
         $.get('../api/template.cgi',
               {
                   type: 'record',
-                  links: 'true'
+                  links: true
               },
               function(result) {
                   this.setState({
@@ -50,7 +60,7 @@ var Record = React.createClass({
                 <li><Link to="summary" id="sw_view_summary">一覧</Link></li>
                 </ul>
                 </div>
-                <RouteHandler/>
+                <RouteHandler admin={this.state.admin}/>
                 </div>
                 </div>
                 <div id="footer">

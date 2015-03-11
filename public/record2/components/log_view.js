@@ -39,7 +39,7 @@ var LogView = React.createClass({
                 <div className="status_window">
                 <StatusHeader tabName='log' toolBar={this.toolBar}/>
                 <div className="status_view">LogView: 構築中 {this.state.clicked.toString()}<br/>
-                <a onClick={this.onClick2}>push</a>
+                <a onClick={this.onClick2}>push</a><br/>
                 </div>
                 </div>
         );
