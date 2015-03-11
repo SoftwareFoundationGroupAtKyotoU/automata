@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'bundler'
+gem 'rack'
 gem 'json'
 gem 'kramdown'
 gem 'rubyzip'
