@@ -7,3 +7,4 @@ db/kadai
 script/setup/passwd
 
 node_modules
+bower_components
