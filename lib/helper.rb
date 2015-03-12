@@ -24,9 +24,15 @@ class Helper
 
   # attr_reader :env
 
+  def json_response(message)
+    Response.new([json(message)], 200, header)
+  end
+
   def header
-    ctype = @callback ? 'text/javascript' : 'application/json'
-    return "Content-Type: #{ctype}; charset=utf-8\r\n\r\n"
+    {
+      'Content-Type' => @callback ? 'text/javascript' : 'application/json',
+      'charset' => 'utf-8'
+    }
   end
 
   def ok(message = nil)
@@ -72,13 +78,13 @@ class Helper
     return param
   end
 
+  private
+
   def json(data)
     data = data.to_json
     data = "#{@callback}(#{data});" if @callback
     return data
   end
-
-  private
 
   def response(status, message = nil)
     Response.new(message ? [message] : [], status)
