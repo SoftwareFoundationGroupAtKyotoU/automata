@@ -9,8 +9,7 @@ var Link = Router.Link;
 var Route = Router.Route;
 var RouteHandler = Router.RouteHandler;
 
-var UserModule = require('./user.js');
-var StatusHeader = UserModule.statusHeader;
+var StatusHeader = require('./status_header.js');
 
 const mode = { normal: 0, edit: 1, preview: 2 };
 

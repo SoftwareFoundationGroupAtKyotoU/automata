@@ -1,8 +1,7 @@
 var React = require('react');
 var $ = require('jquery');
 
-var UserModule = require('./user.js');
-var StatusHeader = UserModule.statusHeader;
+var StatusHeader = require('./status_header.js');
 
 var Log = React.createClass({
     render: function() {

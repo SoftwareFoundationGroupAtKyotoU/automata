@@ -3,7 +3,7 @@ var $ = require('jquery');
 
 var AnswerEdit = require('./answer_edit.js');
 var UserModule = require('./user.js');
-var StatusHeader = UserModule.statusHeader;
+var StatusHeader = require('./status_header.js');
 var Solved = UserModule.Solved;
 var Unsolved = UserModule.Unsolved;
 

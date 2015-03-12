@@ -1,7 +1,6 @@
 var React = require('react');
 
-var UserModule = require('./user.js');
-var StatusHeader = UserModule.statusHeader;
+var StatusHeader = require('./status_header.js');
 
 var FileEntry = (function() {
     var humanReadableSize = function(size) {

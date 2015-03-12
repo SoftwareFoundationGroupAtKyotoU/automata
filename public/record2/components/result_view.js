@@ -1,7 +1,6 @@
 var React = require('react');
 
-var UserModule = require('./user.js');
-var StatusHeader = UserModule.userHeader;
+var StatusHeader = require('./status_header.js');
 
 module.exports = React.createClass({
     render: function() {

@@ -33049,7 +33049,7 @@ var $ = require("./../../../bower_components/jquery/dist/jquery.js");
 
 var AnswerEdit = require('./answer_edit.js');
 var UserModule = require('./user.js');
-var StatusHeader = UserModule.statusHeader;
+var StatusHeader = require('./status_header.js');
 var Solved = UserModule.Solved;
 var Unsolved = UserModule.Unsolved;
 
@@ -33204,7 +33204,7 @@ module.exports = {
 
 
 
-},{"./../../../bower_components/jquery/dist/jquery.js":1,"./../../../bower_components/react/react.js":3,"./answer_edit.js":9,"./user.js":18}],11:[function(require,module,exports){
+},{"./../../../bower_components/jquery/dist/jquery.js":1,"./../../../bower_components/react/react.js":3,"./answer_edit.js":9,"./status_header.js":17,"./user.js":19}],11:[function(require,module,exports){
 var sum_rep = "summary-report2";
 
 var React = require("./../../../bower_components/react/react.js");
@@ -33216,8 +33216,7 @@ var Link = Router.Link;
 var Route = Router.Route;
 var RouteHandler = Router.RouteHandler;
 
-var UserModule = require('./user.js');
-var StatusHeader = UserModule.statusHeader;
+var StatusHeader = require('./status_header.js');
 
 const mode = { normal: 0, edit: 1, preview: 2 };
 
@@ -33544,7 +33543,7 @@ module.exports = {
 
 
 
-},{"./../../../bower_components/jquery/dist/jquery.js":1,"./../../../bower_components/react-router/dist/react-router.js":2,"./../../../bower_components/react/react.js":3,"./user.js":18}],12:[function(require,module,exports){
+},{"./../../../bower_components/jquery/dist/jquery.js":1,"./../../../bower_components/react-router/dist/react-router.js":2,"./../../../bower_components/react/react.js":3,"./status_header.js":17}],12:[function(require,module,exports){
 var React = require("./../../../bower_components/react/react.js");
 window.React = React;
 var Router = require("./../../../bower_components/react-router/dist/react-router.js");
@@ -33783,8 +33782,7 @@ module.exports = {
 },{"./../../../bower_components/jquery/dist/jquery.js":1,"./../../../bower_components/react-router/dist/react-router.js":2,"./../../../bower_components/react/react.js":3,"./status_cell.js":16}],13:[function(require,module,exports){
 var React = require("./../../../bower_components/react/react.js");
 
-var UserModule = require('./user.js');
-var StatusHeader = UserModule.statusHeader;
+var StatusHeader = require('./status_header.js');
 
 var FileEntry = (function() {
     var humanReadableSize = function(size) {
@@ -34089,12 +34087,11 @@ module.exports = FileView;
 
 
 
-},{"./../../../bower_components/react/react.js":3,"./user.js":18}],14:[function(require,module,exports){
+},{"./../../../bower_components/react/react.js":3,"./status_header.js":17}],14:[function(require,module,exports){
 var React = require("./../../../bower_components/react/react.js");
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
 
-var UserModule = require('./user.js');
-var StatusHeader = UserModule.statusHeader;
+var StatusHeader = require('./status_header.js');
 
 var Log = React.createClass({displayName: "Log",
     render: function() {
@@ -34351,11 +34348,10 @@ module.exports = LogView;
 
 
 
-},{"./../../../bower_components/jquery/dist/jquery.js":1,"./../../../bower_components/react/react.js":3,"./user.js":18}],15:[function(require,module,exports){
+},{"./../../../bower_components/jquery/dist/jquery.js":1,"./../../../bower_components/react/react.js":3,"./status_header.js":17}],15:[function(require,module,exports){
 var React = require("./../../../bower_components/react/react.js");
 
-var UserModule = require('./user.js');
-var StatusHeader = UserModule.userHeader;
+var StatusHeader = require('./status_header.js');
 
 module.exports = React.createClass({displayName: "exports",
     render: function() {
@@ -34370,7 +34366,7 @@ module.exports = React.createClass({displayName: "exports",
 
 
 
-},{"./../../../bower_components/react/react.js":3,"./user.js":18}],16:[function(require,module,exports){
+},{"./../../../bower_components/react/react.js":3,"./status_header.js":17}],16:[function(require,module,exports){
 var React = require("./../../../bower_components/react/react.js");
 window.React = React;
 var Router = require("./../../../bower_components/react-router/dist/react-router.js");
@@ -34501,7 +34497,52 @@ module.exports = React.createClass({displayName: "exports",
 
 },{"./../../../bower_components/jquery/dist/jquery.js":1,"./../../../bower_components/react-router/dist/react-router.js":2,"./../../../bower_components/react/react.js":3}],17:[function(require,module,exports){
 var React = require("./../../../bower_components/react/react.js");
+window.React = React;
+var Router = require("./../../../bower_components/react-router/dist/react-router.js");
+var Link = Router.Link;
+
+module.exports = React.createClass({displayName: "exports",
+    mixins: [Router.State],
+
+    getDefaultProps: function() {
+        return {
+            toolBar: function() {
+                return null;
+            }
+        };
+    },
+
+    render: function() {
+        var _tabs = tabs.map(function(tab) {
+            var className = 'status_tabbar_button';
+            if (tab.path === this.props.tabName) {
+                className += ' selected';
+            }
+            return (
+                    React.createElement("li", {className: className, key: tab.path}, 
+                    React.createElement(Link, {to: tab.path, params: {
+                        token: this.getParams().token,
+                        report: this.getParams().report,
+                    }}, tab.name)
+                    )
+            );
+        }.bind(this));
+        return (
+                React.createElement("div", {className: "status_header"}, 
+                this.props.toolBar(), 
+                React.createElement("ul", {className: "status_tabbar"}, _tabs)
+                )
+        );
+    }
+});
+
+
+
+},{"./../../../bower_components/react-router/dist/react-router.js":2,"./../../../bower_components/react/react.js":3}],18:[function(require,module,exports){
+var React = require("./../../../bower_components/react/react.js");
 var $ = require("./../../../bower_components/jquery/dist/jquery.js");
+
+var StatusCell = require('./status_cell.js');
 
 module.exports = React.createClass({displayName: "exports",
     updateStatus: function(token, report) {
@@ -34632,7 +34673,7 @@ module.exports = React.createClass({displayName: "exports",
 
 
 
-},{"./../../../bower_components/jquery/dist/jquery.js":1,"./../../../bower_components/react/react.js":3}],18:[function(require,module,exports){
+},{"./../../../bower_components/jquery/dist/jquery.js":1,"./../../../bower_components/react/react.js":3,"./status_cell.js":16}],19:[function(require,module,exports){
 var React = require("./../../../bower_components/react/react.js");
 window.React = React;
 var Router = require("./../../../bower_components/react-router/dist/react-router.js");
@@ -34666,41 +34707,6 @@ var tabs = [
     { path: 'comment',  name: 'コメント',     handler: CommentViewModule.commentView },
 ];
 
-var StatusHeader = React.createClass({displayName: "StatusHeader",
-    mixins: [Router.State],
-
-    getDefaultProps: function() {
-        return {
-            toolBar: function() {
-                return null;
-            }
-        };
-    },
-
-    render: function() {
-        var _tabs = tabs.map(function(tab) {
-            var className = 'status_tabbar_button';
-            if (tab.path === this.props.tabName) {
-                className += ' selected';
-            }
-            return (
-                    React.createElement("li", {className: className, key: tab.path}, 
-                    React.createElement(Link, {to: tab.path, params: {
-                        token: this.getParams().token,
-                        report: this.getParams().report,
-                    }}, tab.name)
-                    )
-            );
-        }.bind(this));
-        return (
-                React.createElement("div", {className: "status_header"}, 
-                this.props.toolBar(), 
-                React.createElement("ul", {className: "status_tabbar"}, _tabs)
-                )
-        );
-    }
-});
-
 var routes = tabs.map(function(tab) {
     return (
             React.createElement(Route, {name: tab.path, path: tab.path, handler: tab.handler, key: tab.path})
@@ -34716,12 +34722,11 @@ var UserRoute = (
 
 module.exports = {
     userRoute: UserRoute,
-    statusHeader: StatusHeader
 };
 
 
 
-},{"./../../../bower_components/react-router/dist/react-router.js":2,"./../../../bower_components/react/react.js":3,"./answer_view.js":10,"./comment_view.js":11,"./file_view.js":13,"./log_view.js":14,"./result_view.js":15}],19:[function(require,module,exports){
+},{"./../../../bower_components/react-router/dist/react-router.js":2,"./../../../bower_components/react/react.js":3,"./answer_view.js":10,"./comment_view.js":11,"./file_view.js":13,"./log_view.js":14,"./result_view.js":15}],20:[function(require,module,exports){
 var React = require("./../../../bower_components/react/react.js");
 window.React = React;
 var Router = require("./../../../bower_components/react-router/dist/react-router.js");
@@ -34818,4 +34823,4 @@ Router.run(routes, function(Handler) {
 
 
 
-},{"./../../../bower_components/jquery/dist/jquery.js":1,"./../../../bower_components/react-router/dist/react-router.js":2,"./../../../bower_components/react/react.js":3,"./detail_list.js":12,"./summary_list.js":17,"./user.js":18}]},{},[19]);
+},{"./../../../bower_components/jquery/dist/jquery.js":1,"./../../../bower_components/react-router/dist/react-router.js":2,"./../../../bower_components/react/react.js":3,"./detail_list.js":12,"./summary_list.js":18,"./user.js":19}]},{},[20]);
