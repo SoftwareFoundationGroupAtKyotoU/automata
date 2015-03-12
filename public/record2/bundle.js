@@ -33251,7 +33251,7 @@ var Comment = React.createClass({displayName: "Comment",
     reloadComment: function(cont) {
       this.loadingModeStart();
       $.get('../api/comment.cgi',
-          {  
+          {
             user: this.props.token,
             report: this.props.report,
             action: 'get',
@@ -33535,11 +33535,7 @@ var CommentView = React.createClass({displayName: "CommentView",
     }
 });
 
-module.exports = {
-    comment: Comment,
-    commentForm: CommentForm,
-    commentView: CommentView
-};
+module.exports = CommentView;
 
 
 
@@ -33771,11 +33767,7 @@ var DetailList = React.createClass({displayName: "DetailList",
     }
 });
 
-module.exports = {
-    optionalCell: OptionalCell,
-    reportList: ReportList,
-    detailList: DetailList
-};
+module.exports = DetailList;
 
 
 
@@ -34684,7 +34676,7 @@ var LogView = require('./log_view.js');
 var AnswerViewModule = require('./answer_view.js');
 var ResultView = require('./result_view.js');
 var FileView = require('./file_view.js');
-var CommentViewModule = require('./comment_view.js');
+var CommentView = require('./comment_view.js');
 
 var User = React.createClass({displayName: "User",
     mixins: [Router.State],
@@ -34704,7 +34696,7 @@ var tabs = [
     { path: 'answer',   name: '解答状況',     handler: AnswerViewModule.answerView },
     { path: 'result',   name: 'テスト結果',   handler: ResultView },
     { path: 'file',     name: 'ファイル一覧', handler: FileView },
-    { path: 'comment',  name: 'コメント',     handler: CommentViewModule.commentView },
+    { path: 'comment',  name: 'コメント',     handler: CommentView },
 ];
 
 var routes = tabs.map(function(tab) {
@@ -34720,9 +34712,7 @@ var UserRoute = (
         )
 );
 
-module.exports = {
-    userRoute: UserRoute,
-};
+module.exports = UserRoute;
 
 
 
@@ -34810,7 +34800,7 @@ var Record = React.createClass({displayName: "Record",
 
 var routes = (
         React.createElement(Route, {name: "record", path: "/", handler: Record}, 
-        React.createElement(Route, {name: "detail", path: "detail", handler: DetailList.detailList}), 
+        React.createElement(Route, {name: "detail", path: "detail", handler: DetailList}), 
         React.createElement(Route, {name: "summary", path: "summary", handler: SummaryList}), 
         UserRoute, 
         React.createElement(DefaultRoute, {handler: SummaryList})
