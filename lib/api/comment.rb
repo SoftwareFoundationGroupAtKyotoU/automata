@@ -38,7 +38,7 @@ module API
   # Response:
   class Comment
     def call(env)
-      helper = CHelper.new(env)
+      helper = Helper.new(env)
       app = App.new(env['REMOTE_USER'])
 
       # action must be specified
