@@ -73,9 +73,17 @@ class Helper
   end
 
   def optional(key)
-    param = params[key.to_s].deep_copy
-    def param.include?(x) return empty? ? true : member?(x) end
-    return param
+    param = params[key].deep_copy
+    def param.include?(x)
+      if nil? || (is_a?(Array) && empty?)
+        true
+      elsif is_a?(Array)
+        member?(x)
+      else
+        self == x
+      end
+    end
+    param
   end
 
   private
