@@ -3,7 +3,7 @@
 
 # Usage: user [user=<login>] [type={info|status}]
 #             [status={solved|record}] [log] [report=<report-id>]
-#             [filter=<assined_TA>]
+#             [filter=<assigned_TA>]
 #   ユーザごとの情報を表示
 # Options:
 #   user           ログイン名が<login>のユーザの情報のみ取得
@@ -16,6 +16,7 @@
 #   log            提出ステータスの詳細ログを取得
 #   report         <report-id>のレポートに関する情報のみ取得
 #   filter         <assined_TA>の担当学生の情報のみ取得
+#                  (ユーザー名以外ならリモートユーザーの担当学生のみ)
 # Security:
 #   master.su に入っていないユーザに関しては user オプションによらず
 #   ログイン名が remote_user の情報のみ取得可能
@@ -33,8 +34,14 @@ if !helper.params['user'].empty?
       helper.params['user'].include?(u.token))
   end
 elsif !helper.params['filter'].empty?
-  users.select! do |u|
-    helper.params['filter'][0] == u.assigned
+  if users.any? {|u| helper.params['filter'][0] == u.login }
+    users.select! do |u|
+      helper.params['filter'][0] == u.assigned
+    end
+  else
+    users.select! do |u|
+      helper.cgi.remote_user == u.assigned
+    end
   end
 end
 
