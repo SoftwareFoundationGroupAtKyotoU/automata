@@ -1,4 +1,9 @@
-var ResultView = React.createClass({
+var React = require('react');
+
+var UserModule = require('./user.js');
+var StatusHeader = UserModule.userHeader;
+
+module.exports = React.createClass({
     render: function() {
         return (
                 <div className="status_window">

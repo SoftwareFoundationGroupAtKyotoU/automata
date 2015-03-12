@@ -1,3 +1,8 @@
+var React = require('react');
+var $ = require('jquery');
+
+var UserModule = require('./user.js');
+var StatusHeader = UserModule.statusHeader;
 
 var Log = React.createClass({
     render: function() {
@@ -112,7 +117,7 @@ var LogEdit = React.createClass ({
             reason: e.target.value,
         });
     },
-    
+
     render: function (){
         var defs = [
             // {build: 'OK'}
@@ -194,7 +199,7 @@ var LogView = React.createClass({
             {onEdit: true});
     },
 
-    exit: function () {    
+    exit: function () {
         this.setState(
             {onEdit: !this.state.onEdit}
         );
@@ -212,7 +217,7 @@ var LogView = React.createClass({
                   });
               }.bind(this));
     },
-    
+
     toolBar: function () {
         if (!this.props.admin) { return (<div></div>);}
         if (this.state.onEdit) {
@@ -229,9 +234,9 @@ var LogView = React.createClass({
             );
         };
     },
-    
+
     render: function() {
-        var status = this.state.data; 
+        var status = this.state.data;
         if (this.state.onEdit) {
             var logedit = (<LogEdit id={this.state.data.submit} rep={this.props.report} data={this.state.data.log} token={this.props.token} exit={this.exit}/>);
         } else {
@@ -249,3 +254,5 @@ var LogView = React.createClass({
         );
     }
 });
+
+module.exports = LogView;

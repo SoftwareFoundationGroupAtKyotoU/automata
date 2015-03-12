@@ -1,4 +1,9 @@
-var SummaryList = React.createClass({
+var React = require('react');
+var $ = require('jquery');
+
+var StatusCell = require('./status_cell.js');
+
+module.exports = React.createClass({
     updateStatus: function(token, report) {
         $.get('../api/user.cgi',
               {

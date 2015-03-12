@@ -1,8 +1,15 @@
-var Router = ReactRouter;
+var React = require('react');
+window.React = React;
+var Router = require('react-router');
 var DefaultRoute = Router.DefaultRoute;
 var Link = Router.Link;
 var Route = Router.Route;
 var RouteHandler = Router.RouteHandler;
+var $ = require('jquery');
+
+var DetailList = require('./detail_list.js');
+var SummaryList = require('./summary_list.js');
+var UserRoute = require('./user.js');
 
 var Record = React.createClass({
     getInitialState: function() {
@@ -74,7 +81,7 @@ var Record = React.createClass({
 
 var routes = (
         <Route name="record" path="/" handler={Record}>
-        <Route name="detail" path="detail" handler={DetailList}/>
+        <Route name="detail" path="detail" handler={DetailList.detailList}/>
         <Route name="summary" path="summary" handler={SummaryList}/>
         {UserRoute}
         <DefaultRoute handler={SummaryList}/>

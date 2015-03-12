@@ -1,4 +1,9 @@
-var StatusCell = React.createClass({
+var React = require('react');
+window.React = React;
+var Router = require('react-router');
+var $ = require('jquery');
+
+module.exports = React.createClass({
     mixins: [Router.Navigation],
 
     status_map: {

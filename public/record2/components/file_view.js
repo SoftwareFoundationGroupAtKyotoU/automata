@@ -1,3 +1,8 @@
+var React = require('react');
+
+var UserModule = require('./user.js');
+var StatusHeader = UserModule.statusHeader;
+
 var FileEntry = (function() {
     var humanReadableSize = function(size) {
         var prefix = [ '', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y' ];
@@ -296,3 +301,5 @@ FileView.rawPath = function(user, report, path) {
     var param = path != epath ? ('?path=' + epath) : '';
     return uri.attr('protocol') + '//' + uri.attr('host') + pathname.join('/') + param;
 };
+
+module.exports = FileView;

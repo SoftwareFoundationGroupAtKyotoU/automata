@@ -1,3 +1,6 @@
+var React = require('react');
+var $ = require('jquery');
+
 var Report = React.createClass({
     getInitialState: function() {
         var solved = this.props.solved;
@@ -163,3 +166,5 @@ var AnswerEdit = React.createClass({
         };
     }
 });
+
+module.exports = AnswerEdit;

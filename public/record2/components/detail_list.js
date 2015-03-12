@@ -1,4 +1,9 @@
-var Router = ReactRouter;
+var React = require('react');
+window.React = React;
+var Router = require('react-router');
+var $ = require('jquery');
+
+var StatusCell = require('./status_cell.js');
 
 var OptionalCell = React.createClass({
     getInitialState: function() {
@@ -219,3 +224,9 @@ var DetailList = React.createClass({
         );
     }
 });
+
+module.exports = {
+    optionalCell: OptionalCell,
+    reportList: ReportList,
+    detailList: DetailList
+};

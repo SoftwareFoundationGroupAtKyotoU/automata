@@ -1,3 +1,12 @@
+var React = require('react');
+var $ = require('jquery');
+
+var AnswerEdit = require('./answer_edit.js');
+var UserModule = require('./user.js');
+var StatusHeader = UserModule.statusHeader;
+var Solved = UserModule.Solved;
+var Unsolved = UserModule.Unsolved;
+
 var Solved = React.createClass({
     render: function() {
         var solved = this.props.solved.map(function(s) {
@@ -140,3 +149,9 @@ var AnswerView = React.createClass({
         };
     }
 });
+
+module.exports = {
+    answerView: AnswerView,
+    solved: Solved,
+    unsolved: Unsolved
+};

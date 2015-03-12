@@ -1,9 +1,16 @@
-var sum_rep = "summary-report2"; 
-var Router = ReactRouter;
+var sum_rep = "summary-report2";
+
+var React = require('react');
+window.React = React;
+var Router = require('react-router');
+var $ = require('jquery');
 var DefaultRoute = Router.DefaultRoute;
 var Link = Router.Link;
 var Route = Router.Route;
 var RouteHandler = Router.RouteHandler;
+
+var UserModule = require('./user.js');
+var StatusHeader = UserModule.statusHeader;
 
 const mode = { normal: 0, edit: 1, preview: 2 };
 
@@ -321,3 +328,9 @@ var CommentView = React.createClass({
         );
     }
 });
+
+module.exports = {
+    comment: Comment,
+    commentForm: CommentForm,
+    commentView: CommentView
+};
