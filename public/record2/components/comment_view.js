@@ -39,14 +39,13 @@ var Comment = React.createClass({
       this.loadingModeStart();
       $.get('../api/comment.cgi',
           {  
-            user: this.props.comment.user,
+            user: this.props.token,
             report: this.props.report,
             action: 'get',
             id: this.props.comment.id,
             timestamp: this.props.comment.timestamp
           },
           function(result) {
-            console.log(result);
             this.setCommentHTML(result[0].content);
             this.setState({ aclUserFlag: result[0].acl.indexOf('user') != -1,
                             aclOtherFlag: result[0].acl.indexOf('other') != -1 });
@@ -71,7 +70,7 @@ var Comment = React.createClass({
           type: 'POST',
           url: '../api/comment.cgi',
           data: {
-            user: this.props.comment.user,
+            user: this.props.token,
             report: this.props.report,
             action: 'edit',
             id: this.props.comment.id,
@@ -87,7 +86,7 @@ var Comment = React.createClass({
     onEdit: function() {
       $.get('../api/comment.cgi',
           {  
-            user: this.props.comment.user,
+            user: this.props.token,
             report: this.props.report,
             id: this.props.comment.id,
             action: 'get',
@@ -234,7 +233,7 @@ var CommentForm = React.createClass({
           type: 'POST',
           url: '../api/comment.cgi',
           data: {
-            user: this.props.user,
+            user: this.props.token,
             report: this.props.report,
             action: 'post',
             acl:  aclText,
@@ -306,7 +305,7 @@ var CommentView = React.createClass({
     render: function() {
         var comments = this.state.comments.map(function(comment) {
             return (
-                    <Comment comment={comment} report={this.props.report} acl={comment.acl} rerender={this.rerender}/>
+                    <Comment comment={comment} token={this.props.token} report={this.props.report} acl={comment.acl} rerender={this.rerender}/>
             );
         }.bind(this));
         return (
@@ -315,7 +314,7 @@ var CommentView = React.createClass({
                   <div className="status_view">
                   <ul className="comments">
                   {comments}
-                  <li><CommentForm user={this.props.token} report={this.props.report} rerender={this.rerender} /></li>
+                  <li><CommentForm token={this.props.token} report={this.props.report} rerender={this.rerender} /></li>
                   </ul>
                   </div>
                 </div>
