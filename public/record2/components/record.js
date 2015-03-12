@@ -81,7 +81,7 @@ var Record = React.createClass({
 
 var routes = (
         <Route name="record" path="/" handler={Record}>
-        <Route name="detail" path="detail" handler={DetailList.detailList}/>
+        <Route name="detail" path="detail" handler={DetailList}/>
         <Route name="summary" path="summary" handler={SummaryList}/>
         {UserRoute}
         <DefaultRoute handler={SummaryList}/>

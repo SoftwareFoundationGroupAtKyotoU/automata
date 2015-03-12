@@ -225,8 +225,4 @@ var DetailList = React.createClass({
     }
 });
 
-module.exports = {
-    optionalCell: OptionalCell,
-    reportList: ReportList,
-    detailList: DetailList
-};
+module.exports = DetailList;

@@ -8,7 +8,7 @@ var LogView = require('./log_view.js');
 var AnswerViewModule = require('./answer_view.js');
 var ResultView = require('./result_view.js');
 var FileView = require('./file_view.js');
-var CommentViewModule = require('./comment_view.js');
+var CommentView = require('./comment_view.js');
 
 var User = React.createClass({
     mixins: [Router.State],
@@ -28,7 +28,7 @@ var tabs = [
     { path: 'answer',   name: '解答状況',     handler: AnswerViewModule.answerView },
     { path: 'result',   name: 'テスト結果',   handler: ResultView },
     { path: 'file',     name: 'ファイル一覧', handler: FileView },
-    { path: 'comment',  name: 'コメント',     handler: CommentViewModule.commentView },
+    { path: 'comment',  name: 'コメント',     handler: CommentView },
 ];
 
 var routes = tabs.map(function(tab) {
@@ -44,6 +44,4 @@ var UserRoute = (
         </Route>
 );
 
-module.exports = {
-    userRoute: UserRoute,
-};
+module.exports = UserRoute;

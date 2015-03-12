@@ -44,7 +44,7 @@ var Comment = React.createClass({
     reloadComment: function(cont) {
       this.loadingModeStart();
       $.get('../api/comment.cgi',
-          {  
+          {
             user: this.props.token,
             report: this.props.report,
             action: 'get',
@@ -328,8 +328,4 @@ var CommentView = React.createClass({
     }
 });
 
-module.exports = {
-    comment: Comment,
-    commentForm: CommentForm,
-    commentView: CommentView
-};
+module.exports = CommentView;
