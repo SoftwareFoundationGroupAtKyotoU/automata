@@ -1,10 +1,11 @@
 build
 config/*.yml
-db/data.yml
 .htaccess
 .htdigest
-db/kadai
 script/setup/passwd
+
+db
+!db/.gitkeep
 
 node_modules
 bower_components
