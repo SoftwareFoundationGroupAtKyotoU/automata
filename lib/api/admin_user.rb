@@ -14,8 +14,8 @@ module API
     # Security:
     #   master.su に入っているユーザのみ実行可能
     def call(env)
-      helper = CGIHelper.new
-      app = App.new(helper.cgi.remote_user)
+      helper = Helper.new(env)
+      app = App.new(env['REMOTE_USER'])
 
       return helper.forbidden unless app.su?
 

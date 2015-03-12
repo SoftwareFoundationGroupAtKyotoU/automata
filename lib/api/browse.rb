@@ -35,7 +35,7 @@ module API
       app = App.new(env['REMOTE_USER'])
 
       return helper.bad_request unless helper.params['user']
-      user = helper.paramms['user']
+      user = helper.params['user']
 
       # resolve real login name in case user id is a token
       user = app.user_from_token(user)

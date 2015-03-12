@@ -53,11 +53,11 @@ module API
       }.merge(app.conf[:master, :comment] || {})
 
       if action == 'config'
-        config['renderer'] = Comment::Renderer.create.type
+        config['renderer'] = ::Comment::Renderer.create.type
         return helper.json_response(config)
       elsif action == 'preview'
         content = helper.params['message']
-        renderer = Comment::Renderer.create
+        renderer = ::Comment::Renderer.create
 
         # FIXME: enable helper to deal with this response
         return Rack::Response.new([content], 200, 'Content-Type' => renderer.type)
