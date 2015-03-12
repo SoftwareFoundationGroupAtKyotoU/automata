@@ -72,7 +72,6 @@ mapping:
             mapping:
               "java_library":
                 type: seq
-                required: yes
                 sequence:
                   - type: str
               "width":
