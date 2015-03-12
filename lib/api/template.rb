@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
 
-# Usage: template [type=<type>] [links] [requirements]
-#   template.ymlのデータを取得
-# Options:
-#   type          post | record
-#   links         リンクの情報を取得
-#   requirements  課題提出の要件情報を取得
-
 require_relative '../app'
 require_relative '../helper'
 
 module API
+  # Usage: template [type=<type>] [links] [requirements]
+  #   template.ymlのデータを取得
+  # Options:
+  #   type          post | record
+  #   links         リンクの情報を取得
+  #   requirements  課題提出の要件情報を取得
   class Template
-    KEY = [ :institute, :title, :subtitle, ]
-    OPTIONAL = [ :links, :requirements, ]
+    KEY = [:institute, :title, :subtitle]
+    OPTIONAL = [:links, :requirements]
 
     def call(env)
       helper = Helper.new(env)
@@ -21,17 +20,15 @@ module API
 
       temp = app.conf[:template]
 
-      type = helper.params[:type.to_s]
-      temp = temp.merge(temp[type[0]]||{}) unless type.empty?
+      type = helper.params['type']
+      temp = temp.merge(temp[type[0]] || {}) unless type.empty?
 
       result = {}
       keys = KEY.dup
       OPTIONAL.each do |k|
-        unless helper.params[k.to_s].nil?
-          keys << k
-        end
+        keys << k unless helper.params[k.to_s].nil?
       end
-      keys.each {|k| result[k.to_s] = temp[k.to_s] }
+      keys.each { |k| result[k.to_s] = temp[k.to_s] }
       helper.json_response(result)
     end
   end

@@ -1,20 +1,19 @@
 # -*- coding: utf-8 -*-
 
-# Usage: admin_log report=<report-id> user=<login> id=<log-id>
-#   ログを変更
-# Options:
-#   status   ステータスを変更
-#   message  メッセージを変更
-#   error    エラーメッセージを変更
-#   reason   エラーの詳細を変更
-# Security:
-#   master.su に入っているユーザのみ実行可能
-
-require_relative '../../lib/app'
-require_relative '../../lib/log'
-require_relative '../../lib/helper'
+require_relative '../app'
+require_relative '../log'
+require_relative '../helper'
 
 module API
+  # Usage: admin_log report=<report-id> user=<login> id=<log-id>
+  #   ログを変更
+  # Options:
+  #   status   ステータスを変更
+  #   message  メッセージを変更
+  #   error    エラーメッセージを変更
+  #   reason   エラーの詳細を変更
+  # Security:
+  #   master.su に入っているユーザのみ実行可能
   class AdminLog
     LOGKEYS = [ 'message', 'error', 'reason' ]
 
@@ -48,7 +47,7 @@ module API
 
         data_log = {}
         LOGKEYS.each do |k|
-          val = helper.param(k)
+          val = helper.params[k.to_s]
           data_log[k] = val if val
         end
         data['log'] = data_log

@@ -1,29 +1,28 @@
 # -*- coding: utf-8 -*-
 
-# Usage: user [user=<login>] [type={info|status}]
-#             [status={solved|record}] [log] [report=<report-id>]
-#             [filter=<assigned_TA>]
-#   ユーザごとの情報を表示
-# Options:
-#   user           ログイン名が<login>のユーザの情報のみ取得
-#   type   info    ユーザ情報のみ取得(デフォルト)
-#          status  提出状況も取得
-#   email          ユーザ情報にメールアドレスを含める
-#   status なし    レポートの提出状況のみ取得
-#          solved  解いた問題のリストを取得
-#          record  レコード表示用に分類された解答済/未解答の問題のリストを取得
-#   log            提出ステータスの詳細ログを取得
-#   report         <report-id>のレポートに関する情報のみ取得
-#   filter         <assined_TA>の担当学生の情報のみ取得
-#                  (ユーザー名以外ならリモートユーザーの担当学生のみ)
-# Security:
-#   master.su に入っていないユーザに関しては user オプションによらず
-#   ログイン名が remote_user の情報のみ取得可能
-
 require_relative '../app'
 require_relative '../helper'
 
 module API
+  # Usage: user [user=<login>] [type={info|status}]
+  #             [status={solved|record}] [log] [report=<report-id>]
+  #             [filter=<assigned_TA>]
+  #   ユーザごとの情報を表示
+  # Options:
+  #   user           ログイン名が<login>のユーザの情報のみ取得
+  #   type   info    ユーザ情報のみ取得(デフォルト)
+  #          status  提出状況も取得
+  #   email          ユーザ情報にメールアドレスを含める
+  #   status なし    レポートの提出状況のみ取得
+  #          solved  解いた問題のリストを取得
+  #          record  レコード表示用に分類された解答済/未解答の問題のリストを取得
+  #   log            提出ステータスの詳細ログを取得
+  #   report         <report-id>のレポートに関する情報のみ取得
+  #   filter         <assined_TA>の担当学生の情報のみ取得
+  #                  (ユーザー名以外ならリモートユーザーの担当学生のみ)
+  # Security:
+  #   master.su に入っていないユーザに関しては user オプションによらず
+  #   ログイン名が remote_user の情報のみ取得可能
   class User
     def call(env)
       helper = Helper.new(env)
@@ -66,7 +65,7 @@ module API
       users.map!(&:to_hash)
 
       if !app.su? || helper.params['email'].nil?
-        users.each {|u| u.delete('email') }
+        users.each { |u| u.delete('email') }
       end
 
       helper.json_response(users)

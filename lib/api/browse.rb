@@ -1,34 +1,34 @@
 # -*- coding: utf-8 -*-
 
-# Usage: browse report=<report-id> user=<login>
-#               [type={raw|highlight}] [path=.]
-#   アップロードされたファイルを取得
-# Options:
-#   report            取得するファイルの属する課題ID
-#   user              ログイン名が<login>のユーザの情報のみ取得
-#   type   raw        生ファイル取得
-#          highlight  (可能なら)ハイライトしたHTMLを取得
-#   path              取得するファイルのパス
-# Security:
-#   master.su に入っていないユーザに関しては user オプションによらず
-#   ログイン名が remote_user の情報のみ取得可能
-# Return value:
-#   - pathがディレクトリのとき: JSON
-#     [ { name: ファイル名, type: dir|txt|bin,
-#         size: byte, time: yyyy-dd-mmThh:MM:ss+ZONE } ]
-#   - pathがテキストファイルを指すとき:
-#     - type=rawならそのファイルそのもの(text/**)
-#     - type=highlightならハイライトしたHTML(text/html)
-#   - pathがバイナリファイルを指すとき: 生ファイル(適切なMIMEタイプ)
-
 require 'shellwords'
 require 'time'
+require 'shared-mime-info'
 
 require_relative '../app'
 require_relative '../log'
 require_relative '../helper'
 
 module API
+  # Usage: browse report=<report-id> user=<login>
+  #               [type={raw|highlight}] [path=.]
+  #   アップロードされたファイルを取得
+  # Options:
+  #   report            取得するファイルの属する課題ID
+  #   user              ログイン名が<login>のユーザの情報のみ取得
+  #   type   raw        生ファイル取得
+  #          highlight  (可能なら)ハイライトしたHTMLを取得
+  #   path              取得するファイルのパス
+  # Security:
+  #   master.su に入っていないユーザに関しては user オプションによらず
+  #   ログイン名が remote_user の情報のみ取得可能
+  # Return value:
+  #   - pathがディレクトリのとき: JSON
+  #     [ { name: ファイル名, type: dir|txt|bin,
+  #         size: byte, time: yyyy-dd-mmThh:MM:ss+ZONE } ]
+  #   - pathがテキストファイルを指すとき:
+  #     - type=rawならそのファイルそのもの(text/**)
+  #     - type=highlightならハイライトしたHTML(text/html)
+  #   - pathがバイナリファイルを指すとき: 生ファイル(適切なMIMEタイプ)
   class Browse
     def call(env)
       helper = Helper.new(env)
@@ -56,15 +56,15 @@ module API
       return helper.not_found unless [src, path].all?(&:exist?)
 
       # follow symlink
-      src = src.realpath rescue nil
-      path = path.realpath rescue nil
+      src = src.respond_to?(:realpath) ? src.realpath : nil
+      path = path.respond_to?(:realpath) ? path.realpath : nil
       return helper.forbidden unless src && path
       return helper.forbidden unless path.to_s.index(src.to_s) == 0
 
       class_dir = path.parent
       relpath = class_dir.relative_path_from(src)
       applet_code = "code=\"#{File.basename(path.to_s,".*")}\""
-      applet_codebase = "codebase=\"../browse/#{User.make_token(user)}/#{report_id}/#{relpath}\""
+      applet_codebase = "codebase=\"../browse/#{::User.make_token(user)}/#{report_id}/#{relpath}\""
       jar_path = src.relative_path_from(class_dir) + Pathname("../../../jar/")
       libs = app.conf[:master, :check, :default, :applet, :java_library]
       w = app.conf[:master, :check, :default, :applet, :width] || 500
@@ -87,7 +87,7 @@ module API
           return helper.json_response(files)
         end
       elsif MIME.check(path.to_s).media_type == 'text' && 'highlight' == helper.params['type']
-        dir = File.join(File.dirname(File.expand_path($0)), '../../script/vim')
+        dir = File.join(File.dirname(File.expand_path(__FILE__)), '../../script/vim')
         vimcmd =
           [ 'vim -e -s',
             "--cmd 'set runtimepath+=.'",

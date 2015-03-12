@@ -5,12 +5,12 @@ require 'fileutils'
 require_relative '../app'
 require_relative '../log'
 require_relative '../comment'
-require_relative '../cgi_helper'
+require_relative '../helper'
 
 module API
   # Usage:
   #   comment report=<report-id> user=<login> action=<action> ...
-  #   comment action=list_news report=<report-id> user[]=<user>
+  #   comment action=list_news report=<report-id> user[]=<login>
   #   comment action=config
   #   comment action=preview mesage=<content>
   # Actions:
@@ -69,6 +69,11 @@ module API
       # user must be specified
       users = helper.params['user']
       return helper.bad_request if users.nil? || users.empty?
+
+      # user must be an array
+      unless users.is_a?(Array)
+        fail ArgumentError, 'user must be provided as user[]=<login>'
+      end
 
       # resolve real login name in case user id is a token
       users = users.map { |u| app.user_from_token(u) }

@@ -35,7 +35,7 @@ module API
       app = App.new(env['REMOTE_USER'])
       time = Time.now
 
-      rep_id = helper.param(:report_id)
+      rep_id = helper.param['report_id']
       # return Bad Request if 'report_id' parameter is not passed.
       return helper.bad_request(ERR[:require] % 'report_id') unless rep_id
 
@@ -53,7 +53,8 @@ module API
       FileUtils.mkdir_p(src_dir)
       file = helper.params['report_file'][:tempfile]
 
-      if file.is_a?(StringIO) || file.path.nil? then
+      # FIXME: file must not be StringIO
+      if file.is_a?(StringIO) || file.path.nil?
         tmp = Tempfile.open('report.zip')
         tmp.write(file.read)
         file = tmp
@@ -79,8 +80,8 @@ module API
       if entries.length == 1 && entries[0] == /\.tar$/
         Dir.chdir(src_dir) do
           file = File.basename(entries[0])
-          res = system("tar xf '#{file}' > /dev/null 2>&1")
-          res = FileUtils.rm(file) rescue nil
+          system("tar xf '#{file}' > /dev/null 2>&1")
+          FileUtils.rm(file) rescue nil
         end
         entries = Dir.glob("#{src_dir}/*")
       end
@@ -90,22 +91,22 @@ module API
         entries_dir = entries[0]
         Dir.mktmpdir do |tmpdir|
           src_files = Pathname.new(entries_dir).entries
-          src_files.reject!{|f| f.to_s =~ /^\.+$/ }
-          Dir.chdir(entries_dir){ FileUtils.mv(src_files, tmpdir) }
+          src_files.reject! { |f| f.to_s =~ /^\.+$/ }
+          Dir.chdir(entries_dir) { FileUtils.mv(src_files, tmpdir) }
           FileUtils.rmdir(entries_dir)
           FileUtils.mv(Dir.glob("#{tmpdir}/*"), src_dir)
         end
       end
 
       # check requirements
-      files = Dir.glob("#{src_dir}/*").map{|x| File.basename(x)}
+      files = Dir.glob("#{src_dir}/*").map { |x| File.basename(x) }
       check = app.conf[:master, :check] || {}
       reqs = ((check['default'] || {})['require']) ||
              ((check[rep_id] || {})['require']) ||
              []
-      unless reqs.all?{|r| files.include?(r)}
+      unless reqs.all? { |r| files.include?(r) }
         FileUtils.rm_rf(src_dir.parent.to_s)
-        raise RuntimeError, (err[:prerequisite])
+        fail err[:prerequisite]
       end
 
       # convert file names to utf8
@@ -114,8 +115,8 @@ module API
       # solved exercises
       exs = helper.params['ex']
       exs = [exs] unless exs.is_a?(Array)
-      exs = exs.map{|ex| ex.respond_to?(:read) ? ex.read : ex}
-      exs = exs.sort{|a,b| a.to_ex <=> b.to_ex}
+      exs = exs.map { |ex| ex.respond_to?(:read) ? ex.read : ex }
+      exs = exs.sort { |a, b| a.to_ex <=> b.to_ex }
       Log.new(log_file).write(:data, time, 'status' => 'build', 'report' => exs)
 
       # build and run test
@@ -144,15 +145,13 @@ module API
 
     def entries2utf8(path)
       path.each_entry do |e|
-        unless e.to_s =~ /^\.+$/
-          Dir.chdir(path) do
-            entries2utf8(e) if e.directory?
-            utf8 = e.to_s.toutf8
-            e.rename(utf8) if utf8 != e.to_s
-          end
+        next if e.to_s =~ /^\.+$/
+        Dir.chdir(path) do
+          entries2utf8(e) if e.directory?
+          utf8 = e.to_s.toutf8
+          e.rename(utf8) if utf8 != e.to_s
         end
       end
     end
-
   end
 end

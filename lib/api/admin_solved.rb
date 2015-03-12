@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-require_relative '../../lib/app'
-require_relative '../../lib/log'
-require_relative '../../lib/report/exercise'
-require_relative '../../lib/cgi_helper'
+require_relative '../app'
+require_relative '../log'
+require_relative '../report/exercise'
+require_relative '../helper'
 
 module API
   # Usage: admin_solved report=<report-id> user=<login> exercise[]=<exercise-id>
@@ -33,6 +33,12 @@ module API
       # exercises must be specified
       exercises = helper.params['exercise']
       helper.exit_with_bad_request unless exercises
+
+      # exercises must be an array
+      unless exercises.is_a?(Array)
+        fail ArgumentError, 'exercise must be provided as exercise[]=<exercise-id>'
+      end
+
       exercises.sort! { |a, b| a.to_ex <=> b.to_ex }
 
       begin

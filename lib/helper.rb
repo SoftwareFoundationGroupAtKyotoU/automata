@@ -22,8 +22,6 @@ class Helper
     @callback = cb
   end
 
-  # attr_reader :env
-
   def json_response(message)
     Response.new([json(message)], 200, header)
   end
@@ -59,19 +57,18 @@ class Helper
     Response.new { |r| r.redirect(location) }
   end
 
-  # @return [Object] request parameters
+  # @return [Hash{String => Object}] request parameters
+  # @example
+  #   # Values are String by default.
+  #   param['a'] #=> '10' for the query "a=10"
+  #   # Rack accepts multi-valued parameters such as "a[]=hoge".
+  #   param['a'] #=> ['10', '20'] for the query "a[]=10&a[]=20"
+  #   # TODO: write about files
   def params
     @req.params
   end
 
-  # Rack accepts multi-valued parameters.
-  # @example
-  #   For the query "a[]=10&a[]=def", param['a'] = ['10', '20']
-  def param(key)
-    # cgi.rb may return StringIO as value, but Rack doesn't
-    params[key.to_s]
-  end
-
+  # TODO: explain this method
   def optional(key)
     param = params[key].deep_copy
     def param.include?(x)
