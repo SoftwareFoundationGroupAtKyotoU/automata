@@ -22,13 +22,11 @@ module API
       helper = Helper.new(env)
       app = App.new(env['REMOTE_USER'])
 
-      STDERR.pp helper.params
-
       # reject request by normal users
       return helper.forbidden('forbidden') unless app.su?
 
       # user must be specified
-      user = helper.param(:user)
+      user = helper.params['user']
       return helper.bad_request unless user
 
       # resolve real login name in case user id is a token
@@ -36,16 +34,16 @@ module API
       return helper.bad_request unless user
 
       # report ID must be specified
-      report_id = helper.param(:report)
+      report_id = helper.params['report']
       return helper.bad_request unless report_id
 
       # log ID must be specified
-      log_id = helper.param(:id)
+      log_id = helper.params['id']
       return helper.bad_request unless log_id
 
       begin
         data = {}
-        st = helper.param(:status)
+        st = helper.params['status']
         data['status'] = st if st
 
         data_log = {}
@@ -65,8 +63,8 @@ module API
 
         helper.ok('done')
       rescue => e
-        helper.internal_server_error
         app.logger.error(e.to_s)
+        helper.internal_server_error
       end
     end
   end
