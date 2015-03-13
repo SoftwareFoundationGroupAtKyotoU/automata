@@ -181,7 +181,7 @@ module API
         return helper.bad_request('size limit exceeded')
       rescue ::Comment::MaxCommentsExceeded
         return helper.bad_request('max comments exceeded')
-      rescue e
+      rescue => e
         app.logger.error(e.to_s)
         return helper.internal_server_error([e.to_s, e.backtrace].join("\n"))
       end

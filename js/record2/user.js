@@ -13,12 +13,14 @@ var User = React.createClass({
     mixins: [Router.State],
 
     render: function() {
+        var token = this.getParams().token;
+        var report = this.getParams().report;
         return (
                 <div>
-                <SummaryList token={this.getParams().token} report={this.getParams().report} admin={this.props.admin}/>
+                <SummaryList token={token} report={report} admin={this.props.admin}/>
                 <div className="status_window">
                 <StatusHeader/>
-                <RouteHandler token={this.getParams().token} report={this.getParams().report} admin={this.props.admin}/>
+                <RouteHandler token={token} report={report} admin={this.props.admin} key={token + report}/>
                 </div>
                 </div>
         );

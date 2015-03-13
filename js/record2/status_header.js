@@ -20,18 +20,12 @@ var tabs = [
 module.exports = React.createClass({
     mixins: [Router.State],
 
-    getDefaultProps: function() {
-        return {
-            toolBar: function() {
-                return null;
-            }
-        };
-    },
-
     render: function() {
         var _tabs = tabs.map(function(tab) {
             var className = 'status_tabbar_button';
-            if (tab.path === this.props.tabName) {
+            var tabName = this.getPath().split('/')[3];
+            if (!tabName) tabName = 'log';
+            if (tab.path === tabName) {
                 className += ' selected';
             }
             return (
@@ -45,7 +39,6 @@ module.exports = React.createClass({
         }.bind(this));
         return (
                 <div className="status_header">
-                {this.props.toolBar()}
                 <ul className="status_tabbar">{_tabs}</ul>
                 </div>
         );

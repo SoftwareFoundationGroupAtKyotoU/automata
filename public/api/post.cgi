@@ -3,6 +3,6 @@
 
 require 'bundler/setup'
 require 'rack'
-require_relative '../lib/api/post'
+require_relative '../../lib/api/post'
 
 Rack::Handler::CGI.run(API::Post.new)
