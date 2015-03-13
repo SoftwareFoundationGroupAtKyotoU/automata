@@ -39,21 +39,13 @@ var Report = React.createClass({
     },
 
     onClick: function(e) {
-        var new_solved = "";
         var check_list = this.state.checked;
         var report_list = this.props.report_list;
         var solved_list = {solved:[]};
         var unsolved_list = {unsolved:[]};
-        var post_data = {};
 
         for (var key in check_list) {
             if (check_list[key]) {
-                if (new_solved.length === 0) {
-                    new_solved = new_solved + key;
-                } else {
-                    new_solved = new_solved + "," + key;
-                }
-
                 solved_list.solved.push(key);
             }
             else {
@@ -61,22 +53,24 @@ var Report = React.createClass({
                     var ex_name = report[0];
                     var attr = report[1];
 
-                    if (attr.required == 1 && ex_name == key) {
-                        var unsolved = [key, attr.required];
-                        unsolved_list.unsolved.push(unsolved);
+                    if (attr !== null) {
+                        if (attr.required == 1 && ex_name == key) {
+                            var unsolved = [key, attr.required];
+                            unsolved_list.unsolved.push(unsolved);
+                        }
                     }
                 });
             }
         }
 
-        post_data.user = this.props.user;
-        post_data.report = this.props.report;
-        post_data.exercise = new_solved;
-
         $.ajax({
             url: "../api/admin_solved.cgi",
             type: 'POST',
-            data: post_data,
+            data: {
+                'user': this.props.user,
+                'report': this.props.report,
+                'exercise[]': solved_list.solved
+            },
             success: function(data) {
                 this.props.posted(solved_list, unsolved_list);
             }.bind(this),
