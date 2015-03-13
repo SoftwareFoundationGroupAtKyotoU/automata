@@ -32216,6 +32216,7 @@ module.exports = DetailList;
 
 },{"./../../bower_components/jquery/dist/jquery.js":2,"./../../bower_components/react-router/dist/react-router.js":3,"./../../bower_components/react/react.js":4,"./status_cell.js":12}],9:[function(require,module,exports){
 var React = require("./../../bower_components/react/react.js");
+var $ = require("./../../bower_components/jquery/dist/jquery.js");
 
 var FileEntry = (function() {
     var humanReadableSize = function(size) {
@@ -32518,7 +32519,7 @@ module.exports = FileView;
 
 
 
-},{"./../../bower_components/react/react.js":4}],10:[function(require,module,exports){
+},{"./../../bower_components/jquery/dist/jquery.js":2,"./../../bower_components/react/react.js":4}],10:[function(require,module,exports){
 var React = require("./../../bower_components/react/react.js");
 var $ = require("./../../bower_components/jquery/dist/jquery.js");
 
@@ -32577,7 +32578,7 @@ var LogMessages = React.createClass({displayName: "LogMessages",
             }
         ];
         var rawLog = this.props.log;
-        var message;
+        var messages;
         if (rawLog){
             messages = defs.map(
                 function (def){
@@ -32593,7 +32594,7 @@ var LogMessages = React.createClass({displayName: "LogMessages",
                     }
                 });
         } else {
-            message = (React.createElement("div", null));
+            messages = (React.createElement("div", null));
         }
         return (React.createElement("div", null, messages));
     }

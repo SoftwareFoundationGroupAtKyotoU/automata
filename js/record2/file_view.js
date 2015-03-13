@@ -1,4 +1,5 @@
 var React = require('react');
+var $ = require('jquery');
 
 var FileEntry = (function() {
     var humanReadableSize = function(size) {
