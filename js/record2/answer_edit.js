@@ -5,9 +5,9 @@ var Report = React.createClass({
     getInitialState: function() {
         var solved = this.props.solved;
         var check_list = [];
-        var report_list = this.props.report_list;
+        var exercise_list = this.props.exercise_list;
 
-        report_list.forEach(function(report) {
+        exercise_list.forEach(function(report) {
             var ex_name = report[0];
             var index = solved.indexOf(ex_name);
 
@@ -21,8 +21,6 @@ var Report = React.createClass({
 
         return {
             checked: check_list,
-            post: false,
-            cancel: false
         };
     },
 
@@ -40,24 +38,22 @@ var Report = React.createClass({
 
     onClick: function(e) {
         var check_list = this.state.checked;
-        var report_list = this.props.report_list;
-        var solved_list = {solved:[]};
-        var unsolved_list = {unsolved:[]};
+        var exercise_list = this.props.exercise_list;
+        var solved = [];
+        var unsolved = [];
 
         for (var key in check_list) {
             if (check_list[key]) {
-                solved_list.solved.push(key);
+                solved.push(key);
             }
             else {
-                report_list.forEach(function(report) {
+                exercise_list.forEach(function(report) {
                     var ex_name = report[0];
                     var attr = report[1];
 
-                    if (attr !== null) {
-                        if (attr.required == 1 && ex_name == key) {
-                            var unsolved = [key, attr.required];
-                            unsolved_list.unsolved.push(unsolved);
-                        }
+                    if (attr !== null && attr.required == 1 && ex_name == key) {
+                            var unsolved_exercise = [key, attr.required];
+                            unsolved.push(unsolved_exercise);
                     }
                 });
             }
@@ -69,10 +65,10 @@ var Report = React.createClass({
             data: {
                 'user': this.props.user,
                 'report': this.props.report,
-                'exercise': solved_list.solved
+                'exercise': solved
             },
             success: function(data) {
-                this.props.posted(solved_list, unsolved_list);
+                this.props.posted(solved, unsolved);
             }.bind(this),
             error: function(xhr, status, err) {
                 console.log(status);
@@ -84,14 +80,14 @@ var Report = React.createClass({
         var report_name = this.props.report;
         var solved = this.props.solved;
         var check_list = this.state.checked;
-        var reports = [];
+        var exercises = [];
         var handlechange = this.handleChange;
 
-        this.props.report_list.forEach(function(report) {
+        this.props.exercise_list.forEach(function(report) {
             var name = report[0];
             var label = "ex_" + report_name + name;
 
-            reports.push
+            exercises.push
             (
                     <li>
                     <input type="checkbox" checked={check_list[name]}
@@ -105,7 +101,7 @@ var Report = React.createClass({
                 <div>
                 <div className="list_view">
                 <ul className="ex">
-                {reports}
+                {exercises}
                 </ul>
                 </div>
                     <button onClick={this.onClick} >変更</button>
@@ -119,7 +115,7 @@ var AnswerEdit = React.createClass({
 
     getInitialState: function() {
         return {
-            report_list: undefined,
+            exercise_list: undefined,
         };
     },
 
@@ -132,13 +128,13 @@ var AnswerEdit = React.createClass({
               },
               function(result) {
                   this.setState({
-                      report_list: result[0].exercise
+                      exercise_list: result[0].exercise
                   });
               }.bind(this));
     },
 
     render: function() {
-        if (typeof (this.state.report_list) == 'undefined') {
+        if (typeof (this.state.exercise_list) == 'undefined') {
             return (
                     <div>
                     <div className="list_view">
@@ -151,7 +147,7 @@ var AnswerEdit = React.createClass({
                             report={this.props.report}
                             solved={this.props.solved}
                             unsolved={this.props.unsolved}
-                            report_list={this.state.report_list}
+                            exercise_list={this.state.exercise_list}
                             onclick={this.props.onclick}
                             posted={this.props.posted} />
             );
