@@ -62,37 +62,52 @@ module API
       return helper.forbidden unless path.to_s.index(src.to_s) == 0
 
       class_dir = path.parent
-      relpath = class_dir.relative_path_from(src)
-      applet_code = "code=\"#{File.basename(path.to_s,".*")}\""
-      applet_codebase = "codebase=\"../browse/#{::User.make_token(user)}/#{report_id}/#{relpath}\""
-      jar_path = src.relative_path_from(class_dir) + Pathname("../../../jar/")
+      realpath = class_dir.relative_path_from(src)
+      applet_code = "code=\"#{File.basename(path.to_s, '.*')}\""
+      applet_codebase =
+        'codebase="../browse/"' +
+        [::User.make_token(user), report_id, realpath].join('/')
+      jar_path = src.relative_path_from(class_dir) + Pathname('../../../jar/')
       libs = app.conf[:master, :check, :default, :applet, :java_library]
       w = app.conf[:master, :check, :default, :applet, :width] || 500
       h = app.conf[:master, :check, :default, :applet, :height] || 400
-      applet_archive = libs.nil? || libs.empty? ? "" : "archive=\"#{(libs.map{|item| jar_path + item}).join(",")}\""
-      applet_width = "width=\"#{w.to_s}\""
-      applet_height = "height=\"#{h.to_s}\""
+      if lib.nil? || lib.empty?
+        applet_archive = ''
+      else
+        applet_archive =
+          "archive=\"#{ (libs.map { |item| jar_path + item }).join(',') }\""
+      end
+      applet_width = "width=\"#{w}\""
+      applet_height = "height=\"#{h}\""
 
       if path.directory?
         Dir.chdir(path.to_s) do
-          files = path.entries.reject{|f| f.to_s =~ /^\.+$/}.sort do |a,b|
-            "#{a.directory? ? 0 : 1}#{a.to_s}" <=> "#{b.directory? ? 0 : 1}#{b.to_s}"
-          end.map do |f|
+          files = path.entries.reject { |f| f.to_s =~ /^\.+$/ }.sort do |a, b|
+            "#{a.directory? ? 0 : 1}#{a}" <=> "#{b.directory? ? 0 : 1}#{b}"
+          end
+          files.map! do |f|
+            if f.directory?
+              type = 'dir'
+            else
+              type = MIME.check(f.to_s).media_type == 'text' ? 'txt' : 'bin'
+            end
             { 'name' => f.to_s,
-              'type' => f.directory? ? 'dir' : (MIME.check(f.to_s).media_type=='text' ? 'txt' : 'bin'),
+              'type' => type,
               'size' => f.size,
-              'time' => f.mtime.iso8601,
+              'time' => f.mtime.iso8601
             }
           end
           return helper.json_response(files)
         end
-      elsif MIME.check(path.to_s).media_type == 'text' && 'highlight' == helper.params['type']
-        dir = File.join(File.dirname(File.expand_path(__FILE__)), '../../script/vim')
+      elsif MIME.check(path.to_s).media_type == 'text' &&
+            helper.params['type'] == 'highlight'
+        dir = File.join(File.dirname(File.expand_path(__FILE__)),
+                        '../../script/vim')
         vimcmd =
           [ 'vim -e -s',
             "--cmd 'set runtimepath+=.'",
             "--cmd 'source vimrc'",
-            "-S src2html.vim",
+            '-S src2html.vim'
           ].join(' ');
         Dir.chdir(dir) do
           return helper.ok(`#{vimcmd} #{Shellwords.escape(path.to_s)}`)
@@ -126,7 +141,7 @@ APPLET
           'Content-Length' => path.size
         }
         content = nil
-        File.open(path.to_s, 'rb') {|f| content = f.read }
+        File.open(path.to_s, 'rb') { |f| content = f.read }
         Rack::Response.new([content], 200, header)
       end
     end

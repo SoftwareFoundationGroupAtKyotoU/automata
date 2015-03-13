@@ -25,8 +25,6 @@ module API
       conf[:admin] = app.su?
       conf[:token] = ::User.make_token(app.user)
 
-      STDERR.print helper.params
-
       entry = {}
       keys = KEY.dup
       OPTIONAL.each do |k|

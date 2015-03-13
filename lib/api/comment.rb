@@ -72,7 +72,7 @@ module API
 
       # user must be an array
       unless users.is_a?(Array)
-        fail ArgumentError, 'user must be provided as user[]=<login>'
+        return helper.bad_request('user must be provided as user[]=<login>')
       end
 
       # resolve real login name in case user id is a token

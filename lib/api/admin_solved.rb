@@ -36,7 +36,8 @@ module API
 
       # exercises must be an array
       unless exercises.is_a?(Array)
-        fail ArgumentError, 'exercise must be provided as exercise[]=<exercise-id>'
+        return helper.bud_request(
+            'exercise must be provided as exercise[]=<exercise-id>')
       end
 
       exercises.sort! { |a, b| a.to_ex <=> b.to_ex }
