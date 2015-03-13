@@ -48,7 +48,7 @@ end
 srv.mount_apis([
   ['/api/admin_log.cgi', API::AdminLog],
   ['/api/admin_runtest.cgi', API::AdminRuntest],
-  ['/api/admin_solved.cgi', API::AdminLog],
+  ['/api/admin_solved.cgi', API::AdminSolved],
   ['/api/admin_user.cgi', API::AdminUser],
   ['/api/browse.cgi', API::Browse],
   ['/api/comment.cgi', API::Comment],

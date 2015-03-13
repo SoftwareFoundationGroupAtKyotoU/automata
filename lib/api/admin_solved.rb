@@ -12,8 +12,8 @@ module API
   #   master.su に入っているユーザのみ実行可能
   class AdminSolved
     def call(env)
-      helper = CGIHelper.new
-      app = App.new(helper.cgi.remote_user)
+      helper = Helper.new(env)
+      app = App.new(env['REMOTE_USER'])
 
       # reject request by normal users
       return helper.forbidden unless app.su?
