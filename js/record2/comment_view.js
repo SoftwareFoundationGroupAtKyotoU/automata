@@ -55,7 +55,7 @@ var Comment = React.createClass({
         this.loadingModeStart();
         $.get('../api/comment.cgi',
                 {
-                    user: this.props.token,
+                    user: [this.props.token],
                     report: this.props.report,
                     action: 'get',
                     id: this.props.comment.id,
@@ -81,7 +81,7 @@ var Comment = React.createClass({
             type: 'POST',
             url: '../api/comment.cgi',
             data: {
-                user: this.props.token,
+                user: [this.props.token],
                 report: this.props.report,
                 action: 'edit',
                 id: this.props.comment.id,
@@ -96,7 +96,7 @@ var Comment = React.createClass({
     onEdit: function() {
         $.get('../api/comment.cgi',
                 {
-                    user: this.props.token,
+                    user: [this.props.token],
                     report: this.props.report,
                     id: this.props.comment.id,
                     action: 'get',
@@ -118,7 +118,7 @@ var Comment = React.createClass({
                 type: 'POST',
                 url: '../api/comment.cgi',
                 data: {
-                    user: this.props.comment.user,
+                    user: [this.props.comment.user],
                     report: this.props.report,
                     action: 'delete',
                     id: this.props.comment.id
@@ -267,7 +267,7 @@ var CommentForm = React.createClass({
             type: 'POST',
             url: '../api/comment.cgi',
             data: {
-                user: this.props.token,
+                user: [this.props.token],
                 report: this.props.report,
                 action: 'post',
                 acl:  formAclArgument(this.state.aclUserFlag, this.state.aclOtherFlag),
@@ -329,7 +329,7 @@ var CommentView = React.createClass({
     rerender: function() {
         $.get('../api/comment.cgi',
                 {
-                    user: this.props.token,
+                    user: [this.props.token],
                     report: this.props.report,
                     action: 'get',
                 },
