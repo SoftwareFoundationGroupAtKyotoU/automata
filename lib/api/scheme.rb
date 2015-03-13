@@ -25,7 +25,7 @@ module API
       scheme = app.conf[:scheme]
 
       scheme['scheme'].reject do |report|
-        !helper.optional(:id).include?(report['id'])
+        !helper.optional('id').include?(report['id'])
       end.each do |report|
         exes = []
         unless helper.params['exercise'].nil?
@@ -45,7 +45,7 @@ module API
         end
 
         report['exercise'] = exes
-        if FILTER.all? { |k| helper.optional(k).include?(report[k.to_s]) }
+        if FILTER.all? { |k| helper.optional(k.to_s).include?(report[k.to_s]) }
           entry = {}
           keys = KEY.dup
           OPTIONAL.each { |k| keys << k unless helper.params[k.to_s].nil? }
