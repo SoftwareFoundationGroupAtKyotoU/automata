@@ -102,7 +102,6 @@ var ReportList = React.createClass({
                               users_init: true,
                           });
                       }.bind(this),
-                      traditional: true
                   });
               }.bind(this));
     },

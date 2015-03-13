@@ -32087,7 +32087,6 @@ var ReportList = React.createClass({displayName: "ReportList",
                               users_init: true,
                           });
                       }.bind(this),
-                      traditional: true
                   });
               }.bind(this));
     },
@@ -33075,7 +33074,6 @@ module.exports = React.createClass({displayName: "exports",
                                             users_init: true,
                                         });
                                     }.bind(this),
-                                    traditional: true
                                 });
                             }, this);
                         }.bind(this));
