@@ -71,7 +71,7 @@ module API
       libs = app.conf[:master, :check, :default, :applet, :java_library]
       w = app.conf[:master, :check, :default, :applet, :width] || 500
       h = app.conf[:master, :check, :default, :applet, :height] || 400
-      if lib.nil? || lib.empty?
+      if libs.nil? || libs.empty?
         applet_archive = ''
       else
         applet_archive =

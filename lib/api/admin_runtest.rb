@@ -2,7 +2,7 @@
 
 require 'shellwords'
 require_relative '../app'
-require_relative '../cgi_helper'
+require_relative '../helper'
 
 module API
   # Usage: admin_runtest report=<report-id> user=<login>

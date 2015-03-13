@@ -24,11 +24,9 @@ class AuthAPIHandler < Rack::Handler::WEBrick
     super(server, api)
   end
 
-  def do_GET(req, res)
+  def service(req, res)
     super(req, res) if @auth.authenticate(req, res)
   end
-
-  alias_method :do_POST, :do_GET
 end
 
 DOCUMENT_ROOT = File.expand_path(File.dirname(__FILE__)) + '/public'
