@@ -138,7 +138,8 @@ var AnswerView = React.createClass({
                     </div>
             );
         }
-        else if(!this.state.clicked && this.state.mounted && this.state.solved_list.solved.length === 0) {
+        else if(!this.state.clicked && this.state.mounted &&
+                this.state.solved_list.solved.length === 0) {
             return (
                     <div>
                     <div className="status_view">
@@ -150,6 +151,7 @@ var AnswerView = React.createClass({
         else if(!this.state.clicked && this.state.mounted) {
             return (
                     <div>
+                    <a onClick = {this.onClick} >編集</a>
                     <div className="status_view">
                     <Solved solved={this.state.solved_list.solved}/>
                     <Unsolved unsolved={this.state.unsolved_list.unsolved}/>
