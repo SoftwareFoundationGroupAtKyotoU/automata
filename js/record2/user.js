@@ -6,11 +6,8 @@ var DefaultRoute = Router.DefaultRoute;
 var RouteHandler = Router.RouteHandler;
 
 var LogView = require('./log_view.js');
-var AnswerViewModule = require('./answer_view.js');
-var ResultView = require('./result_view.js');
-var FileView = require('./file_view.js');
-var CommentView = require('./comment_view.js');
 var SummaryList = require('./summary_list.js');
+var StatusHeader = require('./status_header.js');
 
 var User = React.createClass({
     mixins: [Router.State],
@@ -25,15 +22,7 @@ var User = React.createClass({
     }
 });
 
-var tabs = [
-    { path: 'log',      name: 'ログ',         handler: LogView },
-    { path: 'answer',   name: '解答状況',     handler: AnswerViewModule.answerView },
-    { path: 'result',   name: 'テスト結果',   handler: ResultView },
-    { path: 'file',     name: 'ファイル一覧', handler: FileView },
-    { path: 'comment',  name: 'コメント',     handler: CommentView },
-];
-
-var routes = tabs.map(function(tab) {
+var routes = StatusHeader.tabs.map(function(tab) {
     return (
             <Route name={tab.path} path={tab.path} handler={tab.handler} key={tab.path}/>
     );

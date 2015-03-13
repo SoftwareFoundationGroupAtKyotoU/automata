@@ -3,6 +3,20 @@ window.React = React;
 var Router = require('react-router');
 var Link = Router.Link;
 
+var LogView = require('./log_view.js');
+var AnswerViewModule = require('./answer_view.js');
+var ResultView = require('./result_view.js');
+var FileView = require('./file_view.js');
+var CommentView = require('./comment_view.js');
+
+var tabs = [
+    { path: 'log',      name: 'ログ',         handler: LogView },
+    { path: 'answer',   name: '解答状況',     handler: AnswerViewModule.answerView },
+    { path: 'result',   name: 'テスト結果',   handler: ResultView },
+    { path: 'file',     name: 'ファイル一覧', handler: FileView },
+    { path: 'comment',  name: 'コメント',     handler: CommentView }
+];
+
 module.exports = React.createClass({
     mixins: [Router.State],
 
@@ -35,5 +49,9 @@ module.exports = React.createClass({
                 <ul className="status_tabbar">{_tabs}</ul>
                 </div>
         );
+    },
+
+    statics: {
+        tabs: tabs
     }
 });
