@@ -69,7 +69,7 @@ var Report = React.createClass({
             data: {
                 'user': this.props.user,
                 'report': this.props.report,
-                'exercise[]': solved_list.solved
+                'exercise': solved_list.solved
             },
             success: function(data) {
                 this.props.posted(solved_list, unsolved_list);
