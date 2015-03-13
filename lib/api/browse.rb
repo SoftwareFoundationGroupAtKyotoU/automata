@@ -65,8 +65,8 @@ module API
       realpath = class_dir.relative_path_from(src)
       applet_code = "code=\"#{File.basename(path.to_s, '.*')}\""
       applet_codebase =
-        'codebase="../browse/"' +
-        [::User.make_token(user), report_id, realpath].join('/')
+        'codebase="../browse/' +
+        [::User.make_token(user).to_s, report_id, realpath.to_s].join('/') + '"'
       jar_path = src.relative_path_from(class_dir) + Pathname('../../../jar/')
       libs = app.conf[:master, :check, :default, :applet, :java_library]
       w = app.conf[:master, :check, :default, :applet, :width] || 500
