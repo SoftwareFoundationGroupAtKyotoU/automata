@@ -48,8 +48,8 @@ var Unsolved = React.createClass({
 var AnswerView = React.createClass({
     getInitialState: function() {
         return {
-            solved_list: {solved:[]},
-            unsolved_list: {unsolved:[]},
+            solved: [],
+            unsolved: [],
             clicked: false,
             mounted: false
         };
@@ -69,12 +69,12 @@ var AnswerView = React.createClass({
 
                   if (typeof (report) === 'undefined') {
                       this.setState({
-                          solved_list: this.state.solved_list
+                          solved: this.state.solved
                       });
                   }
                   else {
                       this.setState({
-                          solved_list: result[0].report[this.props.report]
+                          solved: result[0].report[this.props.report].solved
                       });
                   };
               }.bind(this));
@@ -91,13 +91,13 @@ var AnswerView = React.createClass({
 
                   if (typeof (report) === 'undefined') {
                       this.setState({
-                          unsolved_list: this.state.unsolved_list,
+                          unsolved: this.state.unsolved_list,
                           mounted: true
                       });
                   }
                   else {
                       this.setState({
-                          unsolved_list: result[0].report[this.props.report],
+                          unsolved: result[0].report[this.props.report].unsolved,
                           mounted: true
                       });
                   }
@@ -123,8 +123,8 @@ var AnswerView = React.createClass({
     posted: function(solved, unsolved) {
         this.setState({
             clicked: false,
-            solved_list: solved,
-            unsolved_list: unsolved,
+            solved: solved,
+            unsolved: unsolved,
         });
     },
 
@@ -139,7 +139,7 @@ var AnswerView = React.createClass({
             );
         }
         else if(!this.state.clicked && this.state.mounted &&
-                this.state.solved_list.solved.length === 0) {
+                this.state.solved.length === 0) {
             return (
                     <div>
                     <div className="status_view">
@@ -153,8 +153,8 @@ var AnswerView = React.createClass({
                     <div>
                     <a onClick = {this.onClick} >編集</a>
                     <div className="status_view">
-                    <Solved solved={this.state.solved_list.solved}/>
-                    <Unsolved unsolved={this.state.unsolved_list.unsolved}/>
+                    <Solved solved={this.state.solved}/>
+                    <Unsolved unsolved={this.state.unsolved}/>
                     </div>
                     </div>
             );
@@ -165,8 +165,8 @@ var AnswerView = React.createClass({
                     <div className="status_view">
                     <AnswerEdit token={this.props.token}
                                 report={this.props.report}
-                                solved={this.state.solved_list.solved}
-                                unsolved={this.state.unsolved_list.unsolved}
+                                solved={this.state.solved}
+                                unsolved={this.state.unsolved}
                                 onclick={this.onClick}
                                 posted={this.posted} />
                     </div>
