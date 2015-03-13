@@ -109,7 +109,7 @@ module API
           FileUtils.mkdir_p(dir) unless dir.exist?
           {
             user:    u,
-            comment: Comment.new(app.user, group, dir, config)
+            comment: ::Comment.new(app.user, group, dir, config)
           }
         end
 
@@ -173,15 +173,15 @@ module API
           return helper.json_response(content)
         end
 
-      rescue Comment::NotFound
+      rescue ::Comment::NotFound
         return helper.bad_request
-      rescue Comment::PermissionDenied
+      rescue ::Comment::PermissionDenied
         return helper.bad_request
-      rescue Comment::SizeLimitExceeded
+      rescue ::Comment::SizeLimitExceeded
         return helper.bad_request('size limit exceeded')
-      rescue Comment::MaxCommentsExceeded
+      rescue ::Comment::MaxCommentsExceeded
         return helper.bad_request('max comments exceeded')
-      rescue
+      rescue e
         app.logger.error(e.to_s)
         return helper.internal_server_error([e.to_s, e.backtrace].join("\n"))
       end
