@@ -26,7 +26,7 @@ var Unsolved = React.createClass({
     render: function () {
         var unsolved;
 
-        if (this.props.unsolved.length != []) {
+        if (this.props.unsolved.length != 0) {
             unsolved = this.props.unsolved.map(function(us) {
                 return (
                         <li>{us[0]}</li>
@@ -65,9 +65,18 @@ var AnswerView = React.createClass({
                   action: 'get',
               },
               function(result) {
-                  this.setState({
-                      solved_list: result[0].report[this.props.report]
-                  });
+                  var report = result[0].report
+
+                  if (typeof (report) === 'undefined') {
+                      this.setState({
+                          solved_list: this.state.solved_list
+                      });
+                  }
+                  else {
+                      this.setState({
+                          solved_list: result[0].report[this.props.report]
+                      });
+                  };
               }.bind(this));
         $.get('../api/user.cgi',
               {
@@ -78,10 +87,20 @@ var AnswerView = React.createClass({
                   action: 'get',
               },
               function(result) {
-                  this.setState({
-                      unsolved_list: result[0].report[this.props.report],
-                      mounted: true
-                  });
+                  var report = result[0].report
+
+                  if (typeof (report) === 'undefined') {
+                      this.setState({
+                          unsolved_list: this.state.unsolved_list,
+                          mounted: true
+                      });
+                  }
+                  else {
+                      this.setState({
+                          unsolved_list: result[0].report[this.props.report],
+                          mounted: true
+                      });
+                  }
               }.bind(this));
     },
 
@@ -115,6 +134,15 @@ var AnswerView = React.createClass({
                     <div>
                     <div className="status_view">
                     <img src="./loading.gif" />
+                    </div>
+                    </div>
+            );
+        }
+        else if(!this.state.clicked && this.state.mounted && this.state.solved_list.solved.length === 0) {
+            return (
+                    <div>
+                    <div className="status_view">
+                    なし
                     </div>
                     </div>
             );
