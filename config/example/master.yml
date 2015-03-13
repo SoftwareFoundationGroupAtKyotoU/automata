@@ -23,6 +23,9 @@ check:
     require: # prerequisite files
       - report.txt
       - image.png
+    ignore: # ignored files/directories when uploaded
+      - __MACOSX
+      - .DS_Store
     applet:
       java_library: ["objectdrawV1.1.2.jar"]
       width: 800

@@ -12,6 +12,7 @@ require_relative '../helper'
 require_relative '../app'
 require_relative '../report/exercise'
 require_relative '../log'
+require_relative '../dir/each_leaf'
 
 module API
   class Post
@@ -86,16 +87,17 @@ module API
         entries = Dir.glob("#{src_dir}/*")
       end
 
-      # move files from a single directory to the parent directory
-      if entries.length == 1 && File.directory?(entries[0])
-        entries_dir = entries[0]
-        Dir.mktmpdir do |tmpdir|
-          src_files = Pathname.new(entries_dir).entries
-          src_files.reject! { |f| f.to_s =~ /^\.+$/ }
-          Dir.chdir(entries_dir) { FileUtils.mv(src_files, tmpdir) }
-          FileUtils.rmdir(entries_dir)
-          FileUtils.mv(Dir.glob("#{tmpdir}/*"), src_dir)
-        end
+      check = app.conf[:master, :check] || {}
+      ignore = ((check['default'] || {}).merge((check[rep_id] || {})))['ignore']
+      ignore = ignore || '(?!.*)'
+      ignore = '(?:'+ignore.join('|')+')' if ignore.is_a?(Array)
+
+      # lift directories
+      lift_dir(app, rep_id, ignore, src_dir)
+
+      # clean entries
+      Dir.each_leaf(src_dir, File::FNM_DOTMATCH) do |f|
+        FileUtils.rm(f) if f =~ /#{ignore}/
       end
 
       # check requirements
@@ -151,6 +153,27 @@ module API
           utf8 = e.to_s.toutf8
           e.rename(utf8) if utf8 != e.to_s
         end
+      end
+    end
+
+    def lift_dir(app, rep_id, ignore, src_dir)
+      # remove ignored files
+      Dir.glob("#{src_dir}/*", File::FNM_DOTMATCH) do |e|
+        FileUtils.rm_rf((src_dir+e).to_s) if e =~ /#{ignore}/
+      end
+
+      # move files from a single directory to the parent directory
+      entries = Dir.glob("#{src_dir}/*")
+      if entries.length == 1 && File.directory?(entries[0]) then
+        entries_dir = entries[0]
+        Dir.mktmpdir do |tmpdir|
+          src_files = Pathname.new(entries_dir).entries
+          src_files.reject!{|f| f.to_s=~/^\.+$/}
+          Dir.chdir(entries_dir){ FileUtils.mv(src_files, tmpdir) }
+          FileUtils.rmdir(entries_dir)
+          FileUtils.mv(Dir.glob("#{tmpdir}/*"), src_dir.to_s)
+        end
+        lift_dir(app, rep_id, ignore, src_dir)
       end
     end
   end

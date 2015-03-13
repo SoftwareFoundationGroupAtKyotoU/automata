@@ -67,6 +67,10 @@ mapping:
             type: seq
             sequence:
               - type: str
+          "ignore": &ignore
+            type: seq
+            sequence:
+              - type: str
           "applet":
             type: map
             mapping:
@@ -102,10 +106,6 @@ mapping:
             type: map
             required: yes
             mapping:
-              "ignore": &ignore
-                type: seq
-                sequence:
-                  - type: str
               "command": &command
                 type: seq
                 sequence:
@@ -127,6 +127,7 @@ mapping:
         type: map
         mapping:
           "require": *require
+          "ignore": *ignore
           "test":
             type: map
             mapping:
@@ -135,6 +136,5 @@ mapping:
           "build":
             type: map
             mapping:
-              "ignore": *ignore
               "command": *command
               "file_location": *file_location
