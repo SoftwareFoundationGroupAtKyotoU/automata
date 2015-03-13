@@ -1,8 +1,6 @@
 var React = require('react');
 var $ = require('jquery');
 
-var StatusHeader = require('./status_header.js');
-
 var Log = React.createClass({
     render: function() {
         var defs = [
@@ -245,8 +243,7 @@ var LogView = React.createClass({
             logedit = (<LogMessages log={this.state.data.log}/>);
         }
         return (
-                <div className='status_window'>
-                <StatusHeader tabName='log' toolBar={this.toolBar} />
+                <div>
                 <div id={'status_view'} className='status_view'>
                 <dl className='log_msg'>
                 <Log data={status} />

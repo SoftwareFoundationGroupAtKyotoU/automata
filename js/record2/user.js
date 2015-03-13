@@ -16,7 +16,10 @@ var User = React.createClass({
         return (
                 <div>
                 <SummaryList token={this.getParams().token} report={this.getParams().report} admin={this.props.admin}/>
+                <div className="status_window">
+                <StatusHeader/>
                 <RouteHandler token={this.getParams().token} report={this.getParams().report} admin={this.props.admin}/>
+                </div>
                 </div>
         );
     }

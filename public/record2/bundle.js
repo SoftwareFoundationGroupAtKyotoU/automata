@@ -31368,16 +31368,15 @@ var Report = React.createClass({displayName: "Report",
         var report_list = this.props.report_list;
         var solved_list = {solved:[]};
         var unsolved_list = {unsolved:[]};
-        var post_data = {}
+        var post_data = {};
 
         for (var key in check_list) {
             if (check_list[key]) {
-                if (new_solved.length == 0) {
+                if (new_solved.length === 0) {
                     new_solved = new_solved + key;
-                }
-                else {
+                } else {
                     new_solved = new_solved + "," + key;
-                };
+                }
 
                 solved_list.solved.push(key);
             }
@@ -31391,8 +31390,8 @@ var Report = React.createClass({displayName: "Report",
                         unsolved_list.unsolved.push(unsolved);
                     }
                 });
-            };
-        };
+            }
+        }
 
         post_data.user = this.props.user;
         post_data.report = this.props.report;
@@ -31476,8 +31475,7 @@ var AnswerEdit = React.createClass({displayName: "AnswerEdit",
                     )
                     )
             );
-        }
-        else {
+        } else {
             return (
                     React.createElement(Report, {user: this.props.token, 
                             report: this.props.report, 
@@ -31487,7 +31485,7 @@ var AnswerEdit = React.createClass({displayName: "AnswerEdit",
                             onclick: this.props.onclick, 
                             posted: this.props.posted})
             );
-        };
+        }
     }
 });
 
@@ -31501,7 +31499,6 @@ var $ = require("./../../bower_components/jquery/dist/jquery.js");
 
 var AnswerEdit = require('./answer_edit.js');
 var UserModule = require('./user.js');
-var StatusHeader = require('./status_header.js');
 var Solved = UserModule.Solved;
 var Unsolved = UserModule.Unsolved;
 
@@ -31510,7 +31507,8 @@ var Solved = React.createClass({displayName: "Solved",
         var solved = this.props.solved.map(function(s) {
             return (
                 React.createElement("li", null, s)
-            )});
+            );
+        });
         return (
                 React.createElement("ul", null, 
                 React.createElement("h3", null, "解答済み"), 
@@ -31528,12 +31526,11 @@ var Unsolved = React.createClass({displayName: "Unsolved",
             unsolved = this.props.unsolved.map(function(us) {
                 return (
                         React.createElement("li", null, us[0])
-                )
+                );
             });
-        }
-        else {
+        } else {
             unsolved = (React.createElement("li", null, "なし"));
-            };
+        }
 
         return (
                 React.createElement("ul", null, 
@@ -31611,8 +31608,7 @@ var AnswerView = React.createClass({displayName: "AnswerView",
     render: function() {
         if (!this.state.mounted) {
             return (
-                    React.createElement("div", {className: "status_window"}, 
-                    React.createElement(StatusHeader, {tabName: "answer", toolBar: this.toolBar}), 
+                    React.createElement("div", null, 
                     React.createElement("div", {className: "status_view"}, 
                     React.createElement("img", {src: "./loading.gif"})
                     )
@@ -31621,8 +31617,7 @@ var AnswerView = React.createClass({displayName: "AnswerView",
         }
         else if(!this.state.clicked && this.state.mounted) {
             return (
-                    React.createElement("div", {className: "status_window"}, 
-                    React.createElement(StatusHeader, {tabName: "answer", toolBar: this.toolBar}), 
+                    React.createElement("div", null, 
                     React.createElement("div", {className: "status_view"}, 
                     React.createElement(Solved, {solved: this.state.solved_list.solved}), 
                     React.createElement(Unsolved, {unsolved: this.state.unsolved_list.unsolved})
@@ -31632,8 +31627,7 @@ var AnswerView = React.createClass({displayName: "AnswerView",
         }
         else {
             return (
-                    React.createElement("div", {className: "status_window"}, 
-                    React.createElement(StatusHeader, {tabName: "answer"}), 
+                    React.createElement("div", null, 
                     React.createElement("div", {className: "status_view"}, 
                     React.createElement(AnswerEdit, {token: this.props.token, 
                                 report: this.props.report, 
@@ -31656,7 +31650,7 @@ module.exports = {
 
 
 
-},{"./../../bower_components/jquery/dist/jquery.js":2,"./../../bower_components/react/react.js":4,"./answer_edit.js":5,"./status_header.js":13,"./user.js":15}],7:[function(require,module,exports){
+},{"./../../bower_components/jquery/dist/jquery.js":2,"./../../bower_components/react/react.js":4,"./answer_edit.js":5,"./user.js":15}],7:[function(require,module,exports){
 var sum_rep = "summary-report2";
 
 var React = require("./../../bower_components/react/react.js");
@@ -31668,9 +31662,7 @@ var Link = Router.Link;
 var Route = Router.Route;
 var RouteHandler = Router.RouteHandler;
 
-var StatusHeader = require('./status_header.js');
-
-const mode = { normal: 0, edit: 1, preview: 2 };
+mode = { normal: 0, edit: 1, preview: 2 };
 
 var Comment = React.createClass({displayName: "Comment",
     getInitialState: function() {
@@ -31750,7 +31742,7 @@ var Comment = React.createClass({displayName: "Comment",
 
     onEdit: function() {
       $.get('../api/comment.cgi',
-          {  
+          {
             user: this.props.token,
             report: this.props.report,
             id: this.props.comment.id,
@@ -31762,7 +31754,7 @@ var Comment = React.createClass({displayName: "Comment",
             this.editMode();
           }.bind(this));
     },
-    
+
     onDelete: function() {
       var text = 'このコメント['
                + this.props.comment.user
@@ -31974,8 +31966,7 @@ var CommentView = React.createClass({displayName: "CommentView",
             );
         }.bind(this));
         return (
-                React.createElement("div", {className: "status_window"}, 
-                  React.createElement(StatusHeader, {tabName: "comment"}/* toolBar={ function() { return <p>古典論理の犬</p>; } } */ ), 
+                React.createElement("div", null, 
                   React.createElement("div", {className: "status_view"}, 
                   React.createElement("ul", {className: "comments"}, 
                   comments, 
@@ -31991,7 +31982,7 @@ module.exports = CommentView;
 
 
 
-},{"./../../bower_components/jquery/dist/jquery.js":2,"./../../bower_components/react-router/dist/react-router.js":3,"./../../bower_components/react/react.js":4,"./status_header.js":13}],8:[function(require,module,exports){
+},{"./../../bower_components/jquery/dist/jquery.js":2,"./../../bower_components/react-router/dist/react-router.js":3,"./../../bower_components/react/react.js":4}],8:[function(require,module,exports){
 var React = require("./../../bower_components/react/react.js");
 window.React = React;
 var Router = require("./../../bower_components/react-router/dist/react-router.js");
@@ -32072,7 +32063,7 @@ var ReportList = React.createClass({displayName: "ReportList",
                   log: true,
               },
               function(users) {
-                  var tokens = users.map(function(user) { return user.token });
+                  var tokens = users.map(function(user) { return user.token; });
                   $.ajax({
                       url: '../api/comment.cgi',
                       data: {
@@ -32226,8 +32217,6 @@ module.exports = DetailList;
 },{"./../../bower_components/jquery/dist/jquery.js":2,"./../../bower_components/react-router/dist/react-router.js":3,"./../../bower_components/react/react.js":4,"./status_cell.js":12}],9:[function(require,module,exports){
 var React = require("./../../bower_components/react/react.js");
 
-var StatusHeader = require('./status_header.js');
-
 var FileEntry = (function() {
     var humanReadableSize = function(size) {
         var prefix = [ '', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y' ];
@@ -32282,7 +32271,7 @@ var Breadcrum = (function() {
 
     return React.createClass({
         rawPath: function(path) {
-            return FileView.rawPath(this.props.token, this.props.report, path)
+            return FileView.rawPath(this.props.token, this.props.report, path);
         },
 
         render: function() {
@@ -32306,7 +32295,7 @@ var Breadcrum = (function() {
                     e.preventDefault();
                     p.open(loc.path, loc.type);
                 };
-                var uri = self.rawPath(loc.path);;
+                var uri = self.rawPath(loc.path);
                 return React.createElement("li", null, React.createElement("a", {href: uri, onClick: onclick}, loc.name));
             });
 
@@ -32357,7 +32346,7 @@ var FileViewer = (function() {
             var ln = '';
             var i = 1, arr;
             var re = new RegExp("\n", 'g');
-            while ((arr = re.exec(content)) != null) {
+            while ((arr = re.exec(content)) !== null) {
                 ln += i++ + "\n";
             }
 
@@ -32401,7 +32390,7 @@ var FileView = (function() {
             var arr;
             var re = new RegExp('\\s*([^\{]+?)\\s*{([^\}]*)}','g');
             var rules = [];
-            while ((arr = re.exec(rawcss)) != null) {
+            while ((arr = re.exec(rawcss)) !== null) {
                 if (arr[1].charAt(0) == '.') {
                     rules.push({selector: arr[1], style: arr[2]});
                 }
@@ -32441,11 +32430,11 @@ var FileView = (function() {
                 } else {
                     var div = $('<div />')[0];
                     var content = res.replace(/<pre>\n/, '<pre>');
-                    div.innerHTML = content
+                    div.innerHTML = content;
                     var pre = div.getElementsByTagName('pre')[0];
                     if (content.charAt(content.length-1) != "\n") {
                         content += "\n";
-                    };
+                    }
                     applyStyleFromSource(res);
 
                     this.replaceState({
@@ -32496,9 +32485,7 @@ var FileView = (function() {
                 React.createElement(FileViewer, {content: s.content});
 
             return (React.createElement("div", {id: "summary-" + p.report + "_status_window", 
-                         className: "status_window", 
                          style:  {display: "block"} }, 
-                        React.createElement(StatusHeader, {tabName: "file", toolBar: toolBar}), 
                           React.createElement("div", {id: "summary-" + p.report + "_status_view", 
                                className: "status_view"}, 
                               render
@@ -32531,11 +32518,9 @@ module.exports = FileView;
 
 
 
-},{"./../../bower_components/react/react.js":4,"./status_header.js":13}],10:[function(require,module,exports){
+},{"./../../bower_components/react/react.js":4}],10:[function(require,module,exports){
 var React = require("./../../bower_components/react/react.js");
 var $ = require("./../../bower_components/jquery/dist/jquery.js");
-
-var StatusHeader = require('./status_header.js');
 
 var Log = React.createClass({displayName: "Log",
     render: function() {
@@ -32592,23 +32577,24 @@ var LogMessages = React.createClass({displayName: "LogMessages",
             }
         ];
         var rawLog = this.props.log;
+        var message;
         if (rawLog){
-        var messages = defs.map(
-            function (def){
-                if (rawLog[def.prop] && rawLog[def.prop].trim()) {
-                    return (
-                            React.createElement("div", {className: def.prop}, 
-                            React.createElement("dt", {className: def.prop}, def.label), 
-                            React.createElement("dd", {className: def.prop}, def.proc(rawLog[def.prop]))
-                            )
-                    );
-                } else {
-                    return (React.createElement("div", null));
-                };
-            });
+            messages = defs.map(
+                function (def){
+                    if (rawLog[def.prop] && rawLog[def.prop].trim()) {
+                        return (
+                                React.createElement("div", {className: def.prop}, 
+                                React.createElement("dt", {className: def.prop}, def.label), 
+                                React.createElement("dd", {className: def.prop}, def.proc(rawLog[def.prop]))
+                                )
+                        );
+                    } else {
+                        return (React.createElement("div", null));
+                    }
+                });
         } else {
-            var message = (React.createElement("div", null));
-        };
+            message = (React.createElement("div", null));
+        }
         return (React.createElement("div", null, messages));
     }
 });
@@ -32656,7 +32642,7 @@ var LogEdit = React.createClass ({displayName: "LogEdit",
             // {build: 'OK'}
             { prop: 'build',
               label: 'build',
-              proc: function(x){if (x!='') {return x;};}
+              proc: function(x){if (x !== '') { return x; }}
             },
             // {test: {passed: 0, number: 0}}
             { prop: 'test',
@@ -32665,8 +32651,9 @@ var LogEdit = React.createClass ({displayName: "LogEdit",
                   return (l.passed +'/'+ l.number);}
             }];
         var rawLog = this.props.data;
+        var test;
         if (rawLog) {
-            var test = defs.map(
+            test = defs.map(
                 function (def) {
                     if (rawLog[def.prop]) {
                         return (
@@ -32676,11 +32663,11 @@ var LogEdit = React.createClass ({displayName: "LogEdit",
                                 ));
                     } else {
                         return (React.createElement("div", null));
-                    };
+                    }
                 });
         } else {
-            var test = (React.createElement("div", null));
-        };
+            test = (React.createElement("div", null));
+        }
         return (
                 React.createElement("div", {className: "form"}, 
                 React.createElement("dt", {className: "message"}, "メッセージ"), 
@@ -32765,18 +32752,19 @@ var LogView = React.createClass({displayName: "LogView",
                     React.createElement("li", {className: "toolbutton"}, React.createElement("a", {onClick: this.onEdit}, "✏ 編集"))
                     )
             );
-        };
+        }
     },
 
     render: function() {
         var status = this.state.data;
+        var logedit;
         if (this.state.onEdit) {
-            var logedit = (React.createElement(LogEdit, {id: this.state.data.submit, rep: this.props.report, data: this.state.data.log, token: this.props.token, exit: this.exit}));
+            logedit = (React.createElement(LogEdit, {id: this.state.data.submit, rep: this.props.report, data: this.state.data.log, token: this.props.token, exit: this.exit}));
         } else {
-            var logedit = (React.createElement(LogMessages, {log: this.state.data.log})); };
+            logedit = (React.createElement(LogMessages, {log: this.state.data.log}));
+        }
         return (
-                React.createElement("div", {className: "status_window"}, 
-                React.createElement(StatusHeader, {tabName: "log", toolBar: this.toolBar}), 
+                React.createElement("div", null, 
                 React.createElement("div", {id: 'status_view', className: "status_view"}, 
                 React.createElement("dl", {className: "log_msg"}, 
                 React.createElement(Log, {data: status}), 
@@ -32792,16 +32780,13 @@ module.exports = LogView;
 
 
 
-},{"./../../bower_components/jquery/dist/jquery.js":2,"./../../bower_components/react/react.js":4,"./status_header.js":13}],11:[function(require,module,exports){
+},{"./../../bower_components/jquery/dist/jquery.js":2,"./../../bower_components/react/react.js":4}],11:[function(require,module,exports){
 var React = require("./../../bower_components/react/react.js");
-
-var StatusHeader = require('./status_header.js');
 
 module.exports = React.createClass({displayName: "exports",
     render: function() {
         return (
-                React.createElement("div", {className: "status_window"}, 
-                React.createElement(StatusHeader, {tabName: "result"}), 
+                React.createElement("div", null, 
                 React.createElement("div", {className: "status_view"}, "ResultView: 構築中")
                 )
         );
@@ -32810,7 +32795,7 @@ module.exports = React.createClass({displayName: "exports",
 
 
 
-},{"./../../bower_components/react/react.js":4,"./status_header.js":13}],12:[function(require,module,exports){
+},{"./../../bower_components/react/react.js":4}],12:[function(require,module,exports){
 var React = require("./../../bower_components/react/react.js");
 window.React = React;
 var Router = require("./../../bower_components/react-router/dist/react-router.js");
@@ -32945,6 +32930,20 @@ window.React = React;
 var Router = require("./../../bower_components/react-router/dist/react-router.js");
 var Link = Router.Link;
 
+var LogView = require('./log_view.js');
+var AnswerViewModule = require('./answer_view.js');
+var ResultView = require('./result_view.js');
+var FileView = require('./file_view.js');
+var CommentView = require('./comment_view.js');
+
+var tabs = [
+    { path: 'log',      name: 'ログ',         handler: LogView },
+    { path: 'answer',   name: '解答状況',     handler: AnswerViewModule.answerView },
+    { path: 'result',   name: 'テスト結果',   handler: ResultView },
+    { path: 'file',     name: 'ファイル一覧', handler: FileView },
+    { path: 'comment',  name: 'コメント',     handler: CommentView }
+];
+
 module.exports = React.createClass({displayName: "exports",
     mixins: [Router.State],
 
@@ -32977,12 +32976,16 @@ module.exports = React.createClass({displayName: "exports",
                 React.createElement("ul", {className: "status_tabbar"}, _tabs)
                 )
         );
+    },
+
+    statics: {
+        tabs: tabs
     }
 });
 
 
 
-},{"./../../bower_components/react-router/dist/react-router.js":3,"./../../bower_components/react/react.js":4}],14:[function(require,module,exports){
+},{"./../../bower_components/react-router/dist/react-router.js":3,"./../../bower_components/react/react.js":4,"./answer_view.js":6,"./comment_view.js":7,"./file_view.js":9,"./log_view.js":10,"./result_view.js":11}],14:[function(require,module,exports){
 var React = require("./../../bower_components/react/react.js");
 var $ = require("./../../bower_components/jquery/dist/jquery.js");
 
@@ -33046,7 +33049,7 @@ module.exports = React.createClass({displayName: "exports",
                   $.get('../api/user.cgi',
                         data,
                         function(users) {
-                            var tokens = users.map(function(user) { return user.token });
+                            var tokens = users.map(function(user) { return user.token; });
                             this.state.scheme.forEach(function(s) {
                                 $.ajax({
                                     url: '../api/comment.cgi',
@@ -33123,12 +33126,11 @@ window.React = React;
 var Router = require("./../../bower_components/react-router/dist/react-router.js");
 var Route = Router.Route;
 var DefaultRoute = Router.DefaultRoute;
+var RouteHandler = Router.RouteHandler;
 
 var LogView = require('./log_view.js');
-var AnswerViewModule = require('./answer_view.js');
-var ResultView = require('./result_view.js');
-var FileView = require('./file_view.js');
-var CommentView = require('./comment_view.js');
+var SummaryList = require('./summary_list.js');
+var StatusHeader = require('./status_header.js');
 
 var User = React.createClass({displayName: "User",
     mixins: [Router.State],
@@ -33137,21 +33139,16 @@ var User = React.createClass({displayName: "User",
         return (
                 React.createElement("div", null, 
                 React.createElement(SummaryList, {token: this.getParams().token, report: this.getParams().report, admin: this.props.admin}), 
+                React.createElement("div", {className: "status_window"}, 
+                React.createElement(StatusHeader, null), 
                 React.createElement(RouteHandler, {token: this.getParams().token, report: this.getParams().report, admin: this.props.admin})
+                )
                 )
         );
     }
 });
 
-var tabs = [
-    { path: 'log',      name: 'ログ',         handler: LogView.logView },
-    { path: 'answer',   name: '解答状況',     handler: AnswerViewModule.answerView },
-    { path: 'result',   name: 'テスト結果',   handler: ResultView },
-    { path: 'file',     name: 'ファイル一覧', handler: FileView },
-    { path: 'comment',  name: 'コメント',     handler: CommentView },
-];
-
-var routes = tabs.map(function(tab) {
+var routes = StatusHeader.tabs.map(function(tab) {
     return (
             React.createElement(Route, {name: tab.path, path: tab.path, handler: tab.handler, key: tab.path})
     );
@@ -33160,7 +33157,7 @@ var routes = tabs.map(function(tab) {
 var UserRoute = (
         React.createElement(Route, {name: "user", path: ":token/:report", handler: User}, 
         routes, 
-        React.createElement(DefaultRoute, {handler: LogView.logView})
+        React.createElement(DefaultRoute, {handler: LogView})
         )
 );
 
@@ -33168,7 +33165,7 @@ module.exports = UserRoute;
 
 
 
-},{"./../../bower_components/react-router/dist/react-router.js":3,"./../../bower_components/react/react.js":4,"./answer_view.js":6,"./comment_view.js":7,"./file_view.js":9,"./log_view.js":10,"./result_view.js":11}],16:[function(require,module,exports){
+},{"./../../bower_components/react-router/dist/react-router.js":3,"./../../bower_components/react/react.js":4,"./log_view.js":10,"./status_header.js":13,"./summary_list.js":14}],16:[function(require,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *

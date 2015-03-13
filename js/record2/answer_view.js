@@ -3,7 +3,6 @@ var $ = require('jquery');
 
 var AnswerEdit = require('./answer_edit.js');
 var UserModule = require('./user.js');
-var StatusHeader = require('./status_header.js');
 var Solved = UserModule.Solved;
 var Unsolved = UserModule.Unsolved;
 
@@ -113,8 +112,7 @@ var AnswerView = React.createClass({
     render: function() {
         if (!this.state.mounted) {
             return (
-                    <div className="status_window">
-                    <StatusHeader tabName='answer' toolBar={this.toolBar}/>
+                    <div>
                     <div className="status_view">
                     <img src="./loading.gif" />
                     </div>
@@ -123,8 +121,7 @@ var AnswerView = React.createClass({
         }
         else if(!this.state.clicked && this.state.mounted) {
             return (
-                    <div className="status_window">
-                    <StatusHeader tabName='answer' toolBar={this.toolBar}/>
+                    <div>
                     <div className="status_view">
                     <Solved solved={this.state.solved_list.solved}/>
                     <Unsolved unsolved={this.state.unsolved_list.unsolved}/>
@@ -134,8 +131,7 @@ var AnswerView = React.createClass({
         }
         else {
             return (
-                    <div className="status_window">
-                    <StatusHeader tabName='answer'/>
+                    <div>
                     <div className="status_view">
                     <AnswerEdit token={this.props.token}
                                 report={this.props.report}

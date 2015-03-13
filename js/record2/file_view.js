@@ -1,7 +1,5 @@
 var React = require('react');
 
-var StatusHeader = require('./status_header.js');
-
 var FileEntry = (function() {
     var humanReadableSize = function(size) {
         var prefix = [ '', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y' ];
@@ -270,9 +268,7 @@ var FileView = (function() {
                 <FileViewer  content={s.content} />;
 
             return (<div id={"summary-" + p.report + "_status_window"}
-                         className="status_window"
                          style={ {display: "block"} }>
-                        <StatusHeader tabName='file' toolBar={toolBar} />
                           <div id={"summary-" + p.report + "_status_view"}
                                className="status_view">
                               {render}

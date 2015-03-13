@@ -9,8 +9,6 @@ var Link = Router.Link;
 var Route = Router.Route;
 var RouteHandler = Router.RouteHandler;
 
-var StatusHeader = require('./status_header.js');
-
 mode = { normal: 0, edit: 1, preview: 2 };
 
 var Comment = React.createClass({
@@ -315,8 +313,7 @@ var CommentView = React.createClass({
             );
         }.bind(this));
         return (
-                <div className="status_window">
-                  <StatusHeader tabName="comment" /* toolBar={ function() { return <p>古典論理の犬</p>; } } */ />
+                <div>
                   <div className="status_view">
                   <ul className="comments">
                   {comments}
