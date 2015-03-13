@@ -61,7 +61,7 @@ module.exports = React.createClass({
                   $.get('../api/user.cgi',
                         data,
                         function(users) {
-                            var tokens = users.map(function(user) { return user.token });
+                            var tokens = users.map(function(user) { return user.token; });
                             this.state.scheme.forEach(function(s) {
                                 $.ajax({
                                     url: '../api/comment.cgi',

@@ -56,7 +56,7 @@ var Breadcrum = (function() {
 
     return React.createClass({
         rawPath: function(path) {
-            return FileView.rawPath(this.props.token, this.props.report, path)
+            return FileView.rawPath(this.props.token, this.props.report, path);
         },
 
         render: function() {
@@ -80,7 +80,7 @@ var Breadcrum = (function() {
                     e.preventDefault();
                     p.open(loc.path, loc.type);
                 };
-                var uri = self.rawPath(loc.path);;
+                var uri = self.rawPath(loc.path);
                 return <li><a href={uri} onClick={onclick}>{loc.name}</a></li>;
             });
 
@@ -131,7 +131,7 @@ var FileViewer = (function() {
             var ln = '';
             var i = 1, arr;
             var re = new RegExp("\n", 'g');
-            while ((arr = re.exec(content)) != null) {
+            while ((arr = re.exec(content)) !== null) {
                 ln += i++ + "\n";
             }
 
@@ -175,7 +175,7 @@ var FileView = (function() {
             var arr;
             var re = new RegExp('\\s*([^\{]+?)\\s*{([^\}]*)}','g');
             var rules = [];
-            while ((arr = re.exec(rawcss)) != null) {
+            while ((arr = re.exec(rawcss)) !== null) {
                 if (arr[1].charAt(0) == '.') {
                     rules.push({selector: arr[1], style: arr[2]});
                 }
@@ -215,11 +215,11 @@ var FileView = (function() {
                 } else {
                     var div = $('<div />')[0];
                     var content = res.replace(/<pre>\n/, '<pre>');
-                    div.innerHTML = content
+                    div.innerHTML = content;
                     var pre = div.getElementsByTagName('pre')[0];
                     if (content.charAt(content.length-1) != "\n") {
                         content += "\n";
-                    };
+                    }
                     applyStyleFromSource(res);
 
                     this.replaceState({

@@ -44,16 +44,15 @@ var Report = React.createClass({
         var report_list = this.props.report_list;
         var solved_list = {solved:[]};
         var unsolved_list = {unsolved:[]};
-        var post_data = {}
+        var post_data = {};
 
         for (var key in check_list) {
             if (check_list[key]) {
-                if (new_solved.length == 0) {
+                if (new_solved.length === 0) {
                     new_solved = new_solved + key;
-                }
-                else {
+                } else {
                     new_solved = new_solved + "," + key;
-                };
+                }
 
                 solved_list.solved.push(key);
             }
@@ -67,8 +66,8 @@ var Report = React.createClass({
                         unsolved_list.unsolved.push(unsolved);
                     }
                 });
-            };
-        };
+            }
+        }
 
         post_data.user = this.props.user;
         post_data.report = this.props.report;
@@ -152,8 +151,7 @@ var AnswerEdit = React.createClass({
                     </div>
                     </div>
             );
-        }
-        else {
+        } else {
             return (
                     <Report user={this.props.token}
                             report={this.props.report}
@@ -163,7 +161,7 @@ var AnswerEdit = React.createClass({
                             onclick={this.props.onclick}
                             posted={this.props.posted} />
             );
-        };
+        }
     }
 });
 

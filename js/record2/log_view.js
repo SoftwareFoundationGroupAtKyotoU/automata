@@ -58,23 +58,24 @@ var LogMessages = React.createClass({
             }
         ];
         var rawLog = this.props.log;
+        var message;
         if (rawLog){
-        var messages = defs.map(
-            function (def){
-                if (rawLog[def.prop] && rawLog[def.prop].trim()) {
-                    return (
-                            <div className={def.prop}>
-                            <dt className={def.prop}>{def.label}</dt>
-                            <dd className={def.prop}>{def.proc(rawLog[def.prop])}</dd>
-                            </div>
-                    );
-                } else {
-                    return (<div></div>);
-                };
-            });
+            messages = defs.map(
+                function (def){
+                    if (rawLog[def.prop] && rawLog[def.prop].trim()) {
+                        return (
+                                <div className={def.prop}>
+                                <dt className={def.prop}>{def.label}</dt>
+                                <dd className={def.prop}>{def.proc(rawLog[def.prop])}</dd>
+                                </div>
+                        );
+                    } else {
+                        return (<div></div>);
+                    }
+                });
         } else {
-            var message = (<div></div>);
-        };
+            message = (<div></div>);
+        }
         return (<div>{messages}</div>);
     }
 });
@@ -122,7 +123,7 @@ var LogEdit = React.createClass ({
             // {build: 'OK'}
             { prop: 'build',
               label: 'build',
-              proc: function(x){if (x!='') {return x;};}
+              proc: function(x){if (x !== '') { return x; }}
             },
             // {test: {passed: 0, number: 0}}
             { prop: 'test',
@@ -131,8 +132,9 @@ var LogEdit = React.createClass ({
                   return (l.passed +'/'+ l.number);}
             }];
         var rawLog = this.props.data;
+        var test;
         if (rawLog) {
-            var test = defs.map(
+            test = defs.map(
                 function (def) {
                     if (rawLog[def.prop]) {
                         return (
@@ -142,11 +144,11 @@ var LogEdit = React.createClass ({
                                 </div>);
                     } else {
                         return (<div></div>);
-                    };
+                    }
                 });
         } else {
-            var test = (<div></div>);
-        };
+            test = (<div></div>);
+        }
         return (
                 <div className='form'>
                 <dt className='message'>メッセージ</dt>
@@ -231,15 +233,17 @@ var LogView = React.createClass({
                     <li className='toolbutton'><a onClick={this.onEdit}>✏ 編集</a></li>
                     </ul>
             );
-        };
+        }
     },
 
     render: function() {
         var status = this.state.data;
+        var logedit;
         if (this.state.onEdit) {
-            var logedit = (<LogEdit id={this.state.data.submit} rep={this.props.report} data={this.state.data.log} token={this.props.token} exit={this.exit}/>);
+            logedit = (<LogEdit id={this.state.data.submit} rep={this.props.report} data={this.state.data.log} token={this.props.token} exit={this.exit}/>);
         } else {
-            var logedit = (<LogMessages log={this.state.data.log}/>); };
+            logedit = (<LogMessages log={this.state.data.log}/>);
+        }
         return (
                 <div className='status_window'>
                 <StatusHeader tabName='log' toolBar={this.toolBar} />

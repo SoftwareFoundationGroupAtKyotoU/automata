@@ -3,12 +3,14 @@ window.React = React;
 var Router = require('react-router');
 var Route = Router.Route;
 var DefaultRoute = Router.DefaultRoute;
+var RouteHandler = Router.RouteHandler;
 
 var LogView = require('./log_view.js');
 var AnswerViewModule = require('./answer_view.js');
 var ResultView = require('./result_view.js');
 var FileView = require('./file_view.js');
 var CommentView = require('./comment_view.js');
+var SummaryList = require('./summary_list.js');
 
 var User = React.createClass({
     mixins: [Router.State],
@@ -24,7 +26,7 @@ var User = React.createClass({
 });
 
 var tabs = [
-    { path: 'log',      name: 'ログ',         handler: LogView.logView },
+    { path: 'log',      name: 'ログ',         handler: LogView },
     { path: 'answer',   name: '解答状況',     handler: AnswerViewModule.answerView },
     { path: 'result',   name: 'テスト結果',   handler: ResultView },
     { path: 'file',     name: 'ファイル一覧', handler: FileView },
@@ -40,7 +42,7 @@ var routes = tabs.map(function(tab) {
 var UserRoute = (
         <Route name="user" path=":token/:report" handler={User}>
         {routes}
-        <DefaultRoute handler={LogView.logView}/>
+        <DefaultRoute handler={LogView}/>
         </Route>
 );
 

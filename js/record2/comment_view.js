@@ -11,7 +11,7 @@ var RouteHandler = Router.RouteHandler;
 
 var StatusHeader = require('./status_header.js');
 
-const mode = { normal: 0, edit: 1, preview: 2 };
+mode = { normal: 0, edit: 1, preview: 2 };
 
 var Comment = React.createClass({
     getInitialState: function() {
@@ -91,7 +91,7 @@ var Comment = React.createClass({
 
     onEdit: function() {
       $.get('../api/comment.cgi',
-          {  
+          {
             user: this.props.token,
             report: this.props.report,
             id: this.props.comment.id,
@@ -103,7 +103,7 @@ var Comment = React.createClass({
             this.editMode();
           }.bind(this));
     },
-    
+
     onDelete: function() {
       var text = 'このコメント['
                + this.props.comment.user

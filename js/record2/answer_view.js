@@ -12,7 +12,8 @@ var Solved = React.createClass({
         var solved = this.props.solved.map(function(s) {
             return (
                 <li>{s}</li>
-            )});
+            );
+        });
         return (
                 <ul>
                 <h3>解答済み</h3>
@@ -30,12 +31,11 @@ var Unsolved = React.createClass({
             unsolved = this.props.unsolved.map(function(us) {
                 return (
                         <li>{us[0]}</li>
-                )
+                );
             });
-        }
-        else {
+        } else {
             unsolved = (<li>なし</li>);
-            };
+        }
 
         return (
                 <ul>

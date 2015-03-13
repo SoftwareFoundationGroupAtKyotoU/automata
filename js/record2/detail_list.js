@@ -78,7 +78,7 @@ var ReportList = React.createClass({
                   log: true,
               },
               function(users) {
-                  var tokens = users.map(function(user) { return user.token });
+                  var tokens = users.map(function(user) { return user.token; });
                   $.ajax({
                       url: '../api/comment.cgi',
                       data: {
