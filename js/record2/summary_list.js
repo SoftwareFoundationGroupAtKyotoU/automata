@@ -86,7 +86,6 @@ module.exports = React.createClass({
                                             users_init: true,
                                         });
                                     }.bind(this),
-                                    traditional: true
                                 });
                             }, this);
                         }.bind(this));
