@@ -233,7 +233,7 @@ var FileView = (function() {
                     type:  type,
                     error: true
                 });
-            });
+            }.bind(this));
         },
 
         getInitialState: function() {
@@ -259,7 +259,7 @@ var FileView = (function() {
             }.bind(this);
 
             var render = s.error ?
-                '読み込み失敗' :
+                'なし' :
                 s.type === 'dir' ?
                 <FileBrowser token={p.token}
                              report={p.report}
