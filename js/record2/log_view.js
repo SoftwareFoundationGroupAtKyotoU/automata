@@ -56,7 +56,7 @@ var LogMessages = React.createClass({
             }
         ];
         var rawLog = this.props.log;
-        var message;
+        var messages;
         if (rawLog){
             messages = defs.map(
                 function (def){
@@ -72,7 +72,7 @@ var LogMessages = React.createClass({
                     }
                 });
         } else {
-            message = (<div></div>);
+            messages = (<div></div>);
         }
         return (<div>{messages}</div>);
     }
