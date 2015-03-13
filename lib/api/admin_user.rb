@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require_relative '../app'
-require_relative '../cgi_helper'
+require_relative '../helper'
 
 module API
   class AdminUser

@@ -2,7 +2,7 @@
 
 require_relative '../app'
 require_relative '../log'
-require_relative '../cgi_helper'
+require_relative '../helper'
 
 module API
   # Usage: test_result report=<report-id> user=<login>
