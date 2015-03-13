@@ -1,4 +1,59 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var $ = require("./../../bower_components/jquery/dist/jquery.js")(window);
+window.$ = window.jQuery = require("./../../bower_components/jquery/dist/jquery.js");
+require("./../../bower_components/blockui/jquery.blockUI.js");
+
+jQuery(function($) {
+    function load_users() {
+        $.get("../api/user.cgi?email=true", function(data) {
+            for (var i = 0; i < data.length; ++i) {
+                var user = data[i];
+                var button = $("<button>del</button>");
+                button.click((function(user) {
+                    return function() {
+                        if (confirm("really delete the following user?\n" + user["name"])) {
+                            del_user(user);
+                        }
+                    }})(user));
+                var td = $("<td>").append(button);
+                var tr = $("<tr>", {class: user["token"]})
+                    .append(td)
+                    .append("<td>" + user["login"] + "</td>"
+                            + "<td>" + user["name"] + "</td>"
+                            + "<td>" + user["ruby"] + "</td>"
+                            + "<td>" + user["email"] + "</td>");
+                $("#deluser").append(tr);
+            }
+        });
+    }
+
+    function del_user(user) {
+        $.blockUI({
+            message: "<div><img src='ajax-loader.gif'> deleting user: " + user["name"] + "</div>",
+            css: {padding: '20px'},
+        });
+        $.ajax({
+            url: "../api/admin_user.cgi",
+            data: {method: "delete", user: user["token"]},
+            dataType: "text",
+            type: "POST",
+            success: function(data) {
+                $("#deluser ."+user["token"]).remove();
+            },
+            error: function(xhr, status, error) {
+                alert(status+" : "+error+"\n"+xhr.responseText);
+            },
+            complete: function() {
+                $.unblockUI();
+            },
+        });
+    }
+
+    load_users();
+});
+
+
+},{"./../../bower_components/blockui/jquery.blockUI.js":2,"./../../bower_components/jquery/dist/jquery.js":3}],2:[function(require,module,exports){
 /*!
  * jQuery blockUI plugin
  * Version 2.70.0-2014.11.23
@@ -620,7 +675,8 @@
 
 })();
 
-},{}],2:[function(require,module,exports){
+
+},{}],3:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v2.1.3
  * http://jquery.com/
@@ -9827,58 +9883,5 @@ return jQuery;
 
 }));
 
-},{}],3:[function(require,module,exports){
-var $ = require("./../../bower_components/jquery/dist/jquery.js")(window);
-window.$ = window.jQuery = require("./../../bower_components/jquery/dist/jquery.js");
-require("./../../bower_components/blockui/jquery.blockUI.js");
 
-jQuery(function($) {
-    function load_users() {
-        $.get("../api/user.cgi?email=true", function(data) {
-            for (var i = 0; i < data.length; ++i) {
-                var user = data[i];
-                var button = $("<button>del</button>");
-                button.click((function(user) {
-                    return function() {
-                        if (confirm("really delete the following user?\n" + user["name"])) {
-                            del_user(user);
-                        }
-                    }})(user));
-                var td = $("<td>").append(button);
-                var tr = $("<tr>", {class: user["token"]})
-                    .append(td)
-                    .append("<td>" + user["login"] + "</td>"
-                            + "<td>" + user["name"] + "</td>"
-                            + "<td>" + user["ruby"] + "</td>"
-                            + "<td>" + user["email"] + "</td>");
-                $("#deluser").append(tr);
-            }
-        });
-    }
-
-    function del_user(user) {
-        $.blockUI({
-            message: "<div><img src='ajax-loader.gif'> deleting user: " + user["name"] + "</div>",
-            css: {padding: '20px'},
-        });
-        $.ajax({
-            url: "../api/admin_user.cgi",
-            data: {method: "delete", user: user["token"]},
-            dataType: "text",
-            type: "POST",
-            success: function(data) {
-                $("#deluser ."+user["token"]).remove();
-            },
-            error: function(xhr, status, error) {
-                alert(status+" : "+error+"\n"+xhr.responseText);
-            },
-            complete: function() {
-                $.unblockUI();
-            },
-        });
-    }
-
-    load_users();
-});
-
-},{"./../../bower_components/blockui/jquery.blockUI.js":1,"./../../bower_components/jquery/dist/jquery.js":2}]},{},[3]);
+},{}]},{},[1]);

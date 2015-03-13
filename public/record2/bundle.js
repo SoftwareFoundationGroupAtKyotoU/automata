@@ -1,4 +1,101 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var React = require("./../../bower_components/react/react.js");
+window.React = React;
+var Router = require("./../../bower_components/react-router/dist/react-router.js");
+var DefaultRoute = Router.DefaultRoute;
+var Link = Router.Link;
+var Route = Router.Route;
+var RouteHandler = Router.RouteHandler;
+var $ = require("./../../bower_components/jquery/dist/jquery.js");
+
+var DetailList = require('./detail_list.js');
+var SummaryList = require('./summary_list.js');
+var UserRoute = require('./user.js');
+
+var Record = React.createClass({displayName: "Record",
+    getInitialState: function() {
+        return {
+            admin: false,
+            template: {
+                institute: 'institute',
+                title: 'title',
+                subtitle: 'subtitle',
+                links: [
+                    { uri: '', label: '' }
+                ]
+            }
+        };
+    },
+
+    componentDidMount: function() {
+        $.get('../api/master.cgi',
+              {
+                  admin: true
+              },
+              function(result) {
+                  this.setState({
+                      admin: result.admin
+                  });
+              }.bind(this));
+        $.get('../api/template.cgi',
+              {
+                  type: 'record',
+                  links: true
+              },
+              function(result) {
+                  this.setState({
+                      template: result
+                  });
+              }.bind(this));
+    },
+
+    render: function() {
+        return (
+                React.createElement("div", null, 
+                React.createElement("div", {id: "article"}, 
+                React.createElement("h2", {id: "institute"}, this.state.template.institute), 
+                React.createElement("h1", {id: "title"}, this.state.template.title), 
+                React.createElement("h2", {id: "subtitle"}, this.state.template.subtitle), 
+                React.createElement("ul", null, 
+                React.createElement("li", null, "提出が済んだ場合は, 「提出済」と記載されます"), 
+                React.createElement("li", null, "提出内容に不備がある場合は, 「要再提出」と記載されます"), 
+                React.createElement("li", null, "提出しても, チェックが完了するまでは「確認中」と記載されます")
+                ), 
+                React.createElement("div", {id: "record"}, 
+                React.createElement("div", {id: "view_switch"}, 
+                "表示:", React.createElement("ul", null, 
+                React.createElement("li", null, React.createElement(Link, {to: "detail", id: "sw_view_report"}, "課題ごと")), 
+                React.createElement("li", null, React.createElement(Link, {to: "summary", id: "sw_view_summary"}, "一覧"))
+                )
+                ), 
+                React.createElement(RouteHandler, {admin: this.state.admin})
+                )
+                ), 
+                React.createElement("div", {id: "footer"}, 
+                React.createElement("a", {href: this.state.template.links[0].uri}, this.state.template.links[0].label), 
+                React.createElement("a", {href: "../post/"}, "提出ページ")
+                )
+                )
+        );
+    }
+});
+
+var routes = (
+        React.createElement(Route, {name: "record", path: "/", handler: Record}, 
+        React.createElement(Route, {name: "detail", path: "detail", handler: DetailList}), 
+        React.createElement(Route, {name: "summary", path: "summary", handler: SummaryList}), 
+        UserRoute, 
+        React.createElement(DefaultRoute, {handler: SummaryList})
+        )
+);
+
+Router.run(routes, function(Handler) {
+    React.render(React.createElement(Handler, null), document.body);
+});
+
+
+
+},{"./../../bower_components/jquery/dist/jquery.js":2,"./../../bower_components/react-router/dist/react-router.js":3,"./../../bower_components/react/react.js":4,"./detail_list.js":8,"./summary_list.js":14,"./user.js":15}],2:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v2.1.3
  * http://jquery.com/
@@ -9207,7 +9304,7 @@ return jQuery;
 
 
 
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 (function (process,global,Buffer){
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.ReactRouter=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 /**
@@ -13103,7 +13200,7 @@ define(function() {
 
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
-},{"_process":19,"buffer":15}],3:[function(require,module,exports){
+},{"_process":20,"buffer":16}],4:[function(require,module,exports){
 (function (global){
 /**
  * React v0.12.2
@@ -31224,7 +31321,7 @@ module.exports = warning;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 var React = require("./../../bower_components/react/react.js");
 var $ = require("./../../bower_components/jquery/dist/jquery.js");
 
@@ -31398,7 +31495,7 @@ module.exports = AnswerEdit;
 
 
 
-},{"./../../bower_components/jquery/dist/jquery.js":1,"./../../bower_components/react/react.js":3}],5:[function(require,module,exports){
+},{"./../../bower_components/jquery/dist/jquery.js":2,"./../../bower_components/react/react.js":4}],6:[function(require,module,exports){
 var React = require("./../../bower_components/react/react.js");
 var $ = require("./../../bower_components/jquery/dist/jquery.js");
 
@@ -31559,7 +31656,7 @@ module.exports = {
 
 
 
-},{"./../../bower_components/jquery/dist/jquery.js":1,"./../../bower_components/react/react.js":3,"./answer_edit.js":4,"./status_header.js":12,"./user.js":14}],6:[function(require,module,exports){
+},{"./../../bower_components/jquery/dist/jquery.js":2,"./../../bower_components/react/react.js":4,"./answer_edit.js":5,"./status_header.js":13,"./user.js":15}],7:[function(require,module,exports){
 var sum_rep = "summary-report2";
 
 var React = require("./../../bower_components/react/react.js");
@@ -31894,7 +31991,7 @@ module.exports = CommentView;
 
 
 
-},{"./../../bower_components/jquery/dist/jquery.js":1,"./../../bower_components/react-router/dist/react-router.js":2,"./../../bower_components/react/react.js":3,"./status_header.js":12}],7:[function(require,module,exports){
+},{"./../../bower_components/jquery/dist/jquery.js":2,"./../../bower_components/react-router/dist/react-router.js":3,"./../../bower_components/react/react.js":4,"./status_header.js":13}],8:[function(require,module,exports){
 var React = require("./../../bower_components/react/react.js");
 window.React = React;
 var Router = require("./../../bower_components/react-router/dist/react-router.js");
@@ -32126,7 +32223,7 @@ module.exports = DetailList;
 
 
 
-},{"./../../bower_components/jquery/dist/jquery.js":1,"./../../bower_components/react-router/dist/react-router.js":2,"./../../bower_components/react/react.js":3,"./status_cell.js":11}],8:[function(require,module,exports){
+},{"./../../bower_components/jquery/dist/jquery.js":2,"./../../bower_components/react-router/dist/react-router.js":3,"./../../bower_components/react/react.js":4,"./status_cell.js":12}],9:[function(require,module,exports){
 var React = require("./../../bower_components/react/react.js");
 
 var StatusHeader = require('./status_header.js');
@@ -32434,7 +32531,7 @@ module.exports = FileView;
 
 
 
-},{"./../../bower_components/react/react.js":3,"./status_header.js":12}],9:[function(require,module,exports){
+},{"./../../bower_components/react/react.js":4,"./status_header.js":13}],10:[function(require,module,exports){
 var React = require("./../../bower_components/react/react.js");
 var $ = require("./../../bower_components/jquery/dist/jquery.js");
 
@@ -32695,7 +32792,7 @@ module.exports = LogView;
 
 
 
-},{"./../../bower_components/jquery/dist/jquery.js":1,"./../../bower_components/react/react.js":3,"./status_header.js":12}],10:[function(require,module,exports){
+},{"./../../bower_components/jquery/dist/jquery.js":2,"./../../bower_components/react/react.js":4,"./status_header.js":13}],11:[function(require,module,exports){
 var React = require("./../../bower_components/react/react.js");
 
 var StatusHeader = require('./status_header.js');
@@ -32713,7 +32810,7 @@ module.exports = React.createClass({displayName: "exports",
 
 
 
-},{"./../../bower_components/react/react.js":3,"./status_header.js":12}],11:[function(require,module,exports){
+},{"./../../bower_components/react/react.js":4,"./status_header.js":13}],12:[function(require,module,exports){
 var React = require("./../../bower_components/react/react.js");
 window.React = React;
 var Router = require("./../../bower_components/react-router/dist/react-router.js");
@@ -32842,7 +32939,7 @@ module.exports = React.createClass({displayName: "exports",
 
 
 
-},{"./../../bower_components/jquery/dist/jquery.js":1,"./../../bower_components/react-router/dist/react-router.js":2,"./../../bower_components/react/react.js":3}],12:[function(require,module,exports){
+},{"./../../bower_components/jquery/dist/jquery.js":2,"./../../bower_components/react-router/dist/react-router.js":3,"./../../bower_components/react/react.js":4}],13:[function(require,module,exports){
 var React = require("./../../bower_components/react/react.js");
 window.React = React;
 var Router = require("./../../bower_components/react-router/dist/react-router.js");
@@ -32885,7 +32982,7 @@ module.exports = React.createClass({displayName: "exports",
 
 
 
-},{"./../../bower_components/react-router/dist/react-router.js":2,"./../../bower_components/react/react.js":3}],13:[function(require,module,exports){
+},{"./../../bower_components/react-router/dist/react-router.js":3,"./../../bower_components/react/react.js":4}],14:[function(require,module,exports){
 var React = require("./../../bower_components/react/react.js");
 var $ = require("./../../bower_components/jquery/dist/jquery.js");
 
@@ -33020,7 +33117,7 @@ module.exports = React.createClass({displayName: "exports",
 
 
 
-},{"./../../bower_components/jquery/dist/jquery.js":1,"./../../bower_components/react/react.js":3,"./status_cell.js":11}],14:[function(require,module,exports){
+},{"./../../bower_components/jquery/dist/jquery.js":2,"./../../bower_components/react/react.js":4,"./status_cell.js":12}],15:[function(require,module,exports){
 var React = require("./../../bower_components/react/react.js");
 window.React = React;
 var Router = require("./../../bower_components/react-router/dist/react-router.js");
@@ -33071,7 +33168,7 @@ module.exports = UserRoute;
 
 
 
-},{"./../../bower_components/react-router/dist/react-router.js":2,"./../../bower_components/react/react.js":3,"./answer_view.js":5,"./comment_view.js":6,"./file_view.js":8,"./log_view.js":9,"./result_view.js":10}],15:[function(require,module,exports){
+},{"./../../bower_components/react-router/dist/react-router.js":3,"./../../bower_components/react/react.js":4,"./answer_view.js":6,"./comment_view.js":7,"./file_view.js":9,"./log_view.js":10,"./result_view.js":11}],16:[function(require,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -33138,8 +33235,9 @@ Buffer.TYPED_ARRAY_SUPPORT = (function () {
  * By augmenting the instances, we can avoid modifying the `Uint8Array`
  * prototype.
  */
-function Buffer (subject, encoding, noZero) {
-  if (!(this instanceof Buffer)) return new Buffer(subject, encoding, noZero)
+function Buffer (subject, encoding) {
+  var self = this
+  if (!(self instanceof Buffer)) return new Buffer(subject, encoding)
 
   var type = typeof subject
   var length
@@ -33164,12 +33262,9 @@ function Buffer (subject, encoding, noZero) {
   if (length < 0) length = 0
   else length >>>= 0 // coerce to uint32
 
-  var self = this
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     // Preferred: Return an augmented `Uint8Array` instance for best performance
-    /*eslint-disable consistent-this */
-    self = Buffer._augment(new Uint8Array(length))
-    /*eslint-enable consistent-this */
+    self = Buffer._augment(new Uint8Array(length)) // eslint-disable-line consistent-this
   } else {
     // Fallback: Return THIS instance of Buffer (created by `new`)
     self.length = length
@@ -33193,7 +33288,7 @@ function Buffer (subject, encoding, noZero) {
     }
   } else if (type === 'string') {
     self.write(subject, 0, encoding)
-  } else if (type === 'number' && !Buffer.TYPED_ARRAY_SUPPORT && !noZero) {
+  } else if (type === 'number' && !Buffer.TYPED_ARRAY_SUPPORT) {
     for (i = 0; i < length; i++) {
       self[i] = 0
     }
@@ -33204,10 +33299,10 @@ function Buffer (subject, encoding, noZero) {
   return self
 }
 
-function SlowBuffer (subject, encoding, noZero) {
-  if (!(this instanceof SlowBuffer)) return new SlowBuffer(subject, encoding, noZero)
+function SlowBuffer (subject, encoding) {
+  if (!(this instanceof SlowBuffer)) return new SlowBuffer(subject, encoding)
 
-  var buf = new Buffer(subject, encoding, noZero)
+  var buf = new Buffer(subject, encoding)
   delete buf.parent
   return buf
 }
@@ -33255,7 +33350,7 @@ Buffer.isEncoding = function isEncoding (encoding) {
 }
 
 Buffer.concat = function concat (list, totalLength) {
-  if (!isArray(list)) throw new TypeError('Usage: Buffer.concat(list[, length])')
+  if (!isArray(list)) throw new TypeError('list argument must be an Array of Buffers.')
 
   if (list.length === 0) {
     return new Buffer(0)
@@ -33648,7 +33743,7 @@ Buffer.prototype.slice = function slice (start, end) {
     newBuf = Buffer._augment(this.subarray(start, end))
   } else {
     var sliceLen = end - start
-    newBuf = new Buffer(sliceLen, undefined, true)
+    newBuf = new Buffer(sliceLen, undefined)
     for (var i = 0; i < sliceLen; i++) {
       newBuf[i] = this[i + start]
     }
@@ -34409,7 +34504,7 @@ function decodeUtf8Char (str) {
   }
 }
 
-},{"base64-js":16,"ieee754":17,"is-array":18}],16:[function(require,module,exports){
+},{"base64-js":17,"ieee754":18,"is-array":19}],17:[function(require,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -34535,7 +34630,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	exports.fromByteArray = uint8ToBase64
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 exports.read = function(buffer, offset, isLE, mLen, nBytes) {
   var e, m,
       eLen = nBytes * 8 - mLen - 1,
@@ -34621,7 +34716,7 @@ exports.write = function(buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128;
 };
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 
 /**
  * isArray
@@ -34656,7 +34751,7 @@ module.exports = isArray || function (val) {
   return !! val && '[object Array]' == str.call(val);
 };
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -34716,101 +34811,4 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],20:[function(require,module,exports){
-var React = require("./../../bower_components/react/react.js");
-window.React = React;
-var Router = require("./../../bower_components/react-router/dist/react-router.js");
-var DefaultRoute = Router.DefaultRoute;
-var Link = Router.Link;
-var Route = Router.Route;
-var RouteHandler = Router.RouteHandler;
-var $ = require("./../../bower_components/jquery/dist/jquery.js");
-
-var DetailList = require('./detail_list.js');
-var SummaryList = require('./summary_list.js');
-var UserRoute = require('./user.js');
-
-var Record = React.createClass({displayName: "Record",
-    getInitialState: function() {
-        return {
-            admin: false,
-            template: {
-                institute: 'institute',
-                title: 'title',
-                subtitle: 'subtitle',
-                links: [
-                    { uri: '', label: '' }
-                ]
-            }
-        };
-    },
-
-    componentDidMount: function() {
-        $.get('../api/master.cgi',
-              {
-                  admin: true
-              },
-              function(result) {
-                  this.setState({
-                      admin: result.admin
-                  });
-              }.bind(this));
-        $.get('../api/template.cgi',
-              {
-                  type: 'record',
-                  links: true
-              },
-              function(result) {
-                  this.setState({
-                      template: result
-                  });
-              }.bind(this));
-    },
-
-    render: function() {
-        return (
-                React.createElement("div", null, 
-                React.createElement("div", {id: "article"}, 
-                React.createElement("h2", {id: "institute"}, this.state.template.institute), 
-                React.createElement("h1", {id: "title"}, this.state.template.title), 
-                React.createElement("h2", {id: "subtitle"}, this.state.template.subtitle), 
-                React.createElement("ul", null, 
-                React.createElement("li", null, "提出が済んだ場合は, 「提出済」と記載されます"), 
-                React.createElement("li", null, "提出内容に不備がある場合は, 「要再提出」と記載されます"), 
-                React.createElement("li", null, "提出しても, チェックが完了するまでは「確認中」と記載されます")
-                ), 
-                React.createElement("div", {id: "record"}, 
-                React.createElement("div", {id: "view_switch"}, 
-                "表示:", React.createElement("ul", null, 
-                React.createElement("li", null, React.createElement(Link, {to: "detail", id: "sw_view_report"}, "課題ごと")), 
-                React.createElement("li", null, React.createElement(Link, {to: "summary", id: "sw_view_summary"}, "一覧"))
-                )
-                ), 
-                React.createElement(RouteHandler, {admin: this.state.admin})
-                )
-                ), 
-                React.createElement("div", {id: "footer"}, 
-                React.createElement("a", {href: this.state.template.links[0].uri}, this.state.template.links[0].label), 
-                React.createElement("a", {href: "../post/"}, "提出ページ")
-                )
-                )
-        );
-    }
-});
-
-var routes = (
-        React.createElement(Route, {name: "record", path: "/", handler: Record}, 
-        React.createElement(Route, {name: "detail", path: "detail", handler: DetailList}), 
-        React.createElement(Route, {name: "summary", path: "summary", handler: SummaryList}), 
-        UserRoute, 
-        React.createElement(DefaultRoute, {handler: SummaryList})
-        )
-);
-
-Router.run(routes, function(Handler) {
-    React.render(React.createElement(Handler, null), document.body);
-});
-
-
-
-},{"./../../bower_components/jquery/dist/jquery.js":1,"./../../bower_components/react-router/dist/react-router.js":2,"./../../bower_components/react/react.js":3,"./detail_list.js":7,"./summary_list.js":13,"./user.js":14}]},{},[20]);
+},{}]},{},[1]);
