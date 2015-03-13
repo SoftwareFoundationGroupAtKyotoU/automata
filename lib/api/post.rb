@@ -35,7 +35,7 @@ module API
       app = App.new(env['REMOTE_USER'])
       time = Time.now
 
-      rep_id = helper.param['report_id']
+      rep_id = helper.params['report_id']
       # return Bad Request if 'report_id' parameter is not passed.
       return helper.bad_request(ERR[:require] % 'report_id') unless rep_id
 
