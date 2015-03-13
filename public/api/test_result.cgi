@@ -3,6 +3,6 @@
 
 require 'bundler/setup'
 require 'rack'
-require_relative '../lib/api/test_result.rb'
+require_relative '../../lib/api/test_result.rb'
 
 Rack::Handler::CGI.run(API::TestResult.new)

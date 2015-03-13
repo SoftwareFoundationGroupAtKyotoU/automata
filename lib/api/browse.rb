@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+require 'cgi'
 require 'shellwords'
 require 'time'
 require 'shared-mime-info'
