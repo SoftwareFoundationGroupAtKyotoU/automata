@@ -4,7 +4,7 @@ var source = require('vinyl-source-stream');
 
 module.exports = function() {
     browserify({
-        'entries': ['public/record2/components/record.js'],
+        'entries': ['js/record2/record.js'],
         'transform': ['reactify', 'debowerify']
     })
         .bundle()

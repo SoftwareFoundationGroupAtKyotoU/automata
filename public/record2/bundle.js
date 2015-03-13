@@ -13103,7 +13103,7 @@ define(function() {
 
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
-},{"_process":8,"buffer":4}],3:[function(require,module,exports){
+},{"_process":19,"buffer":15}],3:[function(require,module,exports){
 (function (global){
 /**
  * React v0.12.2
@@ -31225,6 +31225,1853 @@ module.exports = warning;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],4:[function(require,module,exports){
+var React = require("./../../bower_components/react/react.js");
+var $ = require("./../../bower_components/jquery/dist/jquery.js");
+
+var Report = React.createClass({displayName: "Report",
+    getInitialState: function() {
+        var solved = this.props.solved;
+        var check_list = [];
+        var report_list = this.props.report_list;
+
+        report_list.forEach(function(report) {
+            var ex_name = report[0];
+            var index = solved.indexOf(ex_name);
+
+            if (index != -1) {
+                check_list[ex_name] = true;
+            }
+            else {
+                check_list[ex_name] = false;
+            }
+        });
+
+        return {
+            checked: check_list,
+            post: false,
+            cancel: false
+        };
+    },
+
+    handleChange: function(e) {
+        var check_list = this.state.checked;
+        var name = e.target.value;
+        var solved = check_list[name];
+
+        check_list[name] = !solved;
+
+        this.setState({
+            checked: check_list
+        });
+    },
+
+    onClick: function(e) {
+        var new_solved = "";
+        var check_list = this.state.checked;
+        var report_list = this.props.report_list;
+        var solved_list = {solved:[]};
+        var unsolved_list = {unsolved:[]};
+        var post_data = {}
+
+        for (var key in check_list) {
+            if (check_list[key]) {
+                if (new_solved.length == 0) {
+                    new_solved = new_solved + key;
+                }
+                else {
+                    new_solved = new_solved + "," + key;
+                };
+
+                solved_list.solved.push(key);
+            }
+            else {
+                report_list.forEach(function(report) {
+                    var ex_name = report[0];
+                    var attr = report[1];
+
+                    if (attr.required == 1 && ex_name == key) {
+                        var unsolved = [key, attr.required];
+                        unsolved_list.unsolved.push(unsolved);
+                    }
+                });
+            };
+        };
+
+        post_data.user = this.props.user;
+        post_data.report = this.props.report;
+        post_data.exercise = new_solved;
+
+        $.ajax({
+            url: "../api/admin_solved.cgi",
+            type: 'POST',
+            data: post_data,
+            success: function(data) {
+                this.props.posted(solved_list, unsolved_list);
+            }.bind(this),
+            error: function(xhr, status, err) {
+                console.log(status);
+            }
+        });
+    },
+
+    render: function() {
+        var report_name = this.props.report;
+        var solved = this.props.solved;
+        var check_list = this.state.checked;
+        var reports = [];
+        var handlechange = this.handleChange;
+
+        this.props.report_list.forEach(function(report) {
+            var name = report[0];
+            var label = "ex_" + report_name + name;
+
+            reports.push
+            (
+                    React.createElement("li", null, 
+                    React.createElement("input", {type: "checkbox", checked: check_list[name], 
+                           onChange: handlechange, 
+                           value: name}), 
+                    React.createElement("label", null, name)
+                    )
+            );
+        });
+        return (
+                React.createElement("div", null, 
+                React.createElement("div", {className: "list_view"}, 
+                React.createElement("ul", {className: "ex"}, 
+                reports
+                )
+                ), 
+                    React.createElement("button", {onClick: this.onClick}, "変更"), 
+                    React.createElement("button", {onClick: this.props.onclick}, "キャンセル")
+                )
+        );
+    }
+});
+
+var AnswerEdit = React.createClass({displayName: "AnswerEdit",
+
+    getInitialState: function() {
+        return {
+            report_list: undefined,
+        };
+    },
+
+    componentDidMount: function() {
+        $.get('../api/scheme.cgi',
+              {
+                  id: this.props.report,
+                  exercise: true,
+                  action: 'get',
+              },
+              function(result) {
+                  this.setState({
+                      report_list: result[0].exercise
+                  });
+              }.bind(this));
+    },
+
+    render: function() {
+        if (typeof (this.state.report_list) == 'undefined') {
+            return (
+                    React.createElement("div", null, 
+                    React.createElement("div", {className: "list_view"}
+                    )
+                    )
+            );
+        }
+        else {
+            return (
+                    React.createElement(Report, {user: this.props.token, 
+                            report: this.props.report, 
+                            solved: this.props.solved, 
+                            unsolved: this.props.unsolved, 
+                            report_list: this.state.report_list, 
+                            onclick: this.props.onclick, 
+                            posted: this.props.posted})
+            );
+        };
+    }
+});
+
+module.exports = AnswerEdit;
+
+
+
+},{"./../../bower_components/jquery/dist/jquery.js":1,"./../../bower_components/react/react.js":3}],5:[function(require,module,exports){
+var React = require("./../../bower_components/react/react.js");
+var $ = require("./../../bower_components/jquery/dist/jquery.js");
+
+var AnswerEdit = require('./answer_edit.js');
+var UserModule = require('./user.js');
+var StatusHeader = require('./status_header.js');
+var Solved = UserModule.Solved;
+var Unsolved = UserModule.Unsolved;
+
+var Solved = React.createClass({displayName: "Solved",
+    render: function() {
+        var solved = this.props.solved.map(function(s) {
+            return (
+                React.createElement("li", null, s)
+            )});
+        return (
+                React.createElement("ul", null, 
+                React.createElement("h3", null, "解答済み"), 
+                solved
+                )
+        );
+    }
+});
+
+var Unsolved = React.createClass({displayName: "Unsolved",
+    render: function () {
+        var unsolved;
+
+        if (this.props.unsolved.length != []) {
+            unsolved = this.props.unsolved.map(function(us) {
+                return (
+                        React.createElement("li", null, us[0])
+                )
+            });
+        }
+        else {
+            unsolved = (React.createElement("li", null, "なし"));
+            };
+
+        return (
+                React.createElement("ul", null, 
+                React.createElement("h3", null, "未回答"), 
+                unsolved
+                )
+        );
+    }
+});
+
+var AnswerView = React.createClass({displayName: "AnswerView",
+    getInitialState: function() {
+        return {
+            solved_list: {solved:[]},
+            unsolved_list: {unsolved:[]},
+            clicked: false,
+            mounted: false
+        };
+    },
+
+    componentDidMount: function() {
+        $.get('../api/user.cgi',
+              {
+                  user: this.props.token,
+                  report: this.props.report,
+                  type: 'status',
+                  status: 'solved',
+                  action: 'get',
+              },
+              function(result) {
+                  this.setState({
+                      solved_list: result[0].report[this.props.report]
+                  });
+              }.bind(this));
+        $.get('../api/user.cgi',
+              {
+                  user: this.props.token,
+                  report: this.props.report,
+                  type: 'status',
+                  status: 'record',
+                  action: 'get',
+              },
+              function(result) {
+                  this.setState({
+                      unsolved_list: result[0].report[this.props.report],
+                      mounted: true
+                  });
+              }.bind(this));
+    },
+
+    onClick: function() {
+        this.setState({
+            clicked: !this.state.clicked
+        });
+    },
+
+    toolBar: function() {
+        return (
+                React.createElement("ul", {className: "status_toolbar"}, 
+                React.createElement("li", {className: "toolbutton"}, 
+                React.createElement("a", {onClick: this.onClick}, "✏編集")
+                )
+                )
+        );
+    },
+
+    posted: function(solved, unsolved) {
+        this.setState({
+            clicked: false,
+            solved_list: solved,
+            unsolved_list: unsolved,
+        });
+    },
+
+    render: function() {
+        if (!this.state.mounted) {
+            return (
+                    React.createElement("div", {className: "status_window"}, 
+                    React.createElement(StatusHeader, {tabName: "answer", toolBar: this.toolBar}), 
+                    React.createElement("div", {className: "status_view"}, 
+                    React.createElement("img", {src: "./loading.gif"})
+                    )
+                    )
+            );
+        }
+        else if(!this.state.clicked && this.state.mounted) {
+            return (
+                    React.createElement("div", {className: "status_window"}, 
+                    React.createElement(StatusHeader, {tabName: "answer", toolBar: this.toolBar}), 
+                    React.createElement("div", {className: "status_view"}, 
+                    React.createElement(Solved, {solved: this.state.solved_list.solved}), 
+                    React.createElement(Unsolved, {unsolved: this.state.unsolved_list.unsolved})
+                    )
+                    )
+            );
+        }
+        else {
+            return (
+                    React.createElement("div", {className: "status_window"}, 
+                    React.createElement(StatusHeader, {tabName: "answer"}), 
+                    React.createElement("div", {className: "status_view"}, 
+                    React.createElement(AnswerEdit, {token: this.props.token, 
+                                report: this.props.report, 
+                                solved: this.state.solved_list.solved, 
+                                unsolved: this.state.unsolved_list.unsolved, 
+                                onclick: this.onClick, 
+                                posted: this.posted})
+                    )
+                    )
+            );
+        };
+    }
+});
+
+module.exports = {
+    answerView: AnswerView,
+    solved: Solved,
+    unsolved: Unsolved
+};
+
+
+
+},{"./../../bower_components/jquery/dist/jquery.js":1,"./../../bower_components/react/react.js":3,"./answer_edit.js":4,"./status_header.js":12,"./user.js":14}],6:[function(require,module,exports){
+var sum_rep = "summary-report2";
+
+var React = require("./../../bower_components/react/react.js");
+window.React = React;
+var Router = require("./../../bower_components/react-router/dist/react-router.js");
+var $ = require("./../../bower_components/jquery/dist/jquery.js");
+var DefaultRoute = Router.DefaultRoute;
+var Link = Router.Link;
+var Route = Router.Route;
+var RouteHandler = Router.RouteHandler;
+
+var StatusHeader = require('./status_header.js');
+
+const mode = { normal: 0, edit: 1, preview: 2 };
+
+var Comment = React.createClass({displayName: "Comment",
+    getInitialState: function() {
+      return { modeState: mode['normal'],
+               commentHTML: this.props.comment.content,
+               commentText: '',
+               aclUserFlag: this.props.acl.indexOf('user') != -1,
+               aclOtherFlag: this.props.acl.indexOf('other') != -1,
+               loadingFlag: false };
+    },
+    setMode: function(mode_text) {
+      this.setState({modeState: mode[mode_text]});
+    },
+    normalMode: function() { this.setMode('normal'); },
+    editMode: function() { this.setMode('edit'); },
+    previewMode: function() { this.setMode('preview'); },
+    isMode: function(mode_text) { return this.state.modeState == mode[mode_text]; },
+    isNormalMode: function() { return this.isMode('normal'); },
+    isEditMode: function() { return this.isMode('edit'); },
+    isPreviewMode: function() { return this.isMode('preview'); },
+
+    setCommentHTML: function(txt) { this.setState({ commentHTML: txt }); },
+    getCommentHTML: function() { return this.state.commentHTML; },
+    setCommentText: function(txt) { this.setState({ commentText: txt }); },
+    getCommentText: function() { return this.state.commentText; },
+
+    loadingModeStart: function() { this.setState({ loadingFlag: true }); },
+    loadingModeEnd: function() { this.setState({ loadingFlag: false }); },
+
+    reloadComment: function(cont) {
+      this.loadingModeStart();
+      $.get('../api/comment.cgi',
+          {
+            user: this.props.token,
+            report: this.props.report,
+            action: 'get',
+            id: this.props.comment.id,
+            timestamp: this.props.comment.timestamp
+          },
+          function(result) {
+            this.setCommentHTML(result[0].content);
+            this.setState({ aclUserFlag: result[0].acl.indexOf('user') != -1,
+                            aclOtherFlag: result[0].acl.indexOf('other') != -1 });
+            this.loadingModeEnd();
+            cont();
+          }.bind(this));
+    },
+
+    onCheckAclUser: function(event) {
+        this.setState({ aclUserFlag: !this.state.aclUserFlag });
+    },
+    onCheckAclOther: function(event) {
+        this.setState({ aclOtherFlag: !this.state.aclOtherFlag });
+    },
+
+    onComment: function() {
+        var aclAry = [];
+        if (this.state.aclUserFlag) { aclAry.push('user'); }
+        if (this.state.aclOtherFlag) { aclAry.push('other'); }
+        var aclText = aclAry.join(',');
+        $.ajax({
+          type: 'POST',
+          url: '../api/comment.cgi',
+          data: {
+            user: this.props.token,
+            report: this.props.report,
+            action: 'edit',
+            id: this.props.comment.id,
+            acl: aclText,
+            message: this.getCommentText()
+          },
+          complete: function(data) {
+            this.reloadComment(function() { this.normalMode(); }.bind(this));
+          }.bind(this)
+        });
+    },
+
+    onEdit: function() {
+      $.get('../api/comment.cgi',
+          {  
+            user: this.props.token,
+            report: this.props.report,
+            id: this.props.comment.id,
+            action: 'get',
+            type: 'raw'
+          },
+          function(result) {
+            this.setCommentText(result[0].content);
+            this.editMode();
+          }.bind(this));
+    },
+    
+    onDelete: function() {
+      var text = 'このコメント['
+               + this.props.comment.user
+               + ': ' + this.props.comment.timestamp
+               + ']を削除しますか？';
+      if (window.confirm(text)) {
+        $.ajax({
+          type: 'POST',
+          url: '../api/comment.cgi',
+          data: {
+            user: this.props.comment.user,
+            report: this.props.report,
+            action: 'delete',
+            id: this.props.comment.id
+          },
+          complete: function(data) {
+            this.props.rerender();
+          }.bind(this)
+        });
+      }
+    },
+
+    onPreview: function() {
+      // from commentText to commentHTML
+      $.get('../api/comment.cgi',
+          {  
+            action: 'preview',
+            message: this.getCommentText()
+          },
+          function(result) {
+            this.setCommentHTML(result);
+            this.previewMode();
+          }.bind(this));
+    },
+
+    onCancel: function() {
+      this.reloadComment(function () { this.normalMode(); }.bind(this));
+    },
+
+    handleChange: function(event) {
+      this.setCommentText(event.target.value);
+    },
+
+    aclMessage: function() {
+        if (this.state.aclUserFlag && this.state.aclOtherFlag) {
+          return "全員に公開";
+        } else if (this.state.aclUserFlag) {
+          return "提出者に公開";
+        } else if (this.state.aclOtherFlag) {
+          return "提出者以外に公開";
+        } else {
+          return "非公開";
+        }
+    },
+
+    render: function() {
+        if (this.state.loadingFlag) {
+          return React.createElement("li", null, React.createElement("div", {className: "form"}, React.createElement("img", {src: "../record/loading.gif"})));
+        }
+
+        var comment_box;
+        if (this.isNormalMode()) {
+          comment_box = (
+            React.createElement("div", {className: "form"}, 
+              React.createElement("div", {className: "message", dangerouslySetInnerHTML: {__html: this.getCommentHTML()}})
+            )
+          );
+        } else if (this.isEditMode()) {
+          comment_box = (
+            React.createElement("div", {className: "form"}, 
+              React.createElement("textarea", {rows: "6", value: this.getCommentText(), onChange: this.handleChange}), 
+              React.createElement("input", {type: "submit", value: "コメントする", onClick: this.onComment}), 
+              React.createElement("input", {type: "button", value: "プレビュー", onClick: this.onPreview}), 
+              React.createElement("input", {type: "button", value: "キャンセル", onClick: this.onCancel}), 
+              React.createElement("input", {id: "summary-report2_comment_acl_user", type: "checkbox", name: "user", checked: this.state.aclUserFlag, onChange: this.onCheckAclUser}), 
+              React.createElement("label", {htmlFor: "summary-report2_comment_acl_user"}, "提出者に公開"), 
+              React.createElement("input", {id: "summary-report2_comment_acl_other", type: "checkbox", name: "other", checked: this.state.aclOtherFlag, onChange: this.onCheckAclOther}), 
+              React.createElement("label", {htmlFor: "summary-report2_comment_acl_other"}, "提出者以外に公開")
+            )
+          );
+        } else if (this.isPreviewMode()) {
+          comment_box = (
+            React.createElement("div", {className: "form"}, 
+              React.createElement("div", {className: "preview message", dangerouslySetInnerHTML: {__html: this.getCommentHTML()}}), 
+              React.createElement("input", {type: "submit", value: "コメントする", onClick: this.onComment}), 
+              React.createElement("input", {type: "button", value: "再編集", onClick: this.onEdit}), 
+              React.createElement("input", {type: "button", value: "キャンセル", onClick: this.onCancel}), 
+              React.createElement("input", {id: "summary-report2_comment_acl_user", type: "checkbox", name: "user", checked: this.state.aclUserFlag, onChange: this.onCheckAclUser}), 
+              React.createElement("label", {htmlFor: "summary-report2_comment_acl_user"}, "提出者に公開"), 
+              React.createElement("input", {id: "summary-report2_comment_acl_other", type: "checkbox", name: "other", checked: this.state.aclOtherFlag, onChange: this.onCheckAclOther}), 
+              React.createElement("label", {htmlFor: "summary-report2_comment_acl_other"}, "提出者以外に公開")
+            )
+          );
+        } else {
+          console.log("Error: Comment render");
+        }
+        return (
+          // TODO: ここのliの条件分岐何とかしたい．今は空文字のときもタグにclassが付く
+          React.createElement("li", {id: sum_rep + "-comment" + this.props.comment.id, className: !this.state.aclUserFlag && !this.state.aclOtherFlag?"private":" "}, 
+          React.createElement("div", {className: "meta"}, 
+          React.createElement("p", {className: "author"}, this.props.comment.user), 
+          React.createElement("p", {className: "edit"}, 
+          React.createElement("a", {title: "編集する", onClick: this.onEdit}, "✏"), 
+          React.createElement("a", {title: "削除する", onClick: this.onDelete}, "✖")
+          ), 
+          React.createElement("p", {className: "acl"}, this.aclMessage()), 
+          React.createElement("p", {className: "date"}, this.props.comment.timestamp)
+          ), 
+          comment_box
+          )
+          );
+    }
+});
+
+var CommentForm = React.createClass({displayName: "CommentForm",
+    getInitialState: function() {
+        return { isPreview: false,
+                 textValue: "",
+                 aclUserFlag: false,
+                 aclOtherFlag: false };
+    },
+    setIsPreview: function(b) { this.setState({isPreview: b}); },
+    getIsPreview: function() { return this.state.isPreview; },
+    setTextValue: function(txt) { this.setState({ textValue: txt }); },
+    getTextValue: function() { return this.state.textValue; },
+    resetValue: function() { this.setTextValue(''); this.setIsPreview(false); },
+    onComment: function(event) {
+        var aclAry = [];
+        if (this.state.aclUserFlag) { aclAry.push('user'); }
+        if (this.state.aclOtherFlag) { aclAry.push('other'); }
+        var aclText = aclAry.join(',');
+        $.ajax({
+          type: 'POST',
+          url: '../api/comment.cgi',
+          data: {
+            user: this.props.token,
+            report: this.props.report,
+            action: 'post',
+            acl:  aclText,
+            message: this.getTextValue()
+          },
+          complete: function(data) {
+            this.props.rerender();
+            this.resetValue();
+          }.bind(this)
+        });
+    },
+    onPreview: function(event) { this.setIsPreview(!this.getIsPreview()); },
+    handleChange: function(event) { this.setTextValue(event.target.value); },
+    onCheckAclUser: function(event) { this.setState({ aclUserFlag: !this.state.aclUserFlag }); },
+    onCheckAclOther: function(event) { this.setState({ aclOtherFlag: !this.state.aclOtherFlag }); },
+    render: function() {
+        var preview_reedit_text = this.getIsPreview()?"再編集":"プレビュー";
+        var comment_area;
+        if (!this.getIsPreview()) {
+            comment_area = (
+                React.createElement("textarea", {rows: "6", value: this.getTextValue(), onChange: this.handleChange})
+            );
+        } else {
+            comment_area = (
+                React.createElement("div", {className: "preview messsage"}, 
+                    React.createElement("p", null, this.getTextValue())
+                )
+            );
+        }
+        return (
+            React.createElement("div", {className: "form"}, 
+            comment_area, 
+            React.createElement("input", {type: "submit", onClick: this.onComment, value: "コメントする"}), 
+            React.createElement("input", {type: "button", onClick: this.onPreview, value: preview_reedit_text}), 
+            React.createElement("input", {id: "summary-report2_comment_acl_user", type: "checkbox", name: "user", onClick: this.onCheckAclUser}), 
+            React.createElement("label", {htmlFor: "summary-report2_comment_acl_user"}, "提出者に公開"), 
+            React.createElement("input", {id: "summary-report2_comment_acl_other", type: "checkbox", name: "other", onClick: this.onCheckAclOther}), 
+            React.createElement("label", {htmlFor: "summary-report2_comment_acl_other"}, "提出者以外に公開")
+            )
+        );
+    }
+});
+
+var CommentView = React.createClass({displayName: "CommentView",
+    getInitialState: function() {
+        return {
+            comments: []
+        };
+    },
+
+    componentDidMount: function() {
+      this.rerender();
+    },
+
+    rerender: function() {
+      $.get('../api/comment.cgi',
+          {  
+            user: this.props.token,
+            report: this.props.report,
+            action: 'get',
+          },
+          function(result) {
+            this.setState({
+              comments: result
+            });
+          }.bind(this));
+    },
+
+    render: function() {
+        var comments = this.state.comments.map(function(comment) {
+            return (
+                    React.createElement(Comment, {comment: comment, token: this.props.token, report: this.props.report, acl: comment.acl, rerender: this.rerender})
+            );
+        }.bind(this));
+        return (
+                React.createElement("div", {className: "status_window"}, 
+                  React.createElement(StatusHeader, {tabName: "comment"}/* toolBar={ function() { return <p>古典論理の犬</p>; } } */ ), 
+                  React.createElement("div", {className: "status_view"}, 
+                  React.createElement("ul", {className: "comments"}, 
+                  comments, 
+                  React.createElement("li", null, React.createElement(CommentForm, {token: this.props.token, report: this.props.report, rerender: this.rerender}))
+                  )
+                  )
+                )
+        );
+    }
+});
+
+module.exports = CommentView;
+
+
+
+},{"./../../bower_components/jquery/dist/jquery.js":1,"./../../bower_components/react-router/dist/react-router.js":2,"./../../bower_components/react/react.js":3,"./status_header.js":12}],7:[function(require,module,exports){
+var React = require("./../../bower_components/react/react.js");
+window.React = React;
+var Router = require("./../../bower_components/react-router/dist/react-router.js");
+var $ = require("./../../bower_components/jquery/dist/jquery.js");
+
+var StatusCell = require('./status_cell.js');
+
+var OptionalCell = React.createClass({displayName: "OptionalCell",
+    getInitialState: function() {
+        return {
+            expand: false,
+        };
+    },
+
+    toggleDetail: function() {
+        this.setState({
+            expand: !this.state.expand
+        });
+        return false;
+    },
+
+    render: function() {
+        var content;
+        if (this.props.answered.length > 0) {
+            var detail = this.props.answered.length;
+            if (this.state.expand) {
+                detail = this.props.answered.join(', ');
+            }
+            content = (
+                    React.createElement("a", {href: "javascript:void(0)", onClick: this.toggleDetail}, 
+                    detail
+                    )
+            );
+        }
+        return (
+                React.createElement("td", {className: this.props.name}, 
+                content
+                )
+        );
+    }
+});
+
+var ReportList = React.createClass({displayName: "ReportList",
+    mixins: [Router.Navigation],
+
+    updateStatus: function(token, report) {
+        $.get('../api/user.cgi',
+              {
+                  type: 'status',
+                  user: token,
+                  report: report,
+              },
+              function(result) {
+                  this.setState({
+                      users: this.state.users.map(function(user) {
+                          if (user.token === token) {
+                              user.report[report].status = result[0].report[report].status;
+                          }
+                          return user;
+                      })
+                  });
+              }.bind(this));
+    },
+
+    getInitialState: function() {
+        return {
+            users: [],
+            users_init: false,
+        };
+    },
+
+    componentDidMount: function() {
+        $.get('../api/user.cgi',
+              {
+                  type: 'status',
+                  report: this.props.scheme.id,
+                  status: 'record',
+                  log: true,
+              },
+              function(users) {
+                  var tokens = users.map(function(user) { return user.token });
+                  $.ajax({
+                      url: '../api/comment.cgi',
+                      data: {
+                          action: 'list_news',
+                          report: this.props.scheme.id,
+                          user: tokens
+                      },
+                      success: function(comments) {
+                          Object.keys(comments).map(function(key) {
+                              var user = users.filter(function(user) {
+                                  return user.token === key;
+                              })[0];
+                              ['report', this.props.scheme.id, 'comment'].reduce(function(r, k) {
+                                  if (!r[k]) r[k] = {};
+                                  return r[k];
+                              }, user);
+                              user['report'][this.props.scheme.id]['comment'] = comments[key];
+                          }, this);
+                          this.setState({
+                              users: users,
+                              users_init: true,
+                          });
+                      }.bind(this),
+                      traditional: true
+                  });
+              }.bind(this));
+    },
+
+    render: function() {
+        var ths = this.props.scheme.record.map(function(r) {
+            return (
+                    React.createElement("th", {className: r.field}, r.label)
+            );
+        });
+        var users = this.state.users.map(function(user) {
+            var tds = this.props.scheme.record.map(function(r) {
+                if (r.field === 'name') {
+                    var unreads = ['report', this.props.scheme.id, 'comment', 'unreads'].reduce(function(r, k) {
+                        if (!r[k]) r[k] = {};
+                        return r[k];
+                    }, user);
+                    if (unreads > 0) {
+                        unreads = (React.createElement("div", {className: "unread"}, unreads));
+                    }
+                    return (React.createElement("td", {className: "name"}, unreads, user.name));
+                } else if (r.field === 'status') {
+                    return (React.createElement(StatusCell, {user: user, report: this.props.scheme.id, admin: this.props.admin, updateStatus: this.updateStatus}));
+                } else if (/^optional/.test(r.field)) {
+                    var answered = ['report', this.props.scheme.id, 'optional'].reduce(function(r, k) {
+                        if (typeof r[k] === 'undefined') r[k] = {};
+                        return r[k];
+                    }, user);
+                    if (!Array.isArray(answered)) answered = [];
+                    return (React.createElement(OptionalCell, {name: r.field, answered: answered}));
+                } else if (r.field === 'unsolved') {
+                    var unsolved = ['report', this.props.scheme.id, 'unsolved'].reduce(function(r, k) {
+                        if (typeof r[k] === 'undefined') r[k] = {};
+                        return r[k];
+                    }, user);
+                    if (!Array.isArray(unsolved)) unsolved = [];
+                    var str = unsolved.map(function(l) {
+                        var r = l[0];
+                        if (l[1] > 1) r += 'のうち残り' + l[1] + '問';
+                        return r;
+                    }).join(', ');
+                    return (React.createElement("td", {className: "unsolved"}, str));
+                } else if (r.field === 'test') {
+                    var test = ['report', this.props.scheme.id, 'log', 'test'].reduce(function(r, k) {
+                        if (!r[k]) r[k] = {};
+                        return r[k];
+                    }, user);
+                    var str;
+                    if ('passed' in test && 'number' in test) {
+                        str = test.passed + '/' + test.number;
+                    }
+                    return (React.createElement("td", {className: "test"}, str));
+                } else {
+                    return (React.createElement("td", null));
+                }
+            }.bind(this));
+            var transTo = function() {
+                this.transitionTo('user', {
+                    token: user.token,
+                    report: this.props.scheme.id,
+                });
+            }.bind(this);
+            return (
+                    React.createElement("tr", {className: "selectable", onClick: transTo}, tds)
+            );
+        }.bind(this));
+        if (!this.state.users_init) {
+            users = (
+                    React.createElement("tr", null, React.createElement("td", {colSpan: ths.length}, React.createElement("img", {src: "./loading.gif"})))
+            );
+        }
+        return (
+                React.createElement("table", {className: "record"}, 
+                React.createElement("thead", null, 
+                React.createElement("tr", null, ths)
+                ), 
+                React.createElement("tbody", null, 
+                users
+                )
+                )
+        );
+    }
+});
+
+var DetailList = React.createClass({displayName: "DetailList",
+    getInitialState: function() {
+        return {
+            scheme: [],
+            scheme_init: false,
+        };
+    },
+
+    componentDidMount: function() {
+        $.get('../api/scheme.cgi',
+              {
+                  record: true,
+              },
+              function(result) {
+                  this.setState({
+                      scheme: result,
+                      scheme_init: true,
+                  });
+              }.bind(this));
+    },
+
+    render: function() {
+        if (!this.state.scheme_init) {
+            return (
+                    React.createElement("div", null, React.createElement("img", {src: "./loading.gif"}))
+            );
+        }
+        var reports = this.state.scheme.map(function(s) {
+            return (
+                    React.createElement(ReportList, {scheme: s, admin: this.props.admin})
+            );
+        }.bind(this));
+        return (
+                React.createElement("div", {className: "view"}, reports)
+        );
+    }
+});
+
+module.exports = DetailList;
+
+
+
+},{"./../../bower_components/jquery/dist/jquery.js":1,"./../../bower_components/react-router/dist/react-router.js":2,"./../../bower_components/react/react.js":3,"./status_cell.js":11}],8:[function(require,module,exports){
+var React = require("./../../bower_components/react/react.js");
+
+var StatusHeader = require('./status_header.js');
+
+var FileEntry = (function() {
+    var humanReadableSize = function(size) {
+        var prefix = [ '', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y' ];
+        var i;
+        for (i=0; size >= 1024 && i < prefix.length-1; i++) {
+            size /= 1024;
+        }
+        if (i > 0) size = size.toFixed(1);
+        return size + prefix[i];
+    };
+
+    return React.createClass({
+        onclick: function (e) {
+            e.preventDefault();
+
+            var p = this.props;
+            if (p.entry.type === 'bin') return;
+
+            p.open(p.path+'/'+p.entry.name, p.entry.type);
+        },
+
+        render: function() {
+            var p = this.props;
+            var entry = p.entry;
+            var uri = FileView.rawPath(p.token, p.report, p.path+'/'+p.entry.name);
+            var onclick = this.onclick;
+            var suffix = entry.type === 'dir' ? '/' : '';
+
+            return (
+                React.createElement("tr", null, 
+                    React.createElement("td", {className: "file"}, 
+                        React.createElement("img", {className: "icon", 
+                             src: "./" + entry.type + ".png"}), 
+                        React.createElement("a", {href: uri, onClick: onclick}, entry.name + suffix)
+                    ), 
+                    React.createElement("td", {className: "size"}, humanReadableSize(entry.size)), 
+                    React.createElement("td", {className: "time"}, entry.time)
+                )
+            );
+        }
+    });
+})();
+
+var Breadcrum = (function() {
+    var descend = function(path) {
+        return path.split('/').reduce(function(r, p) {
+            r[1].push(p);
+            r[0].push({ name: p, path: r[1].join('/') });
+            return r;
+        }, [ [], [] ])[0];
+    };
+
+    return React.createClass({
+        rawPath: function(path) {
+            return FileView.rawPath(this.props.token, this.props.report, path)
+        },
+
+        render: function() {
+            var p = this.props;
+            var list = descend(p.path).map(function(p) {
+                p.type = 'dir';
+                return p;
+            });
+            last = list[list.length-1];
+            last.type = p.type;
+
+            var toolButton = last.type === 'dir' ? null :
+                React.createElement("li", {className: "toolbutton"}, 
+                    React.createElement("a", {href: this.rawPath(last.path)}, "⏎ 直接開く"));
+
+            var self = this;
+            var items = list.map(function(loc) {
+                if (loc.name == '.') loc.name = p.report;
+
+                var onclick = function(e) {
+                    e.preventDefault();
+                    p.open(loc.path, loc.type);
+                };
+                var uri = self.rawPath(loc.path);;
+                return React.createElement("li", null, React.createElement("a", {href: uri, onClick: onclick}, loc.name));
+            });
+
+            return (React.createElement("ul", {id: "summary-" + p.report + "_status_toolbar", 
+                         className: "status_toolbar"}, 
+                        React.createElement("li", null, "場所:", 
+                            React.createElement("ul", {id: p.report + '-breadcrum', 
+                                className: "breadcrums"}, items)
+                        ), 
+                        toolButton
+                    ));
+        }
+    });
+})();
+
+var FileBrowser = React.createClass({displayName: "FileBrowser",
+    render: function() {
+        var p = this.props;
+        var rows = p.entries.map(function(entry) {
+            return (React.createElement(FileEntry, {entry: entry, 
+                               path: p.path, 
+                               token: p.token, 
+                               report: p.report, 
+                               parent: self, 
+                               open: p.open}
+                    ));
+        });
+
+        return (
+            React.createElement("table", {className: "file_browser"}, 
+                React.createElement("tr", null, 
+                    React.createElement("th", {className: "file"}, "ファイル"), 
+                    React.createElement("th", {className: "size"}, "サイズ"), 
+                    React.createElement("th", {className: "time"}, "更新日時")
+                ), 
+                rows
+            )
+        );
+    }
+});
+
+var FileViewer = (function() {
+    return React.createClass({
+        render: function() {
+            var content = this.props.content;
+
+            // line number
+            var ln = '';
+            var i = 1, arr;
+            var re = new RegExp("\n", 'g');
+            while ((arr = re.exec(content)) != null) {
+                ln += i++ + "\n";
+            }
+
+            return React.createElement("table", {className: "file_browser file"}, React.createElement("tr", null, 
+                React.createElement("td", {className: "linenumber"}, React.createElement("pre", null, ln)), 
+                React.createElement("td", {className: "content"}, React.createElement("pre", null,  {__html: content} ))
+            ));
+        }
+    });
+})();
+
+var FileView = (function() {
+
+    var d = document;
+
+    var applyStyle = function(rules) {
+        if (d.styleSheets[0].addRule) { // IE
+            rules.forEach(function(s) {
+                d.styleSheets[0].addRule(s.selector, s.style);
+            });
+            return true;
+        } else {
+            var style = $('<style type="text/css" />');
+            style.append(rules.map(function(s) {
+                return s.selector+'{'+s.style+'}';
+            }).join("\n"));
+
+            var head = d.getElementsByTagName('head')[0];
+            if (head) {
+                head.appendChild(style[0]);
+                return true;
+            }
+        }
+    };
+
+    var applyStyleFromSource = function(source) {
+        source = source.replace(/[\r\n]/g, '');
+        var regex = '<style[^>]*>(?:<!--)?(.*?)(?:-->)?</style>';
+        if (new RegExp(regex).test(source)) {
+            var rawcss = RegExp.$1;
+            var arr;
+            var re = new RegExp('\\s*([^\{]+?)\\s*{([^\}]*)}','g');
+            var rules = [];
+            while ((arr = re.exec(rawcss)) != null) {
+                if (arr[1].charAt(0) == '.') {
+                    rules.push({selector: arr[1], style: arr[2]});
+                }
+            }
+            return applyStyle(rules);
+        }
+    };
+
+    return React.createClass({
+        browseAPI: function(path, success, error) {
+            $.ajax({
+                method: 'GET',
+                url:    '../api/browse.cgi',
+                data: {
+                    user:   this.props.token,
+                    report: this.props.report,
+                    path:   path,
+                    type:   'highlight',
+                },
+                success: function(res) { success(res); },
+                error:   function(jqxhr, status, err) {
+                    error();
+                },
+            });
+        },
+
+        open: function(path, type) {
+            if (type === 'bin') return;
+
+            this.browseAPI(path, function(res) {
+                if (type === 'dir') {
+                    this.replaceState({
+                        path: path,
+                        type: 'dir',
+                        entries: res
+                    });
+                } else {
+                    var div = $('<div />')[0];
+                    var content = res.replace(/<pre>\n/, '<pre>');
+                    div.innerHTML = content
+                    var pre = div.getElementsByTagName('pre')[0];
+                    if (content.charAt(content.length-1) != "\n") {
+                        content += "\n";
+                    };
+                    applyStyleFromSource(res);
+
+                    this.replaceState({
+                        path: path,
+                        type: type,
+                        content: pre.innerHTML+''
+                    });
+                }
+            }.bind(this), function() {
+                this.replaceState({
+                    path:  path,
+                    type:  type,
+                    error: true
+                });
+            });
+        },
+
+        getInitialState: function() {
+            this.open('.', 'dir');
+            return {
+                path: '.',
+                type: 'dir',
+                entries: []
+            };
+        },
+
+        render: function() {
+            var s = this.state;
+            var p = this.props;
+            var open = this.open;
+
+            var toolBar = function() {
+                return React.createElement(Breadcrum, {token: p.token, 
+                                  report: p.report, 
+                                  path: s.path, 
+                                  type: s.type, 
+                                  open: open});
+            }.bind(this);
+
+            var render = s.error ?
+                '読み込み失敗' :
+                s.type === 'dir' ?
+                React.createElement(FileBrowser, {token: p.token, 
+                             report: p.report, 
+                             path: s.path, 
+                             entries: s.entries, 
+                             open: open}) :
+                React.createElement(FileViewer, {content: s.content});
+
+            return (React.createElement("div", {id: "summary-" + p.report + "_status_window", 
+                         className: "status_window", 
+                         style:  {display: "block"} }, 
+                        React.createElement(StatusHeader, {tabName: "file", toolBar: toolBar}), 
+                          React.createElement("div", {id: "summary-" + p.report + "_status_view", 
+                               className: "status_view"}, 
+                              render
+                          )
+                    ));
+        }
+    });
+})();
+
+FileView.encodePath = function(path) {
+    return [
+        [ '&', '%26' ],
+        [ '\\?', '%3F' ]
+    ].reduce(function(r, x) {
+        return r.replace(new RegExp(x[0], 'g'), x[1]);
+    }, encodeURI(path));
+};
+
+FileView.rawPath = function(user, report, path) {
+    var uri = $(location);
+    var pathname = uri.attr('pathname').split('/');
+    pathname.pop(); pathname.pop();
+    var epath = FileView.encodePath(path);
+    pathname.push('browse', user, report, epath);
+    var param = path != epath ? ('?path=' + epath) : '';
+    return uri.attr('protocol') + '//' + uri.attr('host') + pathname.join('/') + param;
+};
+
+module.exports = FileView;
+
+
+
+},{"./../../bower_components/react/react.js":3,"./status_header.js":12}],9:[function(require,module,exports){
+var React = require("./../../bower_components/react/react.js");
+var $ = require("./../../bower_components/jquery/dist/jquery.js");
+
+var StatusHeader = require('./status_header.js');
+
+var Log = React.createClass({displayName: "Log",
+    render: function() {
+        var defs = [
+            { prop: 'timestamp',
+              label: 'ステータス更新日時'
+            },
+            { prop: 'submit',
+              label: '提出日時'
+            },
+            { prop: 'initial_submit',
+              label: '初回提出'
+            }
+        ];
+        var rawData = this.props.data;
+        var data = defs.map(
+            function (def) {
+                return (
+                        React.createElement("div", null, 
+                        React.createElement("dt", {className: def.prop}, def.label), 
+                        React.createElement("dd", {className: def.prop}, rawData[def.prop])
+                        )
+                );
+            });
+        return (React.createElement("div", null, " ", data, " "));
+    }
+});
+
+var LogMessages = React.createClass({displayName: "LogMessages",
+    render: function (){
+        var id = function (x){
+            return x;
+        };
+        var defs = [
+            // {message: '...', reason: ''}
+            { prop: 'message',
+              label:'メッセージ',
+              proc: id },
+            { prop: 'error',
+              label: 'エラー',
+              proc: id},
+            { prop: 'reason',
+              label: 'エラーの詳細',
+              proc: id },
+            // {build: 'OK'}
+            { prop: 'build',
+              label: 'build',
+              proc: id },
+            // {test: {passed: 0, number: 0}}
+            { prop: 'test',
+              label: 'テスト通過率',
+              proc: function(l){
+                  return (l.passed +'/'+ l.number);}
+            }
+        ];
+        var rawLog = this.props.log;
+        if (rawLog){
+        var messages = defs.map(
+            function (def){
+                if (rawLog[def.prop] && rawLog[def.prop].trim()) {
+                    return (
+                            React.createElement("div", {className: def.prop}, 
+                            React.createElement("dt", {className: def.prop}, def.label), 
+                            React.createElement("dd", {className: def.prop}, def.proc(rawLog[def.prop]))
+                            )
+                    );
+                } else {
+                    return (React.createElement("div", null));
+                };
+            });
+        } else {
+            var message = (React.createElement("div", null));
+        };
+        return (React.createElement("div", null, messages));
+    }
+});
+
+var LogEdit = React.createClass ({displayName: "LogEdit",
+    getInitialState: function (){
+        return {
+            report: this.props.rep,
+            user: this.props.token,
+            id: this.props.id,
+            message: this.props.data.message,
+            error: this.props.data.error,
+            reason: this.props.data.reason
+        };
+    },
+
+    handleSubmit: function (e){
+        $.post('../api/admin_log.cgi',
+               this.state,
+               function (d) {return;},
+               function(xhr, status, err) {
+                   console.error(status, err.toString());
+               }.bind(this));
+        this.props.exit();
+    },
+
+    handleChangeM: function (e) {
+        this.setState({
+            message: e.target.value,
+                      });
+    },
+    handleChangeE: function (e) {
+        this.setState({
+            error: e.target.value,
+        });
+    },
+    handleChangeR: function (e) {
+        this.setState({
+            reason: e.target.value,
+        });
+    },
+
+    render: function (){
+        var defs = [
+            // {build: 'OK'}
+            { prop: 'build',
+              label: 'build',
+              proc: function(x){if (x!='') {return x;};}
+            },
+            // {test: {passed: 0, number: 0}}
+            { prop: 'test',
+              label: 'テスト通過率',
+              proc: function(l){
+                  return (l.passed +'/'+ l.number);}
+            }];
+        var rawLog = this.props.data;
+        if (rawLog) {
+            var test = defs.map(
+                function (def) {
+                    if (rawLog[def.prop]) {
+                        return (
+                                React.createElement("div", null, 
+                                React.createElement("dt", {className: def.prop}, def.label), 
+                                React.createElement("dd", {className: def.prop}, def.proc(rawLog[def.prop]))
+                                ));
+                    } else {
+                        return (React.createElement("div", null));
+                    };
+                });
+        } else {
+            var test = (React.createElement("div", null));
+        };
+        return (
+                React.createElement("div", {className: "form"}, 
+                React.createElement("dt", {className: "message"}, "メッセージ"), 
+                React.createElement("dd", {className: "message"}, 
+                React.createElement("textarea", {rows: "2", cols: "80", onChange: this.handleChangeM, defaultValue: this.props.data.message})
+                ), 
+                React.createElement("dt", {className: "error"}, "エラー"), 
+                React.createElement("dd", {className: "error"}, 
+                React.createElement("textarea", {rows: "2", cols: "80", onChange: this.handleChangeE, defaultValue: this.props.data.error})
+                ), 
+                React.createElement("dt", {className: "reason"}, "エラーの詳細"), 
+                React.createElement("dd", {className: "reason"}, 
+                React.createElement("textarea", {rows: "2", cols: "80", onChange: this.handleChangeR, defaultValue: this.props.data.reason})
+                ), 
+                test, 
+                React.createElement("input", {type: "submit", onClick: this.handleSubmit, value: "変更"}), 
+                React.createElement("input", {type: "button", onClick: this.props.exit, value: "キャンセル"})
+                )
+        );
+    }
+});
+
+var LogView = React.createClass({displayName: "LogView",
+    getInitialState: function(){
+        return {
+            data: {},
+            onEdit: false
+        };
+    },
+
+    componentDidMount: function () {
+        $.get('../api/user.cgi',
+              {
+                  user: this.props.token,
+                  type: 'status',
+                  status: 'record',
+                  log : true,
+                  report: this.props.report
+              },
+              function(result) {
+                  this.setState({
+                      data: (result[0].report[this.props.report])
+                  });
+              }.bind(this));
+    },
+
+    onEdit: function () {
+        this.setState(
+            {onEdit: true});
+    },
+
+    exit: function () {
+        this.setState(
+            {onEdit: !this.state.onEdit}
+        );
+        $.get('../api/user.cgi',
+              {
+                  user: this.props.token,
+                  type: 'status',
+                  status: 'record',
+                  log : true,
+                  report: this.props.report
+              },
+              function(result) {
+                  this.setState({
+                      data: (result[0].report[this.props.report])
+                  });
+              }.bind(this));
+    },
+
+    toolBar: function () {
+        if (!this.props.admin) { return (React.createElement("div", null));}
+        if (this.state.onEdit) {
+            return (
+                    React.createElement("ul", {className: "status_toolbar"}, 
+                    React.createElement("li", {className: "toolbutton"}, "編集中")
+                    )
+            );
+        } else {
+            return (
+                    React.createElement("ul", {className: "status_toolbar"}, 
+                    React.createElement("li", {className: "toolbutton"}, React.createElement("a", {onClick: this.onEdit}, "✏ 編集"))
+                    )
+            );
+        };
+    },
+
+    render: function() {
+        var status = this.state.data;
+        if (this.state.onEdit) {
+            var logedit = (React.createElement(LogEdit, {id: this.state.data.submit, rep: this.props.report, data: this.state.data.log, token: this.props.token, exit: this.exit}));
+        } else {
+            var logedit = (React.createElement(LogMessages, {log: this.state.data.log})); };
+        return (
+                React.createElement("div", {className: "status_window"}, 
+                React.createElement(StatusHeader, {tabName: "log", toolBar: this.toolBar}), 
+                React.createElement("div", {id: 'status_view', className: "status_view"}, 
+                React.createElement("dl", {className: "log_msg"}, 
+                React.createElement(Log, {data: status}), 
+                logedit
+                )
+                )
+                )
+        );
+    }
+});
+
+module.exports = LogView;
+
+
+
+},{"./../../bower_components/jquery/dist/jquery.js":1,"./../../bower_components/react/react.js":3,"./status_header.js":12}],10:[function(require,module,exports){
+var React = require("./../../bower_components/react/react.js");
+
+var StatusHeader = require('./status_header.js');
+
+module.exports = React.createClass({displayName: "exports",
+    render: function() {
+        return (
+                React.createElement("div", {className: "status_window"}, 
+                React.createElement(StatusHeader, {tabName: "result"}), 
+                React.createElement("div", {className: "status_view"}, "ResultView: 構築中")
+                )
+        );
+    }
+});
+
+
+
+},{"./../../bower_components/react/react.js":3,"./status_header.js":12}],11:[function(require,module,exports){
+var React = require("./../../bower_components/react/react.js");
+window.React = React;
+var Router = require("./../../bower_components/react-router/dist/react-router.js");
+var $ = require("./../../bower_components/jquery/dist/jquery.js");
+
+module.exports = React.createClass({displayName: "exports",
+    mixins: [Router.Navigation],
+
+    status_map: {
+        'none':     '未提出',
+        'OK':       '受理',
+        'NG':       '要再提出',
+        'build':    '確認中',
+        'check':    '確認中',
+        'build:NG': '要再提出',
+        'check:NG': '要再提出',
+        'report':   'レポート確認中',
+    },
+
+    edit: function() {
+        this.setState({
+            editing: !this.state.editing
+        });
+        return false;
+    },
+
+    changeState: function(e) {
+        var id = ['report', this.props.report, 'submit'].reduce(function(r, k) {
+            if (typeof r[k] === 'undefined') r[k] = {};
+            return r[k];
+        }, this.props.user);
+        $.post('../api/admin_log.cgi',
+               {
+                   id: id,
+                   user: this.props.user.token,
+                   report: this.props.report,
+                   status: e.target.value
+               },
+               function(result) {
+                   this.props.updateStatus(this.props.user.token,
+                                           this.props.report);
+               }.bind(this));
+        this.setState({
+            editing: false
+        });
+    },
+
+    disable: function() {
+        return false;
+    },
+
+    getDefaultProps: function() {
+        return {
+            unRead: 0
+        };
+    },
+
+    getInitialState: function() {
+        return {
+            editing: false,
+        };
+    },
+
+    render: function() {
+        var status = ['report', this.props.report, 'status'].reduce(function(r, k) {
+            if (typeof r[k] === 'undefined') r[k] = {};
+            return r[k];
+        }, this.props.user);
+        if (typeof status !== 'string') {
+            status = 'none';
+        }
+        var props = {
+            className: 'status ' + status.replace(/:/g, '-')
+        };
+        if (this.props.isSelected) {
+            props.className += ' selected';
+        }
+        if (this.props.isButton) {
+            var transTo = function() {
+                this.transitionTo('user', {
+                    token: this.props.user.token,
+                    report: this.props.report,
+                });
+            }.bind(this);
+            props.className += ' selectable';
+            props.onClick = transTo;
+        }
+        var content = this.status_map[status];
+        if (this.state.editing) {
+            var opts = Object.keys(this.status_map).map(function(key) {
+                var name;
+                if (key === 'none') {
+                    name = '(' + this.status_map[key] + ')';
+                } else {
+                    name = key + ' (' + this.status_map[key] + ')';
+                }
+                return (
+                        React.createElement("option", {value: key}, name)
+                );
+            }.bind(this));
+            content = (
+                    React.createElement("select", {defaultValue: status, onClick: this.disable, onChange: this.changeState}, 
+                    opts
+                    )
+            );
+        }
+        var edit;
+        if (this.props.admin) {
+            edit = (
+                    React.createElement("a", {className: "edit", href: "javascript:void(0)", title: "変更する", onClick: this.edit}, "✏")
+            );
+        }
+        var unread;
+        if (this.props.unRead > 0) {
+            unread = (
+                    React.createElement("div", {className: "unread"}, this.props.unRead)
+            );
+        }
+        return (
+                React.createElement("td", React.__spread({},  props), 
+                unread, content, edit
+                )
+        );
+    }
+});
+
+
+
+},{"./../../bower_components/jquery/dist/jquery.js":1,"./../../bower_components/react-router/dist/react-router.js":2,"./../../bower_components/react/react.js":3}],12:[function(require,module,exports){
+var React = require("./../../bower_components/react/react.js");
+window.React = React;
+var Router = require("./../../bower_components/react-router/dist/react-router.js");
+var Link = Router.Link;
+
+module.exports = React.createClass({displayName: "exports",
+    mixins: [Router.State],
+
+    getDefaultProps: function() {
+        return {
+            toolBar: function() {
+                return null;
+            }
+        };
+    },
+
+    render: function() {
+        var _tabs = tabs.map(function(tab) {
+            var className = 'status_tabbar_button';
+            if (tab.path === this.props.tabName) {
+                className += ' selected';
+            }
+            return (
+                    React.createElement("li", {className: className, key: tab.path}, 
+                    React.createElement(Link, {to: tab.path, params: {
+                        token: this.getParams().token,
+                        report: this.getParams().report,
+                    }}, tab.name)
+                    )
+            );
+        }.bind(this));
+        return (
+                React.createElement("div", {className: "status_header"}, 
+                this.props.toolBar(), 
+                React.createElement("ul", {className: "status_tabbar"}, _tabs)
+                )
+        );
+    }
+});
+
+
+
+},{"./../../bower_components/react-router/dist/react-router.js":2,"./../../bower_components/react/react.js":3}],13:[function(require,module,exports){
+var React = require("./../../bower_components/react/react.js");
+var $ = require("./../../bower_components/jquery/dist/jquery.js");
+
+var StatusCell = require('./status_cell.js');
+
+module.exports = React.createClass({displayName: "exports",
+    updateStatus: function(token, report) {
+        $.get('../api/user.cgi',
+              {
+                  type: 'status',
+                  user: token,
+                  report: report,
+              },
+              function(result) {
+                  this.setState({
+                      users: this.state.users.map(function(user) {
+                          if (user.token === token) {
+                              user.report[report].status = result[0].report[report].status;
+                          }
+                          return user;
+                      })
+                  });
+              }.bind(this));
+    },
+
+    getInitialState: function() {
+        return {
+            scheme: [],
+            scheme_init: false,
+            users: [],
+            users_init: false,
+        };
+    },
+
+    componentDidMount: function() {
+        $.get('../api/scheme.cgi',
+              {
+                  record: true,
+              },
+              function(result) {
+                  var scheme = result.map(function(s) {
+                      var label = s.record.reduce(function(n, r) {
+                          if (r.field === 'status') {
+                              return r.label;
+                          } else {
+                              return n;
+                          }
+                      }, '');
+                      return {
+                          id: s.id,
+                          label: label,
+                      };
+                  });
+                  this.setState({
+                      scheme: scheme,
+                      scheme_init: true,
+                  });
+
+                  var data = { type: 'status' };
+                  if (this.props.token) data.user = this.props.token;
+                  $.get('../api/user.cgi',
+                        data,
+                        function(users) {
+                            var tokens = users.map(function(user) { return user.token });
+                            this.state.scheme.forEach(function(s) {
+                                $.ajax({
+                                    url: '../api/comment.cgi',
+                                    data: {
+                                        action: 'list_news',
+                                        report: s.id,
+                                        user: tokens
+                                    },
+                                    success: function(result) {
+                                        Object.keys(result).map(function(key) {
+                                            var user = users.filter(function(user) {
+                                                return user.token === key;
+                                            })[0];
+                                            ['report', s.id, 'comment'].reduce(function(r, k) {
+                                                if (!r[k]) r[k] = {};
+                                                return r[k];
+                                            }, user);
+                                            user['report'][s.id]['comment'] = result[key];
+                                        }, this);
+                                        this.setState({
+                                            users: users,
+                                            users_init: true,
+                                        });
+                                    }.bind(this),
+                                    traditional: true
+                                });
+                            }, this);
+                        }.bind(this));
+              }.bind(this));
+    },
+
+    render: function() {
+        if (!this.state.scheme_init || !this.state.users_init) {
+            return (
+                    React.createElement("div", null, React.createElement("img", {src: "./loading.gif"}))
+            );
+        }
+        var ths = this.state.scheme.map(function(s) {
+            return (
+                    React.createElement("th", null, s.label)
+            );
+        });
+        if (ths.length > 0) ths.unshift (React.createElement("th", null, "名前"));
+        var users = this.state.users.map(function(user) {
+            var kadais = this.state.scheme.map(function(s) {
+                var unreads = ['report', s.id, 'comment', 'unreads'].reduce(function(r, k) {
+                    if (!r[k]) r[k] = {};
+                    return r[k];
+                }, user);
+                return (React.createElement(StatusCell, {user: user, report: s.id, isButton: true, admin: this.props.admin, updateStatus: this.updateStatus, unRead: unreads, isSelected: this.props.report === s.id}));
+            }.bind(this));
+            return (
+                    React.createElement("tr", {key: user.token}, React.createElement("td", {className: "name"}, user.name), kadais)
+            );
+        }.bind(this));
+        return (
+                React.createElement("table", {className: "record"}, 
+                React.createElement("thead", null, 
+                React.createElement("tr", null, ths)
+                ), 
+                React.createElement("tbody", null, 
+                users
+                )
+                )
+        );
+    }
+});
+
+
+
+},{"./../../bower_components/jquery/dist/jquery.js":1,"./../../bower_components/react/react.js":3,"./status_cell.js":11}],14:[function(require,module,exports){
+var React = require("./../../bower_components/react/react.js");
+window.React = React;
+var Router = require("./../../bower_components/react-router/dist/react-router.js");
+var Route = Router.Route;
+var DefaultRoute = Router.DefaultRoute;
+
+var LogView = require('./log_view.js');
+var AnswerViewModule = require('./answer_view.js');
+var ResultView = require('./result_view.js');
+var FileView = require('./file_view.js');
+var CommentView = require('./comment_view.js');
+
+var User = React.createClass({displayName: "User",
+    mixins: [Router.State],
+
+    render: function() {
+        return (
+                React.createElement("div", null, 
+                React.createElement(SummaryList, {token: this.getParams().token, report: this.getParams().report, admin: this.props.admin}), 
+                React.createElement(RouteHandler, {token: this.getParams().token, report: this.getParams().report, admin: this.props.admin})
+                )
+        );
+    }
+});
+
+var tabs = [
+    { path: 'log',      name: 'ログ',         handler: LogView.logView },
+    { path: 'answer',   name: '解答状況',     handler: AnswerViewModule.answerView },
+    { path: 'result',   name: 'テスト結果',   handler: ResultView },
+    { path: 'file',     name: 'ファイル一覧', handler: FileView },
+    { path: 'comment',  name: 'コメント',     handler: CommentView },
+];
+
+var routes = tabs.map(function(tab) {
+    return (
+            React.createElement(Route, {name: tab.path, path: tab.path, handler: tab.handler, key: tab.path})
+    );
+});
+
+var UserRoute = (
+        React.createElement(Route, {name: "user", path: ":token/:report", handler: User}, 
+        routes, 
+        React.createElement(DefaultRoute, {handler: LogView.logView})
+        )
+);
+
+module.exports = UserRoute;
+
+
+
+},{"./../../bower_components/react-router/dist/react-router.js":2,"./../../bower_components/react/react.js":3,"./answer_view.js":5,"./comment_view.js":6,"./file_view.js":8,"./log_view.js":9,"./result_view.js":10}],15:[function(require,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -32562,7 +34409,7 @@ function decodeUtf8Char (str) {
   }
 }
 
-},{"base64-js":5,"ieee754":6,"is-array":7}],5:[function(require,module,exports){
+},{"base64-js":16,"ieee754":17,"is-array":18}],16:[function(require,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -32688,7 +34535,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	exports.fromByteArray = uint8ToBase64
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
-},{}],6:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 exports.read = function(buffer, offset, isLE, mLen, nBytes) {
   var e, m,
       eLen = nBytes * 8 - mLen - 1,
@@ -32774,7 +34621,7 @@ exports.write = function(buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128;
 };
 
-},{}],7:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 
 /**
  * isArray
@@ -32809,7 +34656,7 @@ module.exports = isArray || function (val) {
   return !! val && '[object Array]' == str.call(val);
 };
 
-},{}],8:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -32869,1862 +34716,15 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],9:[function(require,module,exports){
-var React = require("./../../../bower_components/react/react.js");
-var $ = require("./../../../bower_components/jquery/dist/jquery.js");
-
-var Report = React.createClass({displayName: "Report",
-    getInitialState: function() {
-        var solved = this.props.solved;
-        var check_list = [];
-        var report_list = this.props.report_list;
-
-        report_list.forEach(function(report) {
-            var ex_name = report[0];
-            var index = solved.indexOf(ex_name);
-
-            if (index != -1) {
-                check_list[ex_name] = true;
-            }
-            else {
-                check_list[ex_name] = false;
-            }
-        });
-
-        return {
-            checked: check_list,
-            post: false,
-            cancel: false
-        };
-    },
-
-    handleChange: function(e) {
-        var check_list = this.state.checked;
-        var name = e.target.value;
-        var solved = check_list[name];
-
-        check_list[name] = !solved;
-
-        this.setState({
-            checked: check_list
-        });
-    },
-
-    onClick: function(e) {
-        var new_solved = "";
-        var check_list = this.state.checked;
-        var report_list = this.props.report_list;
-        var solved_list = {solved:[]};
-        var unsolved_list = {unsolved:[]};
-        var post_data = {}
-
-        for (var key in check_list) {
-            if (check_list[key]) {
-                if (new_solved.length == 0) {
-                    new_solved = new_solved + key;
-                }
-                else {
-                    new_solved = new_solved + "," + key;
-                };
-
-                solved_list.solved.push(key);
-            }
-            else {
-                report_list.forEach(function(report) {
-                    var ex_name = report[0];
-                    var attr = report[1];
-
-                    if (attr.required == 1 && ex_name == key) {
-                        var unsolved = [key, attr.required];
-                        unsolved_list.unsolved.push(unsolved);
-                    }
-                });
-            };
-        };
-
-        post_data.user = this.props.user;
-        post_data.report = this.props.report;
-        post_data.exercise = new_solved;
-
-        $.ajax({
-            url: "../api/admin_solved.cgi",
-            type: 'POST',
-            data: post_data,
-            success: function(data) {
-                this.props.posted(solved_list, unsolved_list);
-            }.bind(this),
-            error: function(xhr, status, err) {
-                console.log(status);
-            }
-        });
-    },
-
-    render: function() {
-        var report_name = this.props.report;
-        var solved = this.props.solved;
-        var check_list = this.state.checked;
-        var reports = [];
-        var handlechange = this.handleChange;
-
-        this.props.report_list.forEach(function(report) {
-            var name = report[0];
-            var label = "ex_" + report_name + name;
-
-            reports.push
-            (
-                    React.createElement("li", null, 
-                    React.createElement("input", {type: "checkbox", checked: check_list[name], 
-                           onChange: handlechange, 
-                           value: name}), 
-                    React.createElement("label", null, name)
-                    )
-            );
-        });
-        return (
-                React.createElement("div", null, 
-                React.createElement("div", {className: "list_view"}, 
-                React.createElement("ul", {className: "ex"}, 
-                reports
-                )
-                ), 
-                    React.createElement("button", {onClick: this.onClick}, "変更"), 
-                    React.createElement("button", {onClick: this.props.onclick}, "キャンセル")
-                )
-        );
-    }
-});
-
-var AnswerEdit = React.createClass({displayName: "AnswerEdit",
-
-    getInitialState: function() {
-        return {
-            report_list: undefined,
-        };
-    },
-
-    componentDidMount: function() {
-        $.get('../api/scheme.cgi',
-              {
-                  id: this.props.report,
-                  exercise: true,
-                  action: 'get',
-              },
-              function(result) {
-                  this.setState({
-                      report_list: result[0].exercise
-                  });
-              }.bind(this));
-    },
-
-    render: function() {
-        if (typeof (this.state.report_list) == 'undefined') {
-            return (
-                    React.createElement("div", null, 
-                    React.createElement("div", {className: "list_view"}
-                    )
-                    )
-            );
-        }
-        else {
-            return (
-                    React.createElement(Report, {user: this.props.token, 
-                            report: this.props.report, 
-                            solved: this.props.solved, 
-                            unsolved: this.props.unsolved, 
-                            report_list: this.state.report_list, 
-                            onclick: this.props.onclick, 
-                            posted: this.props.posted})
-            );
-        };
-    }
-});
-
-module.exports = AnswerEdit;
-
-
-
-},{"./../../../bower_components/jquery/dist/jquery.js":1,"./../../../bower_components/react/react.js":3}],10:[function(require,module,exports){
-var React = require("./../../../bower_components/react/react.js");
-var $ = require("./../../../bower_components/jquery/dist/jquery.js");
-
-var AnswerEdit = require('./answer_edit.js');
-var UserModule = require('./user.js');
-var StatusHeader = require('./status_header.js');
-var Solved = UserModule.Solved;
-var Unsolved = UserModule.Unsolved;
-
-var Solved = React.createClass({displayName: "Solved",
-    render: function() {
-        var solved = this.props.solved.map(function(s) {
-            return (
-                React.createElement("li", null, s)
-            )});
-        return (
-                React.createElement("ul", null, 
-                React.createElement("h3", null, "解答済み"), 
-                solved
-                )
-        );
-    }
-});
-
-var Unsolved = React.createClass({displayName: "Unsolved",
-    render: function () {
-        var unsolved;
-
-        if (this.props.unsolved.length != []) {
-            unsolved = this.props.unsolved.map(function(us) {
-                return (
-                        React.createElement("li", null, us[0])
-                )
-            });
-        }
-        else {
-            unsolved = (React.createElement("li", null, "なし"));
-            };
-
-        return (
-                React.createElement("ul", null, 
-                React.createElement("h3", null, "未回答"), 
-                unsolved
-                )
-        );
-    }
-});
-
-var AnswerView = React.createClass({displayName: "AnswerView",
-    getInitialState: function() {
-        return {
-            solved_list: {solved:[]},
-            unsolved_list: {unsolved:[]},
-            clicked: false,
-            mounted: false
-        };
-    },
-
-    componentDidMount: function() {
-        $.get('../api/user.cgi',
-              {
-                  user: this.props.token,
-                  report: this.props.report,
-                  type: 'status',
-                  status: 'solved',
-                  action: 'get',
-              },
-              function(result) {
-                  this.setState({
-                      solved_list: result[0].report[this.props.report]
-                  });
-              }.bind(this));
-        $.get('../api/user.cgi',
-              {
-                  user: this.props.token,
-                  report: this.props.report,
-                  type: 'status',
-                  status: 'record',
-                  action: 'get',
-              },
-              function(result) {
-                  this.setState({
-                      unsolved_list: result[0].report[this.props.report],
-                      mounted: true
-                  });
-              }.bind(this));
-    },
-
-    onClick: function() {
-        this.setState({
-            clicked: !this.state.clicked
-        });
-    },
-
-    toolBar: function() {
-        return (
-                React.createElement("ul", {className: "status_toolbar"}, 
-                React.createElement("li", {className: "toolbutton"}, 
-                React.createElement("a", {onClick: this.onClick}, "✏編集")
-                )
-                )
-        );
-    },
-
-    posted: function(solved, unsolved) {
-        this.setState({
-            clicked: false,
-            solved_list: solved,
-            unsolved_list: unsolved,
-        });
-    },
-
-    render: function() {
-        if (!this.state.mounted) {
-            return (
-                    React.createElement("div", {className: "status_window"}, 
-                    React.createElement(StatusHeader, {tabName: "answer", toolBar: this.toolBar}), 
-                    React.createElement("div", {className: "status_view"}, 
-                    React.createElement("img", {src: "./loading.gif"})
-                    )
-                    )
-            );
-        }
-        else if(!this.state.clicked && this.state.mounted) {
-            return (
-                    React.createElement("div", {className: "status_window"}, 
-                    React.createElement(StatusHeader, {tabName: "answer", toolBar: this.toolBar}), 
-                    React.createElement("div", {className: "status_view"}, 
-                    React.createElement(Solved, {solved: this.state.solved_list.solved}), 
-                    React.createElement(Unsolved, {unsolved: this.state.unsolved_list.unsolved})
-                    )
-                    )
-            );
-        }
-        else {
-            return (
-                    React.createElement("div", {className: "status_window"}, 
-                    React.createElement(StatusHeader, {tabName: "answer"}), 
-                    React.createElement("div", {className: "status_view"}, 
-                    React.createElement(AnswerEdit, {token: this.props.token, 
-                                report: this.props.report, 
-                                solved: this.state.solved_list.solved, 
-                                unsolved: this.state.unsolved_list.unsolved, 
-                                onclick: this.onClick, 
-                                posted: this.posted})
-                    )
-                    )
-            );
-        };
-    }
-});
-
-module.exports = {
-    answerView: AnswerView,
-    solved: Solved,
-    unsolved: Unsolved
-};
-
-
-
-},{"./../../../bower_components/jquery/dist/jquery.js":1,"./../../../bower_components/react/react.js":3,"./answer_edit.js":9,"./status_header.js":17,"./user.js":19}],11:[function(require,module,exports){
-var sum_rep = "summary-report2";
-
-var React = require("./../../../bower_components/react/react.js");
+},{}],20:[function(require,module,exports){
+var React = require("./../../bower_components/react/react.js");
 window.React = React;
-var Router = require("./../../../bower_components/react-router/dist/react-router.js");
-var $ = require("./../../../bower_components/jquery/dist/jquery.js");
+var Router = require("./../../bower_components/react-router/dist/react-router.js");
 var DefaultRoute = Router.DefaultRoute;
 var Link = Router.Link;
 var Route = Router.Route;
 var RouteHandler = Router.RouteHandler;
-
-var StatusHeader = require('./status_header.js');
-
-const mode = { normal: 0, edit: 1, preview: 2 };
-
-var Comment = React.createClass({displayName: "Comment",
-    getInitialState: function() {
-      return { modeState: mode['normal'],
-               commentHTML: this.props.comment.content,
-               commentText: '',
-               aclUserFlag: this.props.acl.indexOf('user') != -1,
-               aclOtherFlag: this.props.acl.indexOf('other') != -1,
-               loadingFlag: false };
-    },
-    setMode: function(mode_text) {
-      this.setState({modeState: mode[mode_text]});
-    },
-    normalMode: function() { this.setMode('normal'); },
-    editMode: function() { this.setMode('edit'); },
-    previewMode: function() { this.setMode('preview'); },
-    isMode: function(mode_text) { return this.state.modeState == mode[mode_text]; },
-    isNormalMode: function() { return this.isMode('normal'); },
-    isEditMode: function() { return this.isMode('edit'); },
-    isPreviewMode: function() { return this.isMode('preview'); },
-
-    setCommentHTML: function(txt) { this.setState({ commentHTML: txt }); },
-    getCommentHTML: function() { return this.state.commentHTML; },
-    setCommentText: function(txt) { this.setState({ commentText: txt }); },
-    getCommentText: function() { return this.state.commentText; },
-
-    loadingModeStart: function() { this.setState({ loadingFlag: true }); },
-    loadingModeEnd: function() { this.setState({ loadingFlag: false }); },
-
-    reloadComment: function(cont) {
-      this.loadingModeStart();
-      $.get('../api/comment.cgi',
-          {
-            user: this.props.token,
-            report: this.props.report,
-            action: 'get',
-            id: this.props.comment.id,
-            timestamp: this.props.comment.timestamp
-          },
-          function(result) {
-            this.setCommentHTML(result[0].content);
-            this.setState({ aclUserFlag: result[0].acl.indexOf('user') != -1,
-                            aclOtherFlag: result[0].acl.indexOf('other') != -1 });
-            this.loadingModeEnd();
-            cont();
-          }.bind(this));
-    },
-
-    onCheckAclUser: function(event) {
-        this.setState({ aclUserFlag: !this.state.aclUserFlag });
-    },
-    onCheckAclOther: function(event) {
-        this.setState({ aclOtherFlag: !this.state.aclOtherFlag });
-    },
-
-    onComment: function() {
-        var aclAry = [];
-        if (this.state.aclUserFlag) { aclAry.push('user'); }
-        if (this.state.aclOtherFlag) { aclAry.push('other'); }
-        var aclText = aclAry.join(',');
-        $.ajax({
-          type: 'POST',
-          url: '../api/comment.cgi',
-          data: {
-            user: this.props.token,
-            report: this.props.report,
-            action: 'edit',
-            id: this.props.comment.id,
-            acl: aclText,
-            message: this.getCommentText()
-          },
-          complete: function(data) {
-            this.reloadComment(function() { this.normalMode(); }.bind(this));
-          }.bind(this)
-        });
-    },
-
-    onEdit: function() {
-      $.get('../api/comment.cgi',
-          {  
-            user: this.props.token,
-            report: this.props.report,
-            id: this.props.comment.id,
-            action: 'get',
-            type: 'raw'
-          },
-          function(result) {
-            this.setCommentText(result[0].content);
-            this.editMode();
-          }.bind(this));
-    },
-    
-    onDelete: function() {
-      var text = 'このコメント['
-               + this.props.comment.user
-               + ': ' + this.props.comment.timestamp
-               + ']を削除しますか？';
-      if (window.confirm(text)) {
-        $.ajax({
-          type: 'POST',
-          url: '../api/comment.cgi',
-          data: {
-            user: this.props.comment.user,
-            report: this.props.report,
-            action: 'delete',
-            id: this.props.comment.id
-          },
-          complete: function(data) {
-            this.props.rerender();
-          }.bind(this)
-        });
-      }
-    },
-
-    onPreview: function() {
-      // from commentText to commentHTML
-      $.get('../api/comment.cgi',
-          {  
-            action: 'preview',
-            message: this.getCommentText()
-          },
-          function(result) {
-            this.setCommentHTML(result);
-            this.previewMode();
-          }.bind(this));
-    },
-
-    onCancel: function() {
-      this.reloadComment(function () { this.normalMode(); }.bind(this));
-    },
-
-    handleChange: function(event) {
-      this.setCommentText(event.target.value);
-    },
-
-    aclMessage: function() {
-        if (this.state.aclUserFlag && this.state.aclOtherFlag) {
-          return "全員に公開";
-        } else if (this.state.aclUserFlag) {
-          return "提出者に公開";
-        } else if (this.state.aclOtherFlag) {
-          return "提出者以外に公開";
-        } else {
-          return "非公開";
-        }
-    },
-
-    render: function() {
-        if (this.state.loadingFlag) {
-          return React.createElement("li", null, React.createElement("div", {className: "form"}, React.createElement("img", {src: "../record/loading.gif"})));
-        }
-
-        var comment_box;
-        if (this.isNormalMode()) {
-          comment_box = (
-            React.createElement("div", {className: "form"}, 
-              React.createElement("div", {className: "message", dangerouslySetInnerHTML: {__html: this.getCommentHTML()}})
-            )
-          );
-        } else if (this.isEditMode()) {
-          comment_box = (
-            React.createElement("div", {className: "form"}, 
-              React.createElement("textarea", {rows: "6", value: this.getCommentText(), onChange: this.handleChange}), 
-              React.createElement("input", {type: "submit", value: "コメントする", onClick: this.onComment}), 
-              React.createElement("input", {type: "button", value: "プレビュー", onClick: this.onPreview}), 
-              React.createElement("input", {type: "button", value: "キャンセル", onClick: this.onCancel}), 
-              React.createElement("input", {id: "summary-report2_comment_acl_user", type: "checkbox", name: "user", checked: this.state.aclUserFlag, onChange: this.onCheckAclUser}), 
-              React.createElement("label", {htmlFor: "summary-report2_comment_acl_user"}, "提出者に公開"), 
-              React.createElement("input", {id: "summary-report2_comment_acl_other", type: "checkbox", name: "other", checked: this.state.aclOtherFlag, onChange: this.onCheckAclOther}), 
-              React.createElement("label", {htmlFor: "summary-report2_comment_acl_other"}, "提出者以外に公開")
-            )
-          );
-        } else if (this.isPreviewMode()) {
-          comment_box = (
-            React.createElement("div", {className: "form"}, 
-              React.createElement("div", {className: "preview message", dangerouslySetInnerHTML: {__html: this.getCommentHTML()}}), 
-              React.createElement("input", {type: "submit", value: "コメントする", onClick: this.onComment}), 
-              React.createElement("input", {type: "button", value: "再編集", onClick: this.onEdit}), 
-              React.createElement("input", {type: "button", value: "キャンセル", onClick: this.onCancel}), 
-              React.createElement("input", {id: "summary-report2_comment_acl_user", type: "checkbox", name: "user", checked: this.state.aclUserFlag, onChange: this.onCheckAclUser}), 
-              React.createElement("label", {htmlFor: "summary-report2_comment_acl_user"}, "提出者に公開"), 
-              React.createElement("input", {id: "summary-report2_comment_acl_other", type: "checkbox", name: "other", checked: this.state.aclOtherFlag, onChange: this.onCheckAclOther}), 
-              React.createElement("label", {htmlFor: "summary-report2_comment_acl_other"}, "提出者以外に公開")
-            )
-          );
-        } else {
-          console.log("Error: Comment render");
-        }
-        return (
-          // TODO: ここのliの条件分岐何とかしたい．今は空文字のときもタグにclassが付く
-          React.createElement("li", {id: sum_rep + "-comment" + this.props.comment.id, className: !this.state.aclUserFlag && !this.state.aclOtherFlag?"private":" "}, 
-          React.createElement("div", {className: "meta"}, 
-          React.createElement("p", {className: "author"}, this.props.comment.user), 
-          React.createElement("p", {className: "edit"}, 
-          React.createElement("a", {title: "編集する", onClick: this.onEdit}, "✏"), 
-          React.createElement("a", {title: "削除する", onClick: this.onDelete}, "✖")
-          ), 
-          React.createElement("p", {className: "acl"}, this.aclMessage()), 
-          React.createElement("p", {className: "date"}, this.props.comment.timestamp)
-          ), 
-          comment_box
-          )
-          );
-    }
-});
-
-var CommentForm = React.createClass({displayName: "CommentForm",
-    getInitialState: function() {
-        return { isPreview: false,
-                 textValue: "",
-                 aclUserFlag: false,
-                 aclOtherFlag: false };
-    },
-    setIsPreview: function(b) { this.setState({isPreview: b}); },
-    getIsPreview: function() { return this.state.isPreview; },
-    setTextValue: function(txt) { this.setState({ textValue: txt }); },
-    getTextValue: function() { return this.state.textValue; },
-    resetValue: function() { this.setTextValue(''); this.setIsPreview(false); },
-    onComment: function(event) {
-        var aclAry = [];
-        if (this.state.aclUserFlag) { aclAry.push('user'); }
-        if (this.state.aclOtherFlag) { aclAry.push('other'); }
-        var aclText = aclAry.join(',');
-        $.ajax({
-          type: 'POST',
-          url: '../api/comment.cgi',
-          data: {
-            user: this.props.token,
-            report: this.props.report,
-            action: 'post',
-            acl:  aclText,
-            message: this.getTextValue()
-          },
-          complete: function(data) {
-            this.props.rerender();
-            this.resetValue();
-          }.bind(this)
-        });
-    },
-    onPreview: function(event) { this.setIsPreview(!this.getIsPreview()); },
-    handleChange: function(event) { this.setTextValue(event.target.value); },
-    onCheckAclUser: function(event) { this.setState({ aclUserFlag: !this.state.aclUserFlag }); },
-    onCheckAclOther: function(event) { this.setState({ aclOtherFlag: !this.state.aclOtherFlag }); },
-    render: function() {
-        var preview_reedit_text = this.getIsPreview()?"再編集":"プレビュー";
-        var comment_area;
-        if (!this.getIsPreview()) {
-            comment_area = (
-                React.createElement("textarea", {rows: "6", value: this.getTextValue(), onChange: this.handleChange})
-            );
-        } else {
-            comment_area = (
-                React.createElement("div", {className: "preview messsage"}, 
-                    React.createElement("p", null, this.getTextValue())
-                )
-            );
-        }
-        return (
-            React.createElement("div", {className: "form"}, 
-            comment_area, 
-            React.createElement("input", {type: "submit", onClick: this.onComment, value: "コメントする"}), 
-            React.createElement("input", {type: "button", onClick: this.onPreview, value: preview_reedit_text}), 
-            React.createElement("input", {id: "summary-report2_comment_acl_user", type: "checkbox", name: "user", onClick: this.onCheckAclUser}), 
-            React.createElement("label", {htmlFor: "summary-report2_comment_acl_user"}, "提出者に公開"), 
-            React.createElement("input", {id: "summary-report2_comment_acl_other", type: "checkbox", name: "other", onClick: this.onCheckAclOther}), 
-            React.createElement("label", {htmlFor: "summary-report2_comment_acl_other"}, "提出者以外に公開")
-            )
-        );
-    }
-});
-
-var CommentView = React.createClass({displayName: "CommentView",
-    getInitialState: function() {
-        return {
-            comments: []
-        };
-    },
-
-    componentDidMount: function() {
-      this.rerender();
-    },
-
-    rerender: function() {
-      $.get('../api/comment.cgi',
-          {  
-            user: this.props.token,
-            report: this.props.report,
-            action: 'get',
-          },
-          function(result) {
-            this.setState({
-              comments: result
-            });
-          }.bind(this));
-    },
-
-    render: function() {
-        var comments = this.state.comments.map(function(comment) {
-            return (
-                    React.createElement(Comment, {comment: comment, token: this.props.token, report: this.props.report, acl: comment.acl, rerender: this.rerender})
-            );
-        }.bind(this));
-        return (
-                React.createElement("div", {className: "status_window"}, 
-                  React.createElement(StatusHeader, {tabName: "comment"}/* toolBar={ function() { return <p>古典論理の犬</p>; } } */ ), 
-                  React.createElement("div", {className: "status_view"}, 
-                  React.createElement("ul", {className: "comments"}, 
-                  comments, 
-                  React.createElement("li", null, React.createElement(CommentForm, {token: this.props.token, report: this.props.report, rerender: this.rerender}))
-                  )
-                  )
-                )
-        );
-    }
-});
-
-module.exports = CommentView;
-
-
-
-},{"./../../../bower_components/jquery/dist/jquery.js":1,"./../../../bower_components/react-router/dist/react-router.js":2,"./../../../bower_components/react/react.js":3,"./status_header.js":17}],12:[function(require,module,exports){
-var React = require("./../../../bower_components/react/react.js");
-window.React = React;
-var Router = require("./../../../bower_components/react-router/dist/react-router.js");
-var $ = require("./../../../bower_components/jquery/dist/jquery.js");
-
-var StatusCell = require('./status_cell.js');
-
-var OptionalCell = React.createClass({displayName: "OptionalCell",
-    getInitialState: function() {
-        return {
-            expand: false,
-        };
-    },
-
-    toggleDetail: function() {
-        this.setState({
-            expand: !this.state.expand
-        });
-        return false;
-    },
-
-    render: function() {
-        var content;
-        if (this.props.answered.length > 0) {
-            var detail = this.props.answered.length;
-            if (this.state.expand) {
-                detail = this.props.answered.join(', ');
-            }
-            content = (
-                    React.createElement("a", {href: "javascript:void(0)", onClick: this.toggleDetail}, 
-                    detail
-                    )
-            );
-        }
-        return (
-                React.createElement("td", {className: this.props.name}, 
-                content
-                )
-        );
-    }
-});
-
-var ReportList = React.createClass({displayName: "ReportList",
-    mixins: [Router.Navigation],
-
-    updateStatus: function(token, report) {
-        $.get('../api/user.cgi',
-              {
-                  type: 'status',
-                  user: token,
-                  report: report,
-              },
-              function(result) {
-                  this.setState({
-                      users: this.state.users.map(function(user) {
-                          if (user.token === token) {
-                              user.report[report].status = result[0].report[report].status;
-                          }
-                          return user;
-                      })
-                  });
-              }.bind(this));
-    },
-
-    getInitialState: function() {
-        return {
-            users: [],
-            users_init: false,
-        };
-    },
-
-    componentDidMount: function() {
-        $.get('../api/user.cgi',
-              {
-                  type: 'status',
-                  report: this.props.scheme.id,
-                  status: 'record',
-                  log: true,
-              },
-              function(users) {
-                  var tokens = users.map(function(user) { return user.token });
-                  $.ajax({
-                      url: '../api/comment.cgi',
-                      data: {
-                          action: 'list_news',
-                          report: this.props.scheme.id,
-                          user: tokens
-                      },
-                      success: function(comments) {
-                          Object.keys(comments).map(function(key) {
-                              var user = users.filter(function(user) {
-                                  return user.token === key;
-                              })[0];
-                              ['report', this.props.scheme.id, 'comment'].reduce(function(r, k) {
-                                  if (!r[k]) r[k] = {};
-                                  return r[k];
-                              }, user);
-                              user['report'][this.props.scheme.id]['comment'] = comments[key];
-                          }, this);
-                          this.setState({
-                              users: users,
-                              users_init: true,
-                          });
-                      }.bind(this),
-                      traditional: true
-                  });
-              }.bind(this));
-    },
-
-    render: function() {
-        var ths = this.props.scheme.record.map(function(r) {
-            return (
-                    React.createElement("th", {className: r.field}, r.label)
-            );
-        });
-        var users = this.state.users.map(function(user) {
-            var tds = this.props.scheme.record.map(function(r) {
-                if (r.field === 'name') {
-                    var unreads = ['report', this.props.scheme.id, 'comment', 'unreads'].reduce(function(r, k) {
-                        if (!r[k]) r[k] = {};
-                        return r[k];
-                    }, user);
-                    if (unreads > 0) {
-                        unreads = (React.createElement("div", {className: "unread"}, unreads));
-                    }
-                    return (React.createElement("td", {className: "name"}, unreads, user.name));
-                } else if (r.field === 'status') {
-                    return (React.createElement(StatusCell, {user: user, report: this.props.scheme.id, admin: this.props.admin, updateStatus: this.updateStatus}));
-                } else if (/^optional/.test(r.field)) {
-                    var answered = ['report', this.props.scheme.id, 'optional'].reduce(function(r, k) {
-                        if (typeof r[k] === 'undefined') r[k] = {};
-                        return r[k];
-                    }, user);
-                    if (!Array.isArray(answered)) answered = [];
-                    return (React.createElement(OptionalCell, {name: r.field, answered: answered}));
-                } else if (r.field === 'unsolved') {
-                    var unsolved = ['report', this.props.scheme.id, 'unsolved'].reduce(function(r, k) {
-                        if (typeof r[k] === 'undefined') r[k] = {};
-                        return r[k];
-                    }, user);
-                    if (!Array.isArray(unsolved)) unsolved = [];
-                    var str = unsolved.map(function(l) {
-                        var r = l[0];
-                        if (l[1] > 1) r += 'のうち残り' + l[1] + '問';
-                        return r;
-                    }).join(', ');
-                    return (React.createElement("td", {className: "unsolved"}, str));
-                } else if (r.field === 'test') {
-                    var test = ['report', this.props.scheme.id, 'log', 'test'].reduce(function(r, k) {
-                        if (!r[k]) r[k] = {};
-                        return r[k];
-                    }, user);
-                    var str;
-                    if ('passed' in test && 'number' in test) {
-                        str = test.passed + '/' + test.number;
-                    }
-                    return (React.createElement("td", {className: "test"}, str));
-                } else {
-                    return (React.createElement("td", null));
-                }
-            }.bind(this));
-            var transTo = function() {
-                this.transitionTo('user', {
-                    token: user.token,
-                    report: this.props.scheme.id,
-                });
-            }.bind(this);
-            return (
-                    React.createElement("tr", {className: "selectable", onClick: transTo}, tds)
-            );
-        }.bind(this));
-        if (!this.state.users_init) {
-            users = (
-                    React.createElement("tr", null, React.createElement("td", {colSpan: ths.length}, React.createElement("img", {src: "./loading.gif"})))
-            );
-        }
-        return (
-                React.createElement("table", {className: "record"}, 
-                React.createElement("thead", null, 
-                React.createElement("tr", null, ths)
-                ), 
-                React.createElement("tbody", null, 
-                users
-                )
-                )
-        );
-    }
-});
-
-var DetailList = React.createClass({displayName: "DetailList",
-    getInitialState: function() {
-        return {
-            scheme: [],
-            scheme_init: false,
-        };
-    },
-
-    componentDidMount: function() {
-        $.get('../api/scheme.cgi',
-              {
-                  record: true,
-              },
-              function(result) {
-                  this.setState({
-                      scheme: result,
-                      scheme_init: true,
-                  });
-              }.bind(this));
-    },
-
-    render: function() {
-        if (!this.state.scheme_init) {
-            return (
-                    React.createElement("div", null, React.createElement("img", {src: "./loading.gif"}))
-            );
-        }
-        var reports = this.state.scheme.map(function(s) {
-            return (
-                    React.createElement(ReportList, {scheme: s, admin: this.props.admin})
-            );
-        }.bind(this));
-        return (
-                React.createElement("div", {className: "view"}, reports)
-        );
-    }
-});
-
-module.exports = DetailList;
-
-
-
-},{"./../../../bower_components/jquery/dist/jquery.js":1,"./../../../bower_components/react-router/dist/react-router.js":2,"./../../../bower_components/react/react.js":3,"./status_cell.js":16}],13:[function(require,module,exports){
-var React = require("./../../../bower_components/react/react.js");
-
-var StatusHeader = require('./status_header.js');
-
-var FileEntry = (function() {
-    var humanReadableSize = function(size) {
-        var prefix = [ '', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y' ];
-        var i;
-        for (i=0; size >= 1024 && i < prefix.length-1; i++) {
-            size /= 1024;
-        }
-        if (i > 0) size = size.toFixed(1);
-        return size + prefix[i];
-    };
-
-    return React.createClass({
-        onclick: function (e) {
-            e.preventDefault();
-
-            var p = this.props;
-            if (p.entry.type === 'bin') return;
-
-            p.open(p.path+'/'+p.entry.name, p.entry.type);
-        },
-
-        render: function() {
-            var p = this.props;
-            var entry = p.entry;
-            var uri = FileView.rawPath(p.token, p.report, p.path+'/'+p.entry.name);
-            var onclick = this.onclick;
-            var suffix = entry.type === 'dir' ? '/' : '';
-
-            return (
-                React.createElement("tr", null, 
-                    React.createElement("td", {className: "file"}, 
-                        React.createElement("img", {className: "icon", 
-                             src: "./" + entry.type + ".png"}), 
-                        React.createElement("a", {href: uri, onClick: onclick}, entry.name + suffix)
-                    ), 
-                    React.createElement("td", {className: "size"}, humanReadableSize(entry.size)), 
-                    React.createElement("td", {className: "time"}, entry.time)
-                )
-            );
-        }
-    });
-})();
-
-var Breadcrum = (function() {
-    var descend = function(path) {
-        return path.split('/').reduce(function(r, p) {
-            r[1].push(p);
-            r[0].push({ name: p, path: r[1].join('/') });
-            return r;
-        }, [ [], [] ])[0];
-    };
-
-    return React.createClass({
-        rawPath: function(path) {
-            return FileView.rawPath(this.props.token, this.props.report, path)
-        },
-
-        render: function() {
-            var p = this.props;
-            var list = descend(p.path).map(function(p) {
-                p.type = 'dir';
-                return p;
-            });
-            last = list[list.length-1];
-            last.type = p.type;
-
-            var toolButton = last.type === 'dir' ? null :
-                React.createElement("li", {className: "toolbutton"}, 
-                    React.createElement("a", {href: this.rawPath(last.path)}, "⏎ 直接開く"));
-
-            var self = this;
-            var items = list.map(function(loc) {
-                if (loc.name == '.') loc.name = p.report;
-
-                var onclick = function(e) {
-                    e.preventDefault();
-                    p.open(loc.path, loc.type);
-                };
-                var uri = self.rawPath(loc.path);;
-                return React.createElement("li", null, React.createElement("a", {href: uri, onClick: onclick}, loc.name));
-            });
-
-            return (React.createElement("ul", {id: "summary-" + p.report + "_status_toolbar", 
-                         className: "status_toolbar"}, 
-                        React.createElement("li", null, "場所:", 
-                            React.createElement("ul", {id: p.report + '-breadcrum', 
-                                className: "breadcrums"}, items)
-                        ), 
-                        toolButton
-                    ));
-        }
-    });
-})();
-
-var FileBrowser = React.createClass({displayName: "FileBrowser",
-    render: function() {
-        var p = this.props;
-        var rows = p.entries.map(function(entry) {
-            return (React.createElement(FileEntry, {entry: entry, 
-                               path: p.path, 
-                               token: p.token, 
-                               report: p.report, 
-                               parent: self, 
-                               open: p.open}
-                    ));
-        });
-
-        return (
-            React.createElement("table", {className: "file_browser"}, 
-                React.createElement("tr", null, 
-                    React.createElement("th", {className: "file"}, "ファイル"), 
-                    React.createElement("th", {className: "size"}, "サイズ"), 
-                    React.createElement("th", {className: "time"}, "更新日時")
-                ), 
-                rows
-            )
-        );
-    }
-});
-
-var FileViewer = (function() {
-    return React.createClass({
-        render: function() {
-            var content = this.props.content;
-
-            // line number
-            var ln = '';
-            var i = 1, arr;
-            var re = new RegExp("\n", 'g');
-            while ((arr = re.exec(content)) != null) {
-                ln += i++ + "\n";
-            }
-
-            return React.createElement("table", {className: "file_browser file"}, React.createElement("tr", null, 
-                React.createElement("td", {className: "linenumber"}, React.createElement("pre", null, ln)), 
-                React.createElement("td", {className: "content"}, React.createElement("pre", null,  {__html: content} ))
-            ));
-        }
-    });
-})();
-
-var FileView = (function() {
-
-    var d = document;
-
-    var applyStyle = function(rules) {
-        if (d.styleSheets[0].addRule) { // IE
-            rules.forEach(function(s) {
-                d.styleSheets[0].addRule(s.selector, s.style);
-            });
-            return true;
-        } else {
-            var style = $('<style type="text/css" />');
-            style.append(rules.map(function(s) {
-                return s.selector+'{'+s.style+'}';
-            }).join("\n"));
-
-            var head = d.getElementsByTagName('head')[0];
-            if (head) {
-                head.appendChild(style[0]);
-                return true;
-            }
-        }
-    };
-
-    var applyStyleFromSource = function(source) {
-        source = source.replace(/[\r\n]/g, '');
-        var regex = '<style[^>]*>(?:<!--)?(.*?)(?:-->)?</style>';
-        if (new RegExp(regex).test(source)) {
-            var rawcss = RegExp.$1;
-            var arr;
-            var re = new RegExp('\\s*([^\{]+?)\\s*{([^\}]*)}','g');
-            var rules = [];
-            while ((arr = re.exec(rawcss)) != null) {
-                if (arr[1].charAt(0) == '.') {
-                    rules.push({selector: arr[1], style: arr[2]});
-                }
-            }
-            return applyStyle(rules);
-        }
-    };
-
-    return React.createClass({
-        browseAPI: function(path, success, error) {
-            $.ajax({
-                method: 'GET',
-                url:    '../api/browse.cgi',
-                data: {
-                    user:   this.props.token,
-                    report: this.props.report,
-                    path:   path,
-                    type:   'highlight',
-                },
-                success: function(res) { success(res); },
-                error:   function(jqxhr, status, err) {
-                    error();
-                },
-            });
-        },
-
-        open: function(path, type) {
-            if (type === 'bin') return;
-
-            this.browseAPI(path, function(res) {
-                if (type === 'dir') {
-                    this.replaceState({
-                        path: path,
-                        type: 'dir',
-                        entries: res
-                    });
-                } else {
-                    var div = $('<div />')[0];
-                    var content = res.replace(/<pre>\n/, '<pre>');
-                    div.innerHTML = content
-                    var pre = div.getElementsByTagName('pre')[0];
-                    if (content.charAt(content.length-1) != "\n") {
-                        content += "\n";
-                    };
-                    applyStyleFromSource(res);
-
-                    this.replaceState({
-                        path: path,
-                        type: type,
-                        content: pre.innerHTML+''
-                    });
-                }
-            }.bind(this), function() {
-                this.replaceState({
-                    path:  path,
-                    type:  type,
-                    error: true
-                });
-            });
-        },
-
-        getInitialState: function() {
-            this.open('.', 'dir');
-            return {
-                path: '.',
-                type: 'dir',
-                entries: []
-            };
-        },
-
-        render: function() {
-            var s = this.state;
-            var p = this.props;
-            var open = this.open;
-
-            var toolBar = function() {
-                return React.createElement(Breadcrum, {token: p.token, 
-                                  report: p.report, 
-                                  path: s.path, 
-                                  type: s.type, 
-                                  open: open});
-            }.bind(this);
-
-            var render = s.error ?
-                '読み込み失敗' :
-                s.type === 'dir' ?
-                React.createElement(FileBrowser, {token: p.token, 
-                             report: p.report, 
-                             path: s.path, 
-                             entries: s.entries, 
-                             open: open}) :
-                React.createElement(FileViewer, {content: s.content});
-
-            return (React.createElement("div", {id: "summary-" + p.report + "_status_window", 
-                         className: "status_window", 
-                         style:  {display: "block"} }, 
-                        React.createElement(StatusHeader, {tabName: "file", toolBar: toolBar}), 
-                          React.createElement("div", {id: "summary-" + p.report + "_status_view", 
-                               className: "status_view"}, 
-                              render
-                          )
-                    ));
-        }
-    });
-})();
-
-FileView.encodePath = function(path) {
-    return [
-        [ '&', '%26' ],
-        [ '\\?', '%3F' ]
-    ].reduce(function(r, x) {
-        return r.replace(new RegExp(x[0], 'g'), x[1]);
-    }, encodeURI(path));
-};
-
-FileView.rawPath = function(user, report, path) {
-    var uri = $(location);
-    var pathname = uri.attr('pathname').split('/');
-    pathname.pop(); pathname.pop();
-    var epath = FileView.encodePath(path);
-    pathname.push('browse', user, report, epath);
-    var param = path != epath ? ('?path=' + epath) : '';
-    return uri.attr('protocol') + '//' + uri.attr('host') + pathname.join('/') + param;
-};
-
-module.exports = FileView;
-
-
-
-},{"./../../../bower_components/react/react.js":3,"./status_header.js":17}],14:[function(require,module,exports){
-var React = require("./../../../bower_components/react/react.js");
-var $ = require("./../../../bower_components/jquery/dist/jquery.js");
-
-var StatusHeader = require('./status_header.js');
-
-var Log = React.createClass({displayName: "Log",
-    render: function() {
-        var defs = [
-            { prop: 'timestamp',
-              label: 'ステータス更新日時'
-            },
-            { prop: 'submit',
-              label: '提出日時'
-            },
-            { prop: 'initial_submit',
-              label: '初回提出'
-            }
-        ];
-        var rawData = this.props.data;
-        var data = defs.map(
-            function (def) {
-                return (
-                        React.createElement("div", null, 
-                        React.createElement("dt", {className: def.prop}, def.label), 
-                        React.createElement("dd", {className: def.prop}, rawData[def.prop])
-                        )
-                );
-            });
-        return (React.createElement("div", null, " ", data, " "));
-    }
-});
-
-var LogMessages = React.createClass({displayName: "LogMessages",
-    render: function (){
-        var id = function (x){
-            return x;
-        };
-        var defs = [
-            // {message: '...', reason: ''}
-            { prop: 'message',
-              label:'メッセージ',
-              proc: id },
-            { prop: 'error',
-              label: 'エラー',
-              proc: id},
-            { prop: 'reason',
-              label: 'エラーの詳細',
-              proc: id },
-            // {build: 'OK'}
-            { prop: 'build',
-              label: 'build',
-              proc: id },
-            // {test: {passed: 0, number: 0}}
-            { prop: 'test',
-              label: 'テスト通過率',
-              proc: function(l){
-                  return (l.passed +'/'+ l.number);}
-            }
-        ];
-        var rawLog = this.props.log;
-        if (rawLog){
-        var messages = defs.map(
-            function (def){
-                if (rawLog[def.prop] && rawLog[def.prop].trim()) {
-                    return (
-                            React.createElement("div", {className: def.prop}, 
-                            React.createElement("dt", {className: def.prop}, def.label), 
-                            React.createElement("dd", {className: def.prop}, def.proc(rawLog[def.prop]))
-                            )
-                    );
-                } else {
-                    return (React.createElement("div", null));
-                };
-            });
-        } else {
-            var message = (React.createElement("div", null));
-        };
-        return (React.createElement("div", null, messages));
-    }
-});
-
-var LogEdit = React.createClass ({displayName: "LogEdit",
-    getInitialState: function (){
-        return {
-            report: this.props.rep,
-            user: this.props.token,
-            id: this.props.id,
-            message: this.props.data.message,
-            error: this.props.data.error,
-            reason: this.props.data.reason
-        };
-    },
-
-    handleSubmit: function (e){
-        $.post('../api/admin_log.cgi',
-               this.state,
-               function (d) {return;},
-               function(xhr, status, err) {
-                   console.error(status, err.toString());
-               }.bind(this));
-        this.props.exit();
-    },
-
-    handleChangeM: function (e) {
-        this.setState({
-            message: e.target.value,
-                      });
-    },
-    handleChangeE: function (e) {
-        this.setState({
-            error: e.target.value,
-        });
-    },
-    handleChangeR: function (e) {
-        this.setState({
-            reason: e.target.value,
-        });
-    },
-
-    render: function (){
-        var defs = [
-            // {build: 'OK'}
-            { prop: 'build',
-              label: 'build',
-              proc: function(x){if (x!='') {return x;};}
-            },
-            // {test: {passed: 0, number: 0}}
-            { prop: 'test',
-              label: 'テスト通過率',
-              proc: function(l){
-                  return (l.passed +'/'+ l.number);}
-            }];
-        var rawLog = this.props.data;
-        if (rawLog) {
-            var test = defs.map(
-                function (def) {
-                    if (rawLog[def.prop]) {
-                        return (
-                                React.createElement("div", null, 
-                                React.createElement("dt", {className: def.prop}, def.label), 
-                                React.createElement("dd", {className: def.prop}, def.proc(rawLog[def.prop]))
-                                ));
-                    } else {
-                        return (React.createElement("div", null));
-                    };
-                });
-        } else {
-            var test = (React.createElement("div", null));
-        };
-        return (
-                React.createElement("div", {className: "form"}, 
-                React.createElement("dt", {className: "message"}, "メッセージ"), 
-                React.createElement("dd", {className: "message"}, 
-                React.createElement("textarea", {rows: "2", cols: "80", onChange: this.handleChangeM, defaultValue: this.props.data.message})
-                ), 
-                React.createElement("dt", {className: "error"}, "エラー"), 
-                React.createElement("dd", {className: "error"}, 
-                React.createElement("textarea", {rows: "2", cols: "80", onChange: this.handleChangeE, defaultValue: this.props.data.error})
-                ), 
-                React.createElement("dt", {className: "reason"}, "エラーの詳細"), 
-                React.createElement("dd", {className: "reason"}, 
-                React.createElement("textarea", {rows: "2", cols: "80", onChange: this.handleChangeR, defaultValue: this.props.data.reason})
-                ), 
-                test, 
-                React.createElement("input", {type: "submit", onClick: this.handleSubmit, value: "変更"}), 
-                React.createElement("input", {type: "button", onClick: this.props.exit, value: "キャンセル"})
-                )
-        );
-    }
-});
-
-var LogView = React.createClass({displayName: "LogView",
-    getInitialState: function(){
-        return {
-            data: {},
-            onEdit: false
-        };
-    },
-
-    componentDidMount: function () {
-        $.get('../api/user.cgi',
-              {
-                  user: this.props.token,
-                  type: 'status',
-                  status: 'record',
-                  log : true,
-                  report: this.props.report
-              },
-              function(result) {
-                  this.setState({
-                      data: (result[0].report[this.props.report])
-                  });
-              }.bind(this));
-    },
-
-    onEdit: function () {
-        this.setState(
-            {onEdit: true});
-    },
-
-    exit: function () {
-        this.setState(
-            {onEdit: !this.state.onEdit}
-        );
-        $.get('../api/user.cgi',
-              {
-                  user: this.props.token,
-                  type: 'status',
-                  status: 'record',
-                  log : true,
-                  report: this.props.report
-              },
-              function(result) {
-                  this.setState({
-                      data: (result[0].report[this.props.report])
-                  });
-              }.bind(this));
-    },
-
-    toolBar: function () {
-        if (!this.props.admin) { return (React.createElement("div", null));}
-        if (this.state.onEdit) {
-            return (
-                    React.createElement("ul", {className: "status_toolbar"}, 
-                    React.createElement("li", {className: "toolbutton"}, "編集中")
-                    )
-            );
-        } else {
-            return (
-                    React.createElement("ul", {className: "status_toolbar"}, 
-                    React.createElement("li", {className: "toolbutton"}, React.createElement("a", {onClick: this.onEdit}, "✏ 編集"))
-                    )
-            );
-        };
-    },
-
-    render: function() {
-        var status = this.state.data;
-        if (this.state.onEdit) {
-            var logedit = (React.createElement(LogEdit, {id: this.state.data.submit, rep: this.props.report, data: this.state.data.log, token: this.props.token, exit: this.exit}));
-        } else {
-            var logedit = (React.createElement(LogMessages, {log: this.state.data.log})); };
-        return (
-                React.createElement("div", {className: "status_window"}, 
-                React.createElement(StatusHeader, {tabName: "log", toolBar: this.toolBar}), 
-                React.createElement("div", {id: 'status_view', className: "status_view"}, 
-                React.createElement("dl", {className: "log_msg"}, 
-                React.createElement(Log, {data: status}), 
-                logedit
-                )
-                )
-                )
-        );
-    }
-});
-
-module.exports = LogView;
-
-
-
-},{"./../../../bower_components/jquery/dist/jquery.js":1,"./../../../bower_components/react/react.js":3,"./status_header.js":17}],15:[function(require,module,exports){
-var React = require("./../../../bower_components/react/react.js");
-
-var StatusHeader = require('./status_header.js');
-
-module.exports = React.createClass({displayName: "exports",
-    render: function() {
-        return (
-                React.createElement("div", {className: "status_window"}, 
-                React.createElement(StatusHeader, {tabName: "result"}), 
-                React.createElement("div", {className: "status_view"}, "ResultView: 構築中")
-                )
-        );
-    }
-});
-
-
-
-},{"./../../../bower_components/react/react.js":3,"./status_header.js":17}],16:[function(require,module,exports){
-var React = require("./../../../bower_components/react/react.js");
-window.React = React;
-var Router = require("./../../../bower_components/react-router/dist/react-router.js");
-var $ = require("./../../../bower_components/jquery/dist/jquery.js");
-
-module.exports = React.createClass({displayName: "exports",
-    mixins: [Router.Navigation],
-
-    status_map: {
-        'none':     '未提出',
-        'OK':       '受理',
-        'NG':       '要再提出',
-        'build':    '確認中',
-        'check':    '確認中',
-        'build:NG': '要再提出',
-        'check:NG': '要再提出',
-        'report':   'レポート確認中',
-    },
-
-    edit: function() {
-        this.setState({
-            editing: !this.state.editing
-        });
-        return false;
-    },
-
-    changeState: function(e) {
-        var id = ['report', this.props.report, 'submit'].reduce(function(r, k) {
-            if (typeof r[k] === 'undefined') r[k] = {};
-            return r[k];
-        }, this.props.user);
-        $.post('../api/admin_log.cgi',
-               {
-                   id: id,
-                   user: this.props.user.token,
-                   report: this.props.report,
-                   status: e.target.value
-               },
-               function(result) {
-                   this.props.updateStatus(this.props.user.token,
-                                           this.props.report);
-               }.bind(this));
-        this.setState({
-            editing: false
-        });
-    },
-
-    disable: function() {
-        return false;
-    },
-
-    getDefaultProps: function() {
-        return {
-            unRead: 0
-        };
-    },
-
-    getInitialState: function() {
-        return {
-            editing: false,
-        };
-    },
-
-    render: function() {
-        var status = ['report', this.props.report, 'status'].reduce(function(r, k) {
-            if (typeof r[k] === 'undefined') r[k] = {};
-            return r[k];
-        }, this.props.user);
-        if (typeof status !== 'string') {
-            status = 'none';
-        }
-        var props = {
-            className: 'status ' + status.replace(/:/g, '-')
-        };
-        if (this.props.isSelected) {
-            props.className += ' selected';
-        }
-        if (this.props.isButton) {
-            var transTo = function() {
-                this.transitionTo('user', {
-                    token: this.props.user.token,
-                    report: this.props.report,
-                });
-            }.bind(this);
-            props.className += ' selectable';
-            props.onClick = transTo;
-        }
-        var content = this.status_map[status];
-        if (this.state.editing) {
-            var opts = Object.keys(this.status_map).map(function(key) {
-                var name;
-                if (key === 'none') {
-                    name = '(' + this.status_map[key] + ')';
-                } else {
-                    name = key + ' (' + this.status_map[key] + ')';
-                }
-                return (
-                        React.createElement("option", {value: key}, name)
-                );
-            }.bind(this));
-            content = (
-                    React.createElement("select", {defaultValue: status, onClick: this.disable, onChange: this.changeState}, 
-                    opts
-                    )
-            );
-        }
-        var edit;
-        if (this.props.admin) {
-            edit = (
-                    React.createElement("a", {className: "edit", href: "javascript:void(0)", title: "変更する", onClick: this.edit}, "✏")
-            );
-        }
-        var unread;
-        if (this.props.unRead > 0) {
-            unread = (
-                    React.createElement("div", {className: "unread"}, this.props.unRead)
-            );
-        }
-        return (
-                React.createElement("td", React.__spread({},  props), 
-                unread, content, edit
-                )
-        );
-    }
-});
-
-
-
-},{"./../../../bower_components/jquery/dist/jquery.js":1,"./../../../bower_components/react-router/dist/react-router.js":2,"./../../../bower_components/react/react.js":3}],17:[function(require,module,exports){
-var React = require("./../../../bower_components/react/react.js");
-window.React = React;
-var Router = require("./../../../bower_components/react-router/dist/react-router.js");
-var Link = Router.Link;
-
-module.exports = React.createClass({displayName: "exports",
-    mixins: [Router.State],
-
-    getDefaultProps: function() {
-        return {
-            toolBar: function() {
-                return null;
-            }
-        };
-    },
-
-    render: function() {
-        var _tabs = tabs.map(function(tab) {
-            var className = 'status_tabbar_button';
-            if (tab.path === this.props.tabName) {
-                className += ' selected';
-            }
-            return (
-                    React.createElement("li", {className: className, key: tab.path}, 
-                    React.createElement(Link, {to: tab.path, params: {
-                        token: this.getParams().token,
-                        report: this.getParams().report,
-                    }}, tab.name)
-                    )
-            );
-        }.bind(this));
-        return (
-                React.createElement("div", {className: "status_header"}, 
-                this.props.toolBar(), 
-                React.createElement("ul", {className: "status_tabbar"}, _tabs)
-                )
-        );
-    }
-});
-
-
-
-},{"./../../../bower_components/react-router/dist/react-router.js":2,"./../../../bower_components/react/react.js":3}],18:[function(require,module,exports){
-var React = require("./../../../bower_components/react/react.js");
-var $ = require("./../../../bower_components/jquery/dist/jquery.js");
-
-var StatusCell = require('./status_cell.js');
-
-module.exports = React.createClass({displayName: "exports",
-    updateStatus: function(token, report) {
-        $.get('../api/user.cgi',
-              {
-                  type: 'status',
-                  user: token,
-                  report: report,
-              },
-              function(result) {
-                  this.setState({
-                      users: this.state.users.map(function(user) {
-                          if (user.token === token) {
-                              user.report[report].status = result[0].report[report].status;
-                          }
-                          return user;
-                      })
-                  });
-              }.bind(this));
-    },
-
-    getInitialState: function() {
-        return {
-            scheme: [],
-            scheme_init: false,
-            users: [],
-            users_init: false,
-        };
-    },
-
-    componentDidMount: function() {
-        $.get('../api/scheme.cgi',
-              {
-                  record: true,
-              },
-              function(result) {
-                  var scheme = result.map(function(s) {
-                      var label = s.record.reduce(function(n, r) {
-                          if (r.field === 'status') {
-                              return r.label;
-                          } else {
-                              return n;
-                          }
-                      }, '');
-                      return {
-                          id: s.id,
-                          label: label,
-                      };
-                  });
-                  this.setState({
-                      scheme: scheme,
-                      scheme_init: true,
-                  });
-
-                  var data = { type: 'status' };
-                  if (this.props.token) data.user = this.props.token;
-                  $.get('../api/user.cgi',
-                        data,
-                        function(users) {
-                            var tokens = users.map(function(user) { return user.token });
-                            this.state.scheme.forEach(function(s) {
-                                $.ajax({
-                                    url: '../api/comment.cgi',
-                                    data: {
-                                        action: 'list_news',
-                                        report: s.id,
-                                        user: tokens
-                                    },
-                                    success: function(result) {
-                                        Object.keys(result).map(function(key) {
-                                            var user = users.filter(function(user) {
-                                                return user.token === key;
-                                            })[0];
-                                            ['report', s.id, 'comment'].reduce(function(r, k) {
-                                                if (!r[k]) r[k] = {};
-                                                return r[k];
-                                            }, user);
-                                            user['report'][s.id]['comment'] = result[key];
-                                        }, this);
-                                        this.setState({
-                                            users: users,
-                                            users_init: true,
-                                        });
-                                    }.bind(this),
-                                    traditional: true
-                                });
-                            }, this);
-                        }.bind(this));
-              }.bind(this));
-    },
-
-    render: function() {
-        if (!this.state.scheme_init || !this.state.users_init) {
-            return (
-                    React.createElement("div", null, React.createElement("img", {src: "./loading.gif"}))
-            );
-        }
-        var ths = this.state.scheme.map(function(s) {
-            return (
-                    React.createElement("th", null, s.label)
-            );
-        });
-        if (ths.length > 0) ths.unshift (React.createElement("th", null, "名前"));
-        var users = this.state.users.map(function(user) {
-            var kadais = this.state.scheme.map(function(s) {
-                var unreads = ['report', s.id, 'comment', 'unreads'].reduce(function(r, k) {
-                    if (!r[k]) r[k] = {};
-                    return r[k];
-                }, user);
-                return (React.createElement(StatusCell, {user: user, report: s.id, isButton: true, admin: this.props.admin, updateStatus: this.updateStatus, unRead: unreads, isSelected: this.props.report === s.id}));
-            }.bind(this));
-            return (
-                    React.createElement("tr", {key: user.token}, React.createElement("td", {className: "name"}, user.name), kadais)
-            );
-        }.bind(this));
-        return (
-                React.createElement("table", {className: "record"}, 
-                React.createElement("thead", null, 
-                React.createElement("tr", null, ths)
-                ), 
-                React.createElement("tbody", null, 
-                users
-                )
-                )
-        );
-    }
-});
-
-
-
-},{"./../../../bower_components/jquery/dist/jquery.js":1,"./../../../bower_components/react/react.js":3,"./status_cell.js":16}],19:[function(require,module,exports){
-var React = require("./../../../bower_components/react/react.js");
-window.React = React;
-var Router = require("./../../../bower_components/react-router/dist/react-router.js");
-var Route = Router.Route;
-var DefaultRoute = Router.DefaultRoute;
-
-var LogView = require('./log_view.js');
-var AnswerViewModule = require('./answer_view.js');
-var ResultView = require('./result_view.js');
-var FileView = require('./file_view.js');
-var CommentView = require('./comment_view.js');
-
-var User = React.createClass({displayName: "User",
-    mixins: [Router.State],
-
-    render: function() {
-        return (
-                React.createElement("div", null, 
-                React.createElement(SummaryList, {token: this.getParams().token, report: this.getParams().report, admin: this.props.admin}), 
-                React.createElement(RouteHandler, {token: this.getParams().token, report: this.getParams().report, admin: this.props.admin})
-                )
-        );
-    }
-});
-
-var tabs = [
-    { path: 'log',      name: 'ログ',         handler: LogView.logView },
-    { path: 'answer',   name: '解答状況',     handler: AnswerViewModule.answerView },
-    { path: 'result',   name: 'テスト結果',   handler: ResultView },
-    { path: 'file',     name: 'ファイル一覧', handler: FileView },
-    { path: 'comment',  name: 'コメント',     handler: CommentView },
-];
-
-var routes = tabs.map(function(tab) {
-    return (
-            React.createElement(Route, {name: tab.path, path: tab.path, handler: tab.handler, key: tab.path})
-    );
-});
-
-var UserRoute = (
-        React.createElement(Route, {name: "user", path: ":token/:report", handler: User}, 
-        routes, 
-        React.createElement(DefaultRoute, {handler: LogView.logView})
-        )
-);
-
-module.exports = UserRoute;
-
-
-
-},{"./../../../bower_components/react-router/dist/react-router.js":2,"./../../../bower_components/react/react.js":3,"./answer_view.js":10,"./comment_view.js":11,"./file_view.js":13,"./log_view.js":14,"./result_view.js":15}],20:[function(require,module,exports){
-var React = require("./../../../bower_components/react/react.js");
-window.React = React;
-var Router = require("./../../../bower_components/react-router/dist/react-router.js");
-var DefaultRoute = Router.DefaultRoute;
-var Link = Router.Link;
-var Route = Router.Route;
-var RouteHandler = Router.RouteHandler;
-var $ = require("./../../../bower_components/jquery/dist/jquery.js");
+var $ = require("./../../bower_components/jquery/dist/jquery.js");
 
 var DetailList = require('./detail_list.js');
 var SummaryList = require('./summary_list.js');
@@ -34813,4 +34813,4 @@ Router.run(routes, function(Handler) {
 
 
 
-},{"./../../../bower_components/jquery/dist/jquery.js":1,"./../../../bower_components/react-router/dist/react-router.js":2,"./../../../bower_components/react/react.js":3,"./detail_list.js":12,"./summary_list.js":18,"./user.js":19}]},{},[20]);
+},{"./../../bower_components/jquery/dist/jquery.js":1,"./../../bower_components/react-router/dist/react-router.js":2,"./../../bower_components/react/react.js":3,"./detail_list.js":7,"./summary_list.js":13,"./user.js":14}]},{},[20]);
