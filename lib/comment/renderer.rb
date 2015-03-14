@@ -1,8 +1,8 @@
-require 'cgi'
 
 require 'bundler/setup'
 require 'kramdown'
 require 'sanitize'
+require 'rack'
 
 class Comment
   class Renderer
@@ -23,7 +23,7 @@ class Comment
 
     class Plain
       def render(text)
-        CGI.escapeHTML(text)
+        Rack::Utils.escape_html(text)
       end
 
       def type

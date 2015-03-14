@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-require 'cgi'
 require 'shellwords'
 require 'time'
 require 'shared-mime-info'
@@ -45,7 +44,7 @@ module API
       return helper.bad_request unless helper.params['report']
       report_id = helper.params['report']
 
-      path = CGI.unescape(helper.params['path'] || '.')
+      path = Rack::Utils.unescape(helper.params['path'] || '.')
       dir_user = App::KADAI + report_id + user
       log_file = dir_user + App::FILES[:log]
       return helper.not_found unless [dir_user, log_file].all?(&:exist?)
