@@ -13,6 +13,8 @@ require_relative 'lib/api/scheme.rb'
 require_relative 'lib/api/template.rb'
 require_relative 'lib/api/test_result.rb'
 require_relative 'lib/api/user.rb'
+require_relative 'lib/account/reset.rb'
+require_relative 'lib/account/register.rb'
 
 require 'webrick'
 include WEBrick
@@ -35,8 +37,9 @@ srv = HTTPServer.new(DocumentRoot: DOCUMENT_ROOT, Port: 3000)
 
 conf = Conf.new
 digest_auth = HTTPAuth::DigestAuth.new(
-  Realm:  conf[:master, :authn, :realm],
-  UserDB: HTTPAuth::Htdigest.new(conf[:master, :authn, :htdigest])
+  Realm: conf[:master, :authn, :realm],
+  UserDB: HTTPAuth::Htdigest.new(conf[:master, :authn, :htdigest]),
+  AutoReloadUserDB: true
 )
 
 def srv.mount_apis(apis, auth)
@@ -59,6 +62,9 @@ srv.mount_apis([
   ['/api/test_result.cgi', API::TestResult],
   ['/api/user.cgi', API::User]
 ], digest_auth)
+
+srv.mount('/account/reset.cgi', Rack::Handler::WEBrick, Account::Reset.new)
+srv.mount('/account/register.cgi', Rack::Handler::WEBrick, Account::Register.new)
 
 trap('INT') { srv.shutdown }
 

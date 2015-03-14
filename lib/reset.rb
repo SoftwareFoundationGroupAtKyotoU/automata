@@ -4,7 +4,7 @@ require 'bundler/setup'
 require 'mail'
 
 require_relative 'app'
-require_relative 'cgi_helper'
+require_relative 'helper'
 require_relative 'string/random'
 
 class App
