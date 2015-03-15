@@ -60,9 +60,8 @@ class App
     return @logger
   end
 
-  def user()
-    @user ||= conf[:master, :user] || @remote_user || ENV['USER']
-    return @user
+  def user
+    @remote_user
   end
 
   def su?(u=nil)
