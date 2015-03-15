@@ -21,7 +21,7 @@ module API
       temp = app.conf[:template]
 
       type = helper.params['type']
-      temp = temp.merge(temp[type[0]] || {}) unless type.empty?
+      temp = temp.merge(temp[type] || {}) unless type.nil?
 
       result = {}
       keys = KEY.dup
