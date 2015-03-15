@@ -4,7 +4,6 @@ require 'yaml'
 
 require 'bundler/setup'
 require 'kwalify'
-require_relative 'util'
 
 #
 # Provides access to configurations of master.yml, scheme.yml, and template.yml.
@@ -42,7 +41,7 @@ class Conf
 
   private
 
-  CONFIG = Util.find_base(__FILE__, :config)
+  CONFIG = Pathname.new(File.dirname(File.expand_path(__FILE__))) + '../config'
   SCHEMA = CONFIG + 'schema'
   FILES = {
     master:        CONFIG + 'master.yml',

@@ -8,7 +8,6 @@ require 'webrick'
 
 require 'bundler/setup'
 
-require_relative 'util'
 require_relative 'clone'
 require_relative 'conf'
 require_relative 'log'
@@ -17,17 +16,18 @@ require_relative 'user'
 require_relative 'logger_ext'
 
 class App
-  DB     = Util.find_base(__FILE__, :db)
+  base_dir = Pathname.new(File.dirname(File.expand_path(__FILE__))) + '..'
+  DB     = base_dir + 'db'
   KADAI  = DB + 'kadai'
-  BUILD  = Util.find_base(__FILE__, :build)
-  SCRIPT = Util.find_base(__FILE__, :script)
+  BUILD  = base_dir + 'build'
+  SCRIPT = base_dir + 'script'
 
   FILES = {
-    data:          DB + 'data.yml',
-    log:           'log.yml',
-    build:         SCRIPT + 'build.rb',
-    sandbox:       SCRIPT + 'test.rb',
-    test_script:   SCRIPT + 'test'
+    data:        DB + 'data.yml',
+    log:         'log.yml',
+    build:       SCRIPT + 'build.rb',
+    sandbox:     SCRIPT + 'test.rb',
+    test_script: SCRIPT + 'test'
   }
 
   LOGGER_LEVEL = {
