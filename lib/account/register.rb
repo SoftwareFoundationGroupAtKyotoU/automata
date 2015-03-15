@@ -27,12 +27,14 @@ module Account
         email = helper.params['email']
         name  = helper.params['name']
         ruby  = helper.params['ruby']
-        login = helper.params['login'].to_s
+        login = helper.params['login']
 
         # Validates arguments.
-        if email.empty? || name.empty? || ruby.empty? || login !~ /[0-9]{10}/
+        if email.nil? || name.nil? || ruby.nil? || login.nil?
           fail InvalidArguments
         end
+        login = login.to_s
+        fail InvalidArguments if login !~ /[0-9]{10}/
 
         # Checks whether the email address or the login are already used or not.
         if app.users.any? { |u| u.email == email || u.real_login == login }
@@ -55,6 +57,7 @@ module Account
         return helper.redirect(URL + '#invalidarguments')
       rescue => e
         app.logger.error(e.to_s)
+        app.logger.error(e.backtrace)
         return helper.redirect(URL + '#failed')
       end
     end
