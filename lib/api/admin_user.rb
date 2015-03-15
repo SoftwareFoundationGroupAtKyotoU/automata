@@ -5,12 +5,15 @@ require_relative '../helper'
 
 module API
   class AdminUser
-    # Usage: admin_user method=<method> <arguments>
+    # Usage: admin_user method=<method> user=<user> {arguments}
     #   ユーザ情報を編集
     #   method:
+    #     modify: ユーザ情報を編集
+    #         name: 新しい名前 (option)
+    #         ruby: 新しいふりがな (option)
+    #         email: 新しいメールアドレス (option)
+    #         assigned: 新しい担当TA (option)
     #     delete: ユーザを削除
-    #       arguments:
-    #         user: ユーザトークン名
     # Security:
     #   master.su に入っているユーザのみ実行可能
     def call(env)
@@ -19,15 +22,20 @@ module API
 
       return helper.forbidden unless app.su?
 
+      token = helper.params['user'] || ''
+      user = app.user_from_token(token)
+      return helper.bad_request("Unknown user: #{token}") if user.nil?
+
       method = helper.params['method'] || ''
       case method.intern
+      when :modify
+        info = ['name', 'ruby', 'email', 'assigned'].inject({}) {|h, k|
+          h[k] = helper.params[k]
+          h
+        }
+        app.modify_user(user, info)
       when :delete
-        token = helper.params['user'] || ''
-        remove_user = app.user_from_token(helper.params['user'])
-        unless remove_user
-          return helper.bad_request("Unknown user token: #{token}")
-        end
-        app.delete_user(remove_user)
+        app.delete_user(user)
       else
         return helper.bad_request("Unknown method: #{method}")
       end
