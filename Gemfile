@@ -14,4 +14,5 @@ group :development, :test do
   gem 'rake'
   gem 'rr', require: false
   gem 'test-unit'
+  gem 'rack-test'
 end
