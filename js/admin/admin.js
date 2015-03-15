@@ -2,12 +2,6 @@ var React = require('react');
 var $ = require('jquery');
 
 var EditableCellComponent = React.createClass({
-    toggleEdit: function() {
-        this.setState({
-            editing: !this.state.editing
-        });
-    },
-
     onEdit: function() {
         var data = {
             method: 'modify',
@@ -23,25 +17,28 @@ var EditableCellComponent = React.createClass({
                        this.props.label,
                        text
                    );
+                   this.setState({
+                       editing: 'none'
+                   });
                }.bind(this));
         this.setState({
-            editing: false
+            editing: 'exec'
         });
     },
 
     getInitialState: function() {
         return {
-            editing: false
+            editing: 'none'
         };
     },
 
     render: function() {
-        if (this.state.editing) {
+        if (this.state.editing === 'edit') {
             var cancel = React.DOM.a({
                 href: 'javascript:void(0)',
                 style: { textDecoration: 'none' },
                 title: 'キャンセル',
-                onClick: this.toggleEdit
+                onClick: function() { this.setState({ editing: 'none' }); }.bind(this)
             }, '✖');
             var ok = React.DOM.a({
                 href: 'javascript:void(0)',
@@ -56,12 +53,19 @@ var EditableCellComponent = React.createClass({
                 size: 40
             });
             return React.DOM.td(null, cancel, ' ', ok, ' ', textbox);
+        } else if (this.state.editing === 'exec') {
+            return React.DOM.td(
+                null,
+                React.DOM.img({ src: '../image/loading.gif' }),
+                ' ',
+                this.props.text
+            );
         } else {
             var edit = React.DOM.a({
                 href: 'javascript:void(0)',
                 style: { textDecoration: 'none' },
                 title: '変更する',
-                onClick: this.toggleEdit
+                onClick: function() { this.setState({ editing: 'edit' }); }.bind(this)
             }, '✏');
             return React.DOM.td(null, edit, ' ', this.props.text);
         }
@@ -82,15 +86,31 @@ var DeleteCellComponent = React.createClass({
                        this.props.delUser(this.props.text);
                    }.bind(this));
         }
+        this.setState({
+            deleting: 'exec'
+        });
+    },
+
+    getInitialState: function() {
+        return {
+            deleting: 'none'
+        };
     },
 
     render: function() {
-        var del = React.DOM.a({
-            href: 'javascript:void(0)',
-            style: { textDecoration: 'none' },
-            title: '削除する',
-            onClick: this.onDelete
-        }, '♲');
+        var del;
+        if (this.state.deleting === 'none') {
+            del = React.DOM.a({
+                href: 'javascript:void(0)',
+                style: { textDecoration: 'none' },
+                title: '削除する',
+                onClick: this.onDelete
+            }, '♲');
+        } else {
+            del = React.DOM.img({
+                src: '../image/loading.gif'
+            });
+        }
         return React.DOM.td(null, del, ' ', this.props.text);
     }
 });
@@ -204,12 +224,44 @@ var UserTableComponent = React.createClass({
 var UserTable = React.createFactory(UserTableComponent);
 
 var AdminComponent = React.createClass({
+    getInitialState: function() {
+        return {};
+    },
+
+    componentDidMount: function() {
+        $.get('../api/master.cgi',
+              {
+                  user: true,
+                  admin: true
+              },
+              function(result) {
+                  this.setState({
+                      user: result.user,
+                      admin: result.admin
+                  });
+              }.bind(this));
+    },
+
     render: function() {
-        return React.DOM.div(
-            null,
-            React.DOM.h2(null, 'ユーザ管理'),
-            UserTable(null)
-        );
+        if (this.state.admin) {
+            return React.DOM.div(
+                null,
+                React.DOM.h2(null, 'ユーザ管理'),
+                UserTable(null)
+            );
+        } else if (this.state.admin === false) {
+            return React.DOM.div(
+                null,
+                React.DOM.h2(null, '権限がありません')
+            );
+        } else {
+            return React.DOM.div(
+                null,
+                React.DOM.img({
+                    src: '../image/loading.gif'
+                })
+            );
+        }
     }
 });
 
