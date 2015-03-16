@@ -33,6 +33,23 @@ mapping:
         type: str
         required: yes
 
+  "authn_account":
+    type: map
+    required: no
+    mapping:
+      "htdigest":
+        type: str
+        required: yes
+      "realm":
+        type: str
+        required: yes
+      "user":
+        type: str
+        required: yes
+      "passwd":
+        type: str
+        required: yes
+
   "record":
     type: map
     required: yes

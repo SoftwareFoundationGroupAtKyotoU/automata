@@ -63,4 +63,31 @@ AuthName "#{conf[:master, :authn, :realm]}"
 Require valid-user
 EOF
   end
+
+  if conf[:master, :authn_account]
+    htdigest = conf[:master, :authn_account, :htdigest]
+    puts "Create #{htdigest}"
+    htd = WEBrick::HTTPAuth::Htdigest.new(htdigest)
+    htd.set_passwd(
+      conf[:master, :authn_account, :realm],
+      conf[:master, :authn_account, :user],
+      conf[:master, :authn_account, :passwd]
+    )
+    htd.flush
+
+    htaccess =
+      Pathname.new(File.dirname(File.expand_path(__FILE__))) +
+      'public/account/.htaccess'
+    puts "Create #{htaccess}"
+    open(htaccess, 'w') do |io|
+      io.write <<-EOF
+AuthType Digest
+AuthUserFile "#{htdigest}"
+AuthName "#{conf[:master, :authn_account, :realm]}"
+Require valid-user
+      EOF
+    end
+  else
+    # remove auth files
+  end
 end
