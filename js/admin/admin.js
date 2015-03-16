@@ -85,10 +85,10 @@ var DeleteCellComponent = React.createClass({
                    function() {
                        this.props.delUser(this.props.text);
                    }.bind(this));
+            this.setState({
+                deleting: 'exec'
+            });
         }
-        this.setState({
-            deleting: 'exec'
-        });
     },
 
     getInitialState: function() {
