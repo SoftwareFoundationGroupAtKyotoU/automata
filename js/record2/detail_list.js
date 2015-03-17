@@ -70,39 +70,39 @@ var ReportList = React.createClass({
     },
 
     componentDidMount: function() {
+        var data = {
+            type: 'status',
+            report: this.props.scheme.id,
+            status: 'record',
+            log: true
+        };
+        if (this.props.filtered) data.filter = true;
         $.get('../api/user.cgi',
-              {
-                  type: 'status',
-                  report: this.props.scheme.id,
-                  status: 'record',
-                  log: true,
-              },
+              data,
               function(users) {
                   var tokens = users.map(function(user) { return user.token; });
-                  $.ajax({
-                      url: '../api/comment.cgi',
-                      data: {
-                          action: 'list_news',
-                          report: this.props.scheme.id,
-                          user: tokens
-                      },
-                      success: function(comments) {
-                          Object.keys(comments).map(function(key) {
-                              var user = users.filter(function(user) {
-                                  return user.token === key;
-                              })[0];
-                              ['report', this.props.scheme.id, 'comment'].reduce(function(r, k) {
-                                  if (!r[k]) r[k] = {};
-                                  return r[k];
-                              }, user);
-                              user['report'][this.props.scheme.id]['comment'] = comments[key];
-                          }, this);
-                          this.setState({
-                              users: users,
-                              users_init: true,
-                          });
-                      }.bind(this),
-                  });
+                  $.get('../api/comment.cgi',
+                        {
+                            action: 'list_news',
+                            report: this.props.scheme.id,
+                            user: tokens
+                        },
+                        function(comments) {
+                            Object.keys(comments).map(function(key) {
+                                var user = users.filter(function(user) {
+                                    return user.token === key;
+                                })[0];
+                                ['report', this.props.scheme.id, 'comment'].reduce(function(r, k) {
+                                    if (!r[k]) r[k] = {};
+                                    return r[k];
+                                }, user);
+                                user['report'][this.props.scheme.id]['comment'] = comments[key];
+                            }, this);
+                            this.setState({
+                                users: users,
+                                users_init: true,
+                            });
+                        }.bind(this));
               }.bind(this));
     },
 
@@ -215,7 +215,7 @@ var DetailList = React.createClass({
         }
         var reports = this.state.scheme.map(function(s) {
             return (
-                    <ReportList scheme={s} admin={this.props.admin}/>
+                    <ReportList scheme={s} admin={this.props.admin} filtered={this.props.filtered}/>
             );
         }.bind(this));
         return (
