@@ -33,63 +33,55 @@ module.exports = React.createClass({
     },
 
     componentDidMount: function() {
-        $.get('../api/scheme.cgi',
-              {
-                  record: true,
-              },
-              function(result) {
-                  var scheme = result.map(function(s) {
-                      var label = s.record.reduce(function(n, r) {
-                          if (r.field === 'status') {
-                              return r.label;
-                          } else {
-                              return n;
-                          }
-                      }, '');
-                      return {
-                          id: s.id,
-                          label: label,
-                      };
-                  });
-                  this.setState({
-                      scheme: scheme,
-                      scheme_init: true,
-                  });
+        var data = {
+            type: 'status',
+        };
+        if (this.props.token) data.user = this.props.token;
+        if (this.props.filtered) data.filter = true;
 
-                  var data = { type: 'status' };
-                  if (this.props.token) data.user = this.props.token;
-                  $.get('../api/user.cgi',
-                        data,
-                        function(users) {
-                            var tokens = users.map(function(user) { return user.token; });
-                            this.state.scheme.forEach(function(s) {
-                                $.ajax({
-                                    url: '../api/comment.cgi',
-                                    data: {
-                                        action: 'list_news',
-                                        report: s.id,
-                                        user: tokens
-                                    },
-                                    success: function(result) {
-                                        Object.keys(result).map(function(key) {
-                                            var user = users.filter(function(user) {
-                                                return user.token === key;
-                                            })[0];
-                                            ['report', s.id, 'comment'].reduce(function(r, k) {
-                                                if (!r[k]) r[k] = {};
-                                                return r[k];
-                                            }, user);
-                                            user['report'][s.id]['comment'] = result[key];
-                                        }, this);
-                                        this.setState({
-                                            users: users,
-                                            users_init: true,
-                                        });
-                                    }.bind(this),
-                                });
-                            }, this);
-                        }.bind(this));
-              }.bind(this));
+        $.when(
+            $.get('../api/scheme.cgi', { record: true }),
+            $.get('../api/user.cgi', data)
+        ).done(function(scheme, users) {
+            scheme = scheme[0];
+            users = users[0];
+            var scheme = scheme.map(function(s) {
+                return {
+                    id: s.id,
+                    label: s.record.filter(function(r) {
+                        return r.field === 'status';
+                    })[0].label
+                };
+            });
+
+            var tokens = users.map(function(user) { return user.token; });
+            scheme.forEach(function(s) {
+                $.get('../api/comment.cgi',
+                      {
+                          action: 'list_news',
+                          report: s.id,
+                          user: tokens
+                      },
+                      function(result) {
+                          Object.keys(result).map(function(key) {
+                              var user = users.filter(function(user) {
+                                  return user.token === key;
+                              })[0];
+                              ['report', s.id, 'comment'].reduce(function(r, k) {
+                                  if (!r[k]) r[k] = {};
+                                  return r[k];
+                              }, user);
+                              user['report'][s.id]['comment'] = result[key];
+                          }, this);
+                          this.setState({
+                              scheme: scheme,
+                              scheme_init: true,
+                              users: users,
+                              users_init: true
+                          });
+                      }.bind(this));
+            }, this);
+        }.bind(this));
     },
 
     render: function() {
