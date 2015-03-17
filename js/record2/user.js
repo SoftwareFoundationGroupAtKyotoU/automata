@@ -17,7 +17,7 @@ var User = React.createClass({
         var report = this.getParams().report;
         return (
                 <div>
-                <SummaryList token={token} report={report} admin={this.props.admin}/>
+                <SummaryList token={token} report={report} admin={this.props.admin} scheme={this.props.scheme}/>
                 <div className="status_window">
                 <StatusHeader/>
                 <RouteHandler token={token} report={report} admin={this.props.admin} key={token + report}/>

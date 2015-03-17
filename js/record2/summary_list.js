@@ -23,81 +23,60 @@ module.exports = React.createClass({
               }.bind(this));
     },
 
-    getInitialState: function() {
-        return {
-            scheme: [],
-            scheme_init: false,
-            users: [],
-            users_init: false,
-        };
-    },
-
     componentDidMount: function() {
         var data = {
             type: 'status',
         };
         if (this.props.token) data.user = this.props.token;
         if (this.props.filtered) data.filter = true;
-
-        $.when(
-            $.get('../api/scheme.cgi', { record: true }),
-            $.get('../api/user.cgi', data)
-        ).done(function(scheme, users) {
-            scheme = scheme[0];
-            users = users[0];
-            var scheme = scheme.map(function(s) {
-                return {
-                    id: s.id,
-                    label: s.record.filter(function(r) {
-                        return r.field === 'status';
-                    })[0].label
-                };
-            });
-
-            var tokens = users.map(function(user) { return user.token; });
-            scheme.forEach(function(s) {
-                $.get('../api/comment.cgi',
-                      {
-                          action: 'list_news',
-                          report: s.id,
-                          user: tokens
-                      },
-                      function(result) {
-                          Object.keys(result).map(function(key) {
-                              var user = users.filter(function(user) {
-                                  return user.token === key;
-                              })[0];
-                              ['report', s.id, 'comment'].reduce(function(r, k) {
-                                  if (!r[k]) r[k] = {};
-                                  return r[k];
-                              }, user);
-                              user['report'][s.id]['comment'] = result[key];
-                          }, this);
-                          this.setState({
-                              scheme: scheme,
-                              scheme_init: true,
-                              users: users,
-                              users_init: true
-                          });
-                      }.bind(this));
-            }, this);
-        }.bind(this));
+        $.get('../api/user.cgi', data,
+              function(users) {
+                  var tokens = users.map(function(user) { return user.token; });
+                  this.props.scheme.forEach(function(s) {
+                      $.get('../api/comment.cgi',
+                            {
+                                action: 'list_news',
+                                report: s.id,
+                                user: tokens
+                            },
+                            function(result) {
+                                Object.keys(result).map(function(key) {
+                                    var user = users.filter(function(user) {
+                                        return user.token === key;
+                                    })[0];
+                                    ['report', s.id, 'comment'].reduce(function(r, k) {
+                                        if (!r[k]) r[k] = {};
+                                        return r[k];
+                                    }, user);
+                                    user['report'][s.id]['comment'] = result[key];
+                                }, this);
+                                this.setState({
+                                    users: users,
+                                });
+                            }.bind(this));
+                  }, this);
+              }.bind(this));
     },
 
     render: function() {
-        if (!this.state.scheme_init || !this.state.users_init) {
-            return (
-                    <div><img src="./loading.gif"/></div>
-            );
-        }
-        var ths = this.state.scheme.map(function(s) {
+        if (!this.state) return (<img src="../image/loading.gif"/>);
+
+        var scheme = this.props.scheme.map(function(s) {
+            return {
+                id: s.id,
+                label: s.record.filter(function(r) {
+                    return r.field === 'status';
+                })[0].label
+            };
+        });
+        var ths = scheme.map(function(s) {
             return (
                     <th>{s.label}</th>
             );
         });
         if (ths.length > 0) ths.unshift (<th>名前</th>);
         var users = this.state.users.map(function(user) {
-            var kadais = this.state.scheme.map(function(s) {
+            var kadais = scheme.map(function(s) {
                 var unreads = ['report', s.id, 'comment', 'unreads'].reduce(function(r, k) {
                     if (!r[k]) r[k] = {};
                     return r[k];
