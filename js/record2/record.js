@@ -6,33 +6,52 @@ var Link = Router.Link;
 var Route = Router.Route;
 var RouteHandler = Router.RouteHandler;
 var $ = require('jquery');
+require('jquery.cookie');
 
 var DetailList = require('./detail_list.js');
 var SummaryList = require('./summary_list.js');
 var UserRoute = require('./user.js');
 
 var Record = React.createClass({
+    mixins: [Router.Navigation],
+
     toggleFilter: function() {
+        $.cookie('default-filtered', !this.state.filtered);
         this.setState({
             filtered: !this.state.filtered
-        })
+        });
     },
 
     componentDidMount: function() {
         $.when(
-            $.get('../api/master.cgi', { admin: true }),
+            $.get('../api/master.cgi', { admin: true, token: true }),
             $.get('../api/template.cgi', { type: 'record', links: true }),
             $.get('../api/scheme.cgi', { record: true })
         ).done(function(master, template, scheme) {
             master = master[0];
             template = template[0];
             scheme = scheme[0];
+            var filtered = $.cookie('default-filtered');
+            if (typeof filtered === 'undefined' || filtered === 'true') {
+                filtered = true;
+            } else {
+                filtered = false;
+            }
+            $.cookie('default-filtered', filtered);
             this.setState({
                 admin: master.admin,
                 template: template,
                 scheme: scheme,
-                filtered: true,
+                filtered: filtered
             });
+            if (!master.admin) {
+                var report = $.cookie('default-report');
+                if (!report) report = scheme[0].id;
+                this.replaceWith('user', {
+                    token: master.token,
+                    report: report
+                });
+            }
         }.bind(this));
     },
 

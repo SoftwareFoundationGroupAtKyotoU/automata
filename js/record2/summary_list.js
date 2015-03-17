@@ -50,9 +50,11 @@ module.exports = React.createClass({
                                     }, user);
                                     user['report'][s.id]['comment'] = result[key];
                                 }, this);
-                                this.setState({
-                                    users: users,
-                                });
+                                if (this.isMounted()) {
+                                    this.setState({
+                                        users: users,
+                                    });
+                                }
                             }.bind(this));
                   }, this);
               }.bind(this));

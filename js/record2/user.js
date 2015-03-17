@@ -4,6 +4,8 @@ var Router = require('react-router');
 var Route = Router.Route;
 var DefaultRoute = Router.DefaultRoute;
 var RouteHandler = Router.RouteHandler;
+var $ = require('jquery');
+require('jquery.cookie');
 
 var LogView = require('./log_view.js');
 var SummaryList = require('./summary_list.js');
@@ -15,6 +17,7 @@ var User = React.createClass({
     render: function() {
         var token = this.getParams().token;
         var report = this.getParams().report;
+        $.cookie('default-report', report);
         return (
                 <div>
                 <SummaryList token={token} report={report} admin={this.props.admin} scheme={this.props.scheme}/>
