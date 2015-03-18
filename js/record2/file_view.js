@@ -272,6 +272,7 @@ var FileView = (function() {
 
             return (<div id={"summary-" + p.report + "_status_window"}
                          style={ {display: "block"} }>
+                          <div className="status_header">{toolBar()}</div>
                           <div id={"summary-" + p.report + "_status_view"}
                                className="status_view">
                               {render}

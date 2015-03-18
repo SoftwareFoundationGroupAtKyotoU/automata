@@ -228,7 +228,7 @@ var LogView = React.createClass({
         } else {
             return (
                     <ul className='status_toolbar'>
-                    <li className='toolbutton'><a onClick={this.onEdit}>✏ 編集</a></li>
+                    <li className='toolbutton'><a href="javascript:void(0)" onClick={this.onEdit}>✏ 編集</a></li>
                     </ul>
             );
         }
@@ -244,6 +244,7 @@ var LogView = React.createClass({
         }
         return (
                 <div>
+                <div className="status_header">{this.toolBar()}</div>
                 <div id={'status_view'} className='status_view'>
                 <dl className='log_msg'>
                 <Log data={status} />
