@@ -187,33 +187,8 @@ var ReportList = React.createClass({
 });
 
 var DetailList = React.createClass({
-    getInitialState: function() {
-        return {
-            scheme: [],
-            scheme_init: false,
-        };
-    },
-
-    componentDidMount: function() {
-        $.get('../api/scheme.cgi',
-              {
-                  record: true,
-              },
-              function(result) {
-                  this.setState({
-                      scheme: result,
-                      scheme_init: true,
-                  });
-              }.bind(this));
-    },
-
     render: function() {
-        if (!this.state.scheme_init) {
-            return (
-                    <div><img src="./loading.gif"/></div>
-            );
-        }
-        var reports = this.state.scheme.map(function(s) {
+        var reports = this.props.scheme.map(function(s) {
             return (
                     <ReportList scheme={s} admin={this.props.admin} filtered={this.props.filtered}/>
             );
