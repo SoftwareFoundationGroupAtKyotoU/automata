@@ -148,10 +148,23 @@ var AnswerView = React.createClass({
                     </div>
             );
         }
-        else if(!this.state.clicked && this.state.mounted) {
+        else if(!this.state.clicked && this.state.mounted &&
+                this.props.admin) {
             return (
                     <div>
                     <div className="status_header">{this.toolBar()}</div>
+                    <div className="status_view">
+                    <Solved solved={this.state.solved}/>
+                    <Unsolved unsolved={this.state.unsolved}/>
+                    </div>
+                    </div>
+            );
+        }
+        else if(!this.state.clicked && this.state.mounted &&
+                !this.props.admin) {
+            return (
+                    <div>
+                    <div className="status_header"></div>
                     <div className="status_view">
                     <Solved solved={this.state.solved}/>
                     <Unsolved unsolved={this.state.unsolved}/>
