@@ -19,11 +19,24 @@ require_relative 'lib/account/register.rb'
 require 'webrick'
 include WEBrick
 
-# Rack handler with digest authentication
-class AuthAPIHandler < Rack::Handler::WEBrick
+# Authenticated Rack handler
+class AuthedAPIHandler < Rack::Handler::WEBrick
   def initialize(server, api, auth)
     @auth = auth
     super(server, api)
+  end
+
+  def service(req, res)
+    super(req, res) if @auth.authenticate(req, res)
+  end
+end
+
+# Authenticated FileHandler
+class AuthedFileHandler < HTTPServlet::FileHandler
+  def initialize(server, root, auth, options = {},
+                 default = WEBrick::Config::FileHandler)
+    @auth = auth
+    super(server, root, options, default)
   end
 
   def service(req, res)
@@ -42,9 +55,13 @@ digest_auth = HTTPAuth::DigestAuth.new(
   AutoReloadUserDB: true
 )
 
-def srv.mount_apis(apis, auth)
+def srv.mount_apis(apis, auth = nil)
   apis.each do |api|
-    mount(api[0], AuthAPIHandler, api[1].new, auth)
+    if auth
+      mount(api[0], AuthedAPIHandler, api[1].new, auth)
+    else
+      mount(api[0], Rack::Handler::WEBrick, api[1].new)
+    end
   end
 end
 
@@ -63,8 +80,27 @@ srv.mount_apis([
   ['/api/user.cgi', API::User]
 ], digest_auth)
 
-srv.mount('/account/reset.cgi', Rack::Handler::WEBrick, Account::Reset.new)
-srv.mount('/account/register.cgi', Rack::Handler::WEBrick, Account::Register.new)
+if conf[:master, :authn_account]
+  unless File.exist?(conf[:master, :authn_account, :htdigest])
+    puts <<-EOS
+Error: authn_account is configured but htdigest file doesn't exist.
+Please execute 'bundle exec rake htaccess'.
+    EOS
+    fail RuntimeError
+  end
+  auth = HTTPAuth::DigestAuth.new(
+    Realm: conf[:master, :authn_account, :realm],
+    UserDB: HTTPAuth::Htdigest.new(conf[:master, :authn_account, :htdigest]),
+    AutoReloadUserDB: true
+  )
+  srv.umount('/account')
+  srv.mount('/account', AuthedFileHandler, 'public/account', auth)
+end
+
+srv.mount_apis([
+  ['/account/reset.cgi', Account::Reset],
+  ['/account/register.cgi', Account::Register]
+])
 
 trap('INT') { srv.shutdown }
 
