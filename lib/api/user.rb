@@ -68,6 +68,10 @@ module API
         users.each { |u| u.delete('email') }
       end
 
+      if !app.su? || helper.params['assigned'].nil?
+        users.each { |u| u.delete('assigned') }
+      end
+
       helper.json_response(users)
     end
   end

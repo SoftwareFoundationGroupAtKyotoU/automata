@@ -124,6 +124,24 @@ class App
     htd.flush
   end
 
+  def modify_user(id, info)
+    user_store = Store::YAML.new(App::FILES[:data])
+    user_store.transaction {|store|
+      users = (store['data'] || [])
+      users.map! {|user|
+        if user['login'] == id
+          user['name'] = info['name'] || user['name']
+          user['ruby'] = info['ruby'] || user['ruby']
+          user['email'] = info['email'] || user['email']
+          user['assigned'] = info['assigned'] || user['assigned']
+        end
+        user
+      }
+      store['data'] = users
+    }
+    @users = nil
+  end
+
   def delete_user(id)
     backup_dir = DB + 'backup' + Time.new.iso8601
     raise RuntimeError, '頻度が高すぎるためリクエストを拒否しました' if File.exist?(backup_dir)
