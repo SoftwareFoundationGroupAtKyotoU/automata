@@ -136,7 +136,9 @@ var FileViewer = (function() {
 
             return <table className="file_browser file"><tr>
                 <td className="linenumber"><pre>{ln}</pre></td>
-                <td className="content"><pre>{ {__html: content} }</pre></td>
+                <td className="content"><pre dangerouslySetInnerHTML={
+                    {__html: content }
+                }/></td>
             </tr></table>;
         }
     });
@@ -270,6 +272,7 @@ var FileView = (function() {
 
             return (<div id={"summary-" + p.report + "_status_window"}
                          style={ {display: "block"} }>
+                          <div className="status_header">{toolBar()}</div>
                           <div id={"summary-" + p.report + "_status_view"}
                                className="status_view">
                               {render}

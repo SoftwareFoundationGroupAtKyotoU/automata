@@ -114,7 +114,7 @@ var AnswerView = React.createClass({
         return (
                 <ul className="status_toolbar">
                 <li className="toolbutton">
-                <a onClick={this.onClick}>✏編集</a>
+                <a href="javascript:void(0)" onClick={this.onClick}>✏ 編集</a>
                 </li>
                 </ul>
         );
@@ -151,7 +151,7 @@ var AnswerView = React.createClass({
         else if(!this.state.clicked && this.state.mounted) {
             return (
                     <div>
-                    <a onClick = {this.onClick} >編集</a>
+                    <div className="status_header">{this.toolBar()}</div>
                     <div className="status_view">
                     <Solved solved={this.state.solved}/>
                     <Unsolved unsolved={this.state.unsolved}/>
