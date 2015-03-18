@@ -85,11 +85,11 @@ var Report = React.createClass({
 
         this.props.exercise_list.forEach(function(report) {
             var name = report[0];
-            var label = "ex_" + report_name + name;
+            var label = "";
             var attr = report[1];
 
             if (attr !== null && attr.required === 1) {
-                name = name + "[必修]";
+                label = name + "[必修]";
             }
             else if (attr != null && attr.level > 0) {
                 var level = "";
@@ -98,7 +98,10 @@ var Report = React.createClass({
                     level = level + "★";
                 }
 
-                name = name + "[" + level + "]";
+                label = name + "[" + level + "]";
+            }
+            else {
+                label = name;
             }
 
             exercises.push
@@ -107,7 +110,7 @@ var Report = React.createClass({
                     <input type="checkbox" checked={check_list[name]}
                            onChange={handlechange}
                            value={name} />
-                    <label>{name}</label>
+                    <label>{label}</label>
                     </li>
             );
         });
