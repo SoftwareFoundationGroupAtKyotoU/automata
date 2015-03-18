@@ -15,7 +15,7 @@ module API
   # Security:
   #   master.su に入っているユーザのみ実行可能
   class AdminLog
-    LOGKEYS = [ 'message', 'error', 'reason' ]
+    LOGKEYS = %w(message error reason)
 
     def call(env)
       helper = Helper.new(env)
@@ -47,10 +47,10 @@ module API
 
         data_log = {}
         LOGKEYS.each do |k|
-          val = helper.params[k.to_s]
+          val = helper.params[k]
           data_log[k] = val if val
         end
-        data['log'] = data_log
+        data['log'] = data_log unless data_log.empty?
 
         unless data.empty?
           log_file = App::KADAI + report_id + user + App::FILES[:log]

@@ -3,15 +3,19 @@ require 'rr'
 
 require 'app'
 
-class App
-  def initialize(remote_user=nil)
-    @remote_user = remote_user
-  end
-end
-
-class AppText < Test::Unit::TestCase
+class AppTest < Test::Unit::TestCase
   def setup
+    $original_app_initialize = App.allocate.method(:initialize)
+    App.class_eval do
+      define_method(:initialize) {}
+    end
     @app = App.new
+  end
+
+  def teardown
+    App.class_eval do
+      define_method(:initialize, $original_app_initialize)
+    end
   end
 
   def test_user_names_from_token

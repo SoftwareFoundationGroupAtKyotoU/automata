@@ -15,6 +15,8 @@ GEM
       nokogiri
     power_assert (0.2.3)
     rack (1.6.0)
+    rack-test (0.6.3)
+      rack (>= 1.0)
     rake (10.4.2)
     rr (1.1.2)
     rubyzip (1.1.7)
@@ -36,6 +38,7 @@ DEPENDENCIES
   kwalify
   mail
   rack
+  rack-test
   rake
   rr
   rubyzip
