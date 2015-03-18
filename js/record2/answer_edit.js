@@ -86,6 +86,20 @@ var Report = React.createClass({
         this.props.exercise_list.forEach(function(report) {
             var name = report[0];
             var label = "ex_" + report_name + name;
+            var attr = report[1];
+
+            if (attr !== null && attr.required === 1) {
+                name = name + "[必修]";
+            }
+            else if (attr != null && attr.level > 0) {
+                var level = "";
+
+                for (i = 0; i < attr.level; i = i + 1) {
+                    level = level + "★";
+                }
+
+                name = name + "[" + level + "]";
+            }
 
             exercises.push
             (
