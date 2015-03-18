@@ -136,7 +136,9 @@ var FileViewer = (function() {
 
             return <table className="file_browser file"><tr>
                 <td className="linenumber"><pre>{ln}</pre></td>
-                <td className="content"><pre>{ {__html: content} }</pre></td>
+                <td className="content"><pre dangerouslySetInnerHTML={
+                    {__html: content }
+                }/></td>
             </tr></table>;
         }
     });
