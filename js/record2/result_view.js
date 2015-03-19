@@ -1,6 +1,39 @@
 var React = require('react');
 var $ = require('jquery');
 
+function isPassed(t) {
+    if (typeof t === 'string') t = t.result;
+    return t =~ /^\s*ok\s*/i;
+}
+
+var defs = [
+    {
+        key: 'result',
+        name: 'result',
+        node: function(x) { return isPassed(x) ? 'passed' : 'failed'; }
+    },
+    {
+        key: 'description',
+        name: 'test',
+        node: function(x) { return (<pre>{x}</pre>); }
+    },
+    {
+        key: 'expected',
+        name: 'expected',
+        node: function(x) { return (<pre>{x}</pre>); }
+    },
+    {
+        key: 'returned',
+        name: 'returned',
+        node: function(x) { return (<pre>{x}</pre>); }
+    },
+    {
+        key: 'exception',
+        name: 'error',
+        node: function(x) { return (<pre>{x}</pre>); }
+    }
+];
+
 module.exports = React.createClass({
     runTest: function() {
         $.post('../api/admin_runtest.cgi',
@@ -69,16 +102,21 @@ module.exports = React.createClass({
             var testcase = (<p>非公開</p>);
             if (Array.isArray(this.state.test_result.detail)) {
                 var tests = this.state.test_result.detail.map(function(t) {
+                    var rows = [];
+                    defs.forEach(function(d) {
+                        var x = t[d.key];
+                        if (x) {
+                            rows.push(
+                                    <tr><th>{d.name}</th><td>{d.node(x)}</td></tr>
+                            );
+                        }
+                    });
+                    var cname = isPassed(t) ? 'passed' : 'failed';
                     return [
-                        (<dt className="passed">{t.name}</dt>),
-                        (<dd className="passed">
+                        (<dt className={cname}>{t.name}</dt>),
+                        (<dd className={cname}>
                          <table>
-                         <tbody>
-                         <tr><th>result</th><td>{t.result}</td></tr>
-                         <tr><th>test</th><td><pre>{t.description}</pre></td></tr>
-                         <tr><th>expected</th><td><pre>{t.expected}</pre></td></tr>
-                         <tr><th>returned</th><td><pre>{t.returned}</pre></td></tr>
-                         </tbody>
+                         <tbody>{rows}</tbody>
                          </table>
                          </dd>)
                     ];
@@ -89,6 +127,11 @@ module.exports = React.createClass({
                         </dl>
                 )
             }
+            var passed = this.state.test_result.passed;
+            var number = this.state.test_result.number;
+            var rate = passed === number
+                ? (<p>{passed}/{number}</p>)
+                : (<p><em>{passed}</em>/{number}</p>);
             return (
                     <div>
                     <div className="status_header">{this.toolBar()}</div>
