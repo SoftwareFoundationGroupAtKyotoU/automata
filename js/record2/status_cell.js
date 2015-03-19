@@ -1,6 +1,7 @@
 var React = require('react');
 window.React = React;
 var Router = require('react-router');
+var Link = Router.Link;
 var $ = require('jquery');
 
 module.exports = React.createClass({
@@ -17,11 +18,20 @@ module.exports = React.createClass({
         'report':   'レポート確認中',
     },
 
-    edit: function() {
+    onEdit: function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         this.setState({
-            editing: !this.state.editing
+            editing: 'edit'
         });
-        return false;
+    },
+
+    onCancel: function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.setState({
+            editing: 'done'
+        });
     },
 
     changeState: function(e) {
@@ -29,24 +39,29 @@ module.exports = React.createClass({
             if (typeof r[k] === 'undefined') r[k] = {};
             return r[k];
         }, this.props.user);
+        var new_status = e.target.value;
         $.post('../api/admin_log.cgi',
                {
                    id: id,
                    user: this.props.user.token,
                    report: this.props.report,
-                   status: e.target.value
+                   status: new_status
                },
                function(result) {
                    this.props.updateStatus(this.props.user.token,
-                                           this.props.report);
+                                           this.props.report,
+                                           new_status);
+                   this.setState({
+                       editing: 'done'
+                   });
                }.bind(this));
         this.setState({
-            editing: false
+            editing: 'exec'
         });
     },
 
-    disable: function() {
-        return false;
+    disable: function(e) {
+        e.stopPropagation();
     },
 
     getDefaultProps: function() {
@@ -57,7 +72,7 @@ module.exports = React.createClass({
 
     getInitialState: function() {
         return {
-            editing: false,
+            editing: 'done',
         };
     },
 
@@ -85,8 +100,8 @@ module.exports = React.createClass({
             props.className += ' selectable';
             props.onClick = transTo;
         }
-        var content = this.status_map[status];
-        if (this.state.editing) {
+        var content;
+        if (this.state.editing === 'edit') {
             var opts = Object.keys(this.status_map).map(function(key) {
                 var name;
                 if (key === 'none') {
@@ -103,12 +118,31 @@ module.exports = React.createClass({
                     {opts}
                     </select>
             );
+        } else {
+            content = (
+                    <Link to="user" params={{
+                        token: this.props.user.token,
+                        report: this.props.report
+                    }}>{this.status_map[status]}</Link>
+            );
         }
         var edit;
         if (this.props.admin) {
-            edit = (
-                    <a className="edit" href="javascript:void(0)" title="変更する" onClick={this.edit}>✏</a>
-            );
+            if (this.state.editing === 'edit') {
+                edit = (
+                        <a className="edit" href="javascript:void(0)" title="キャンセル" onClick={this.onCancel}>✖</a>
+                );
+            } else if (this.state.editing === 'exec') {
+                edit = (
+                        <a className="edit" title="変更中">
+                        <img src="../image/loading.gif"/>
+                        </a>
+                );
+            } else {
+                edit = (
+                        <a className="edit" href="javascript:void(0)" title="変更する" onClick={this.onEdit}>✏</a>
+                );
+            }
         }
         var unread;
         if (this.props.unRead > 0) {

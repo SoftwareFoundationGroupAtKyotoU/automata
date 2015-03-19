@@ -83,17 +83,19 @@ var Record = React.createClass({
                 );
             }
         }
+        var institute = this.state.template.institute
+            ? (<h2 id="institute">{this.state.template.institute}</h2>)
+            : null;
+        var title = this.state.template.title
+            ? (<h1 id="title">{this.state.template.title}</h1>)
+            : null;
+        var subtitle = this.state.template.subtitle
+            ? (<h2 id="subtitle">{this.state.template.subtitle}</h2>)
+            : null;
         return (
                 <div>
                 <div id="article">
-                <h2 id="institute">{this.state.template.institute}</h2>
-                <h1 id="title">{this.state.template.title}</h1>
-                <h2 id="subtitle">{this.state.template.subtitle}</h2>
-                <ul>
-                <li>提出が済んだ場合は, 「提出済」と記載されます</li>
-                <li>提出内容に不備がある場合は, 「要再提出」と記載されます</li>
-                <li>提出しても, チェックが完了するまでは「確認中」と記載されます</li>
-                </ul>
+                {institute}{title}{subtitle}
                 <div id="record">
                 <div id="view_switch">
                 表示:<ul>

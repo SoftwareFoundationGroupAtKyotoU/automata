@@ -14,6 +14,19 @@ var StatusHeader = require('./status_header.js');
 var User = React.createClass({
     mixins: [Router.State],
 
+    reloadView: function(e)  {
+        e.preventDefault();
+        this.setState({
+            counter: this.state.counter + 1
+        });
+    },
+
+    getInitialState: function() {
+        return {
+            counter: 0
+        };
+    },
+
     render: function() {
         var token = this.getParams().token;
         var report = this.getParams().report;
@@ -22,8 +35,8 @@ var User = React.createClass({
                 <div>
                 <SummaryList token={token} report={report} admin={this.props.admin} scheme={this.props.scheme}/>
                 <div className="status_window">
-                <StatusHeader/>
-                <RouteHandler token={token} report={report} admin={this.props.admin} key={token + report}/>
+                <StatusHeader reload={this.reloadView}/>
+                <RouteHandler token={token} report={report} admin={this.props.admin} key={token + report + this.state.counter}/>
                 </div>
                 </div>
         );
