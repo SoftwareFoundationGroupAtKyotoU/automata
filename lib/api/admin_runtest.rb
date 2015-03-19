@@ -29,7 +29,7 @@ module API
       return helper.bad_request unless user
 
       # report ID must be specified
-      report_id = helper.param['report']
+      report_id = helper.params['report']
       return helper.bad_request unless report_id
 
       cmd =
