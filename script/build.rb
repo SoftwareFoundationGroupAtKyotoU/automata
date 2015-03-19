@@ -33,11 +33,12 @@ files = {
 yml = {}
 files.each{|name, file| yml[name] = YAML.load_file(file)||{} rescue {} }
 
+app = App.new
 conf = {}
 [:build, :test].each do |k|
   conf[k] = {}
   [:default, report_id].each do |l|
-    conf[k].merge!((App.new.conf[:master, :check, l, k] || {}).to_hash)
+    conf[k].merge!((app.conf[:master, :check, l, k] || {}).to_hash)
   end
 end
 
@@ -72,13 +73,6 @@ src_files = Dir.glob("#{dir[:src]}/*", File::FNM_DOTMATCH)
 src_files.reject!{|f| f =~ /\/\.+$/}
 
 FileUtils.cp_r(src_files, dir[:target].to_s)
-
-# clean
-ignore = conf[:build]['ignore'] || []
-ignore = '(?:'+ignore.join('|')+')' if ignore.is_a?(Array)
-Dir.each_leaf(dir[:target].to_s, File::FNM_DOTMATCH) do |f|
-  FileUtils.rm(f) if f =~ /#{ignore}/
-end
 
 # make input file
 if !conf[:test].empty?

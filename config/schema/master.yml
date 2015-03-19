@@ -62,7 +62,6 @@ mapping:
         required: yes
       "detail":
         type: str
-        required: yes
 
   "comment":
     type: map
