@@ -13,7 +13,10 @@ var SummaryList = require('./summary_list.js');
 var UserRoute = require('./user.js');
 
 var Record = React.createClass({
-    mixins: [Router.Navigation],
+    mixins: [
+        Router.Navigation,
+        Router.State
+    ],
 
     toggleFilter: function() {
         $.cookie('default-filtered', !this.state.filtered);
@@ -44,7 +47,7 @@ var Record = React.createClass({
                 scheme: scheme,
                 filtered: filtered
             });
-            if (!master.admin) {
+            if (!master.admin && this.getPath() === '/') {
                 var report = $.cookie('default-report');
                 if (!report) report = scheme[0].id;
                 this.replaceWith('user', {
