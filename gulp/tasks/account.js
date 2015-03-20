@@ -9,8 +9,4 @@ module.exports = function() {
         .pipe(concat('bundle.js'))
         .pipe(uglify())
         .pipe(gulp.dest('public/account'));
-    gulp.src(depends.concat(['js/account/register_msg.js']))
-        .pipe(concat('register.js'))
-        .pipe(uglify())
-        .pipe(gulp.dest('public/account'));
 };

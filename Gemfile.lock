@@ -2,6 +2,8 @@ GEM
   remote: https://rubygems.org/
   specs:
     crass (1.0.1)
+    haml (4.0.6)
+      tilt
     json (1.8.2)
     kramdown (1.6.0)
     kwalify (0.7.2)
@@ -27,12 +29,14 @@ GEM
     shared-mime-info (0.2.5)
     test-unit (3.0.9)
       power_assert
+    tilt (2.0.1)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   bundler
+  haml
   json
   kramdown
   kwalify
