@@ -14,10 +14,12 @@ var Solved = React.createClass({
             );
         });
         return (
-                <ul>
+                <div>
                 <h3>解答済み</h3>
+                <ul>
                 {solved}
                 </ul>
+                </div>
         );
     }
 });
@@ -37,10 +39,12 @@ var Unsolved = React.createClass({
         }
 
         return (
-                <ul>
+                <div>
                 <h3>未回答</h3>
+                <ul>
                 {unsolved}
                 </ul>
+                </div>
         );
     }
 });

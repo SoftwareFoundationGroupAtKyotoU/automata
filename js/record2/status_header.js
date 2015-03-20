@@ -25,17 +25,24 @@ module.exports = React.createClass({
             var className = 'status_tabbar_button';
             var tabName = this.getPath().split('/')[3];
             if (!tabName) tabName = 'log';
+            var params = {
+                token: this.getParams().token,
+                report: this.getParams().report
+            };
             if (tab.path === tabName) {
-                className += ' selected';
+                return (
+                        <li className={className + ' selected'} key={tab.path}>
+                        <Link to={tab.path} params={params}
+                              onClick={this.props.reload}>{tab.name}</Link>
+                        </li>
+                );
+            } else {
+                return (
+                        <li className={className} key={tab.path}>
+                        <Link to={tab.path} params={params}>{tab.name}</Link>
+                        </li>
+                );
             }
-            return (
-                    <li className={className} key={tab.path}>
-                    <Link to={tab.path} params={{
-                        token: this.getParams().token,
-                        report: this.getParams().report,
-                    }}>{tab.name}</Link>
-                    </li>
-            );
         }.bind(this));
         return (
                 <div className="status_header">
