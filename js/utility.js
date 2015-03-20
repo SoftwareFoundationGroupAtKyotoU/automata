@@ -1,24 +1,11 @@
 var _ = require('lodash');
 var $ = require('jquery');
 var React = require('react');
-var URI = require('./uri2');
 
-var base = function() {
-    var uri = URI.location();
-    uri.local.pop(); uri.local.pop();
-    return uri;
-};
-
-var api = function(name, args) {
-    var uri = base();
-    uri.local.push('api');
-    uri.local.push(name+'.cgi');
-    uri.params = args || {};
-    uri.refresh = function() {
-        delete uri.params.timestamp;
-        return uri;
-    };
-    return uri;
+var api = function(name) {
+    var uri = $(location);
+    return uri.attr('protocol') + '//' + uri.attr('host') +
+        '/api/'+name+'.cgi';
 };
 
 var setTitle = function(template) {
