@@ -77,23 +77,38 @@ var jsonpFailure = function(reason, jsonp, failed) {
     ]);
 };
 
-var apiGet = function() {
+var apiCall = function() {
     var params = _.toArray(arguments);
     var d = $.Deferred();
 
     $.when.apply($, params.map(function(p) { return $.ajax({
-        method: 'GET',
+        method: p.method,
         url:    api(p.api),
         data:   p.data,
         error:  jsonpFailure
     }); })).then(function() {
         d.resolve.apply(d, _.toArray(arguments).map(function (r) {
-            r[0].__original_response = r;
-            return r[0];
+            if (r.length === 3) {
+                r[0].__original_response = r;
+                r = r[0];
+            }
+            return r;
         }));
     });
 
     return d;
+};
+
+var apiGet = function() {
+    var params = _.toArray(arguments);
+    params.forEach(function (p) { p.method = 'GET'; });
+    return apiCall.apply(this, params);
+};
+
+var apiPost = function() {
+    var params = _.toArray(arguments);
+    params.forEach(function (p) { p.method = 'Post'; });
+    return apiCall.apply(this, params);
 };
 
 var transEx = function(ex) {
@@ -222,6 +237,7 @@ module.exports = {
     setTitle: setTitle,
     addLinks: addLinks,
     apiGet: apiGet,
+    apiPost: apiPost,
     ExerciseCheckList: ExerciseCheckList,
     transformExercises: transExList
 };
