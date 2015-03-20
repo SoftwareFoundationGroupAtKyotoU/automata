@@ -2,7 +2,7 @@ var React = require('react');
 var $ = require('jquery');
 
 function isPassed(t) {
-    if (typeof t === 'string') t = t.result;
+    if (typeof t !== 'string') t = t.result;
     return t =~ /^\s*ok\s*/i;
 }
 
