@@ -3,9 +3,10 @@ var $ = require('jquery');
 var React = require('react');
 
 var api = function(name) {
-    var uri = $(location);
-    return uri.attr('protocol') + '//' + uri.attr('host') +
-        '/api/'+name+'.cgi';
+    var pathname = location.pathname.split('/');
+    pathname.pop(); pathname.pop();
+    return location.protocol + '//' + location.host +
+        pathname.join('/')+'/api/'+name+'.cgi';
 };
 
 var setTitle = function(template) {
