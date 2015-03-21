@@ -97,10 +97,12 @@ Please execute 'bundle exec rake htaccess'.
   srv.mount('/account', AuthedFileHandler, 'public/account', auth)
 end
 
-srv.mount_apis([
-  ['/account/reset.cgi', Account::Reset],
-  ['/account/register.cgi', Account::Register]
-])
+srv.mount('/account/reset.cgi', Rack::Handler::WEBrick, Account::Reset.new)
+srv.mount(
+  '/account/register.cgi',
+  Rack::Handler::WEBrick,
+  Rack::Session::Pool.new(Account::Register.new, secret: 'account-secret-key')
+)
 
 trap('INT') { srv.shutdown }
 
