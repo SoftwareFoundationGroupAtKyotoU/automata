@@ -185,15 +185,16 @@ var ExerciseCheck = React.createClass({
 
         var p = this.props;
         var subComponents = subs.map(function(sub) {
+            var id = p.prefix+sub.name;
             var label = sub.required && p.ex.label !== 'all' ? 'all' : '';
                 
             return <li>
-                       <input id={p.prefix+sub.name} type='checkbox'
+                       <input id={id} type='checkbox'
                               name='ex[]' value={sub.name}
                               checked={this.checked(sub.name)}
                               required={sub.required}
                               onChange={this.onChangeChild} />
-                       <ExerciseLabel htmlFor={this.id()}
+                       <ExerciseLabel for={id}
                                       name={sub.name}
                                       level={sub.level}
                                       label={label} />
@@ -211,7 +212,7 @@ var ExerciseCheck = React.createClass({
                            value={p.ex.name} checked={this.checked(p.ex.name)}
                            required={p.ex.label === 'all'}
                            onChange={this.onChange} />
-                   <ExerciseLabel htmlFor={this.id()}
+                   <ExerciseLabel for={this.id()}
                                   name={p.ex.name}
                                   level={p.ex.level}
                                   label={p.ex.label}
