@@ -1,130 +1,55 @@
 var React = require('react');
-var $ = require('jquery');
+var util = require('../utility');
 
 var Report = React.createClass({
     getInitialState: function() {
-        var solved = this.props.solved;
-        var check_list = [];
-        var exercise_list = this.props.exercise_list;
-
-        exercise_list.forEach(function(report) {
-            var ex_name = report[0];
-            var index = solved.indexOf(ex_name);
-
-            if (index != -1) {
-                check_list[ex_name] = true;
-            }
-            else {
-                check_list[ex_name] = false;
-            }
-        });
-
+        var checked_list = {};
+        this.props.solved.forEach(function(ex) { checked_list[ex] = true; });
         return {
-            checked: check_list,
+            checked: checked_list
         };
     },
 
-    handleChange: function(e) {
-        var check_list = this.state.checked;
-        var name = e.target.value;
-        var solved = check_list[name];
-
-        check_list[name] = !solved;
-
+    handleChange: function(exs, checked) {
+        var checked_list = this.state.checked;
+        exs.forEach(function(ex) { checked_list[ex] = checked; });
         this.setState({
-            checked: check_list
+            checked: checked_list
         });
     },
 
     onClick: function(e) {
-        var check_list = this.state.checked;
-        var exercise_list = this.props.exercise_list;
-        var solved = [];
-        var unsolved = [];
-
-        for (var key in check_list) {
-            if (check_list[key]) {
-                solved.push(key);
-            }
-            else {
-                exercise_list.forEach(function(report) {
-                    var ex_name = report[0];
-                    var attr = report[1];
-
-                    if (attr !== null && attr.required == 1 && ex_name == key) {
-                            var unsolved_exercise = [key, attr.required];
-                            unsolved.push(unsolved_exercise);
-                    }
-                });
-            }
-        }
-
-        $.ajax({
-            url: "../api/admin_solved.cgi",
-            type: 'POST',
-            data: {
-                'user': this.props.user,
-                'report': this.props.report,
-                'exercise': solved
-            },
-            success: function(data) {
-                this.props.posted(solved, unsolved);
-            }.bind(this),
-            error: function(xhr, status, err) {
-                console.log(status);
-            }
+        var checked_list = this.state.checked;
+        var solved = Object.keys(checked_list).filter(function (ex) {
+            return checked_list[ex];
         });
+
+        util.apiPost({
+            api: 'admin_solved',
+            data: {
+                user: this.props.token,
+                report: this.props.report,
+                exercise: solved
+            }
+        }).then(function() { this.props.posted(); }.bind(this));
     },
 
     render: function() {
-        var report_name = this.props.report;
-        var solved = this.props.solved;
-        var check_list = this.state.checked;
-        var exercises = [];
-        var handlechange = this.handleChange;
+        var p = this.props;
+        var s = this.state;
 
-        this.props.exercise_list.forEach(function(report) {
-            var name = report[0];
-            var label = "";
-            var attr = report[1];
-
-            if (attr !== null && attr.required === 1) {
-                label = name + "[必修]";
-            }
-            else if (attr != null && attr.level > 0) {
-                var level = "";
-
-                for (i = 0; i < attr.level; i = i + 1) {
-                    level = level + "★";
-                }
-
-                label = name + "[" + level + "]";
-            }
-            else {
-                label = name;
-            }
-
-            exercises.push
-            (
-                    <li>
-                    <input type="checkbox" checked={check_list[name]}
-                           onChange={handlechange}
-                           value={name} />
-                    <label>{label}</label>
-                    </li>
-            );
-        });
-        return (
-                <div>
-                <div className="list_view">
-                <ul className="ex">
-                {exercises}
-                </ul>
-                </div>
-                    <button onClick={this.onClick} >変更</button>
-                    <button onClick={this.props.onclick} >キャンセル</button>
-                </div>
-        );
+        return <div>
+                   <div className="list_view">
+                   <ul className="ex">
+                       <util.ExerciseCheckList prefix={'ex_' + p.report}
+                                               exs={p.exercise_list}
+                                               checkedExs={s.checked}
+                                               onChange={this.handleChange} />
+                   </ul>
+                   </div>
+                   <button onClick={this.onClick} >変更</button>
+                   <button onClick={p.onCancel} >キャンセル</button>
+               </div>;
     }
 });
 
@@ -137,35 +62,36 @@ var AnswerEdit = React.createClass({
     },
 
     componentDidMount: function() {
-        $.get('../api/scheme.cgi',
-              {
-                  id: this.props.report,
-                  exercise: true,
-                  action: 'get',
-              },
-              function(result) {
-                  this.setState({
-                      exercise_list: result[0].exercise
-                  });
-              }.bind(this));
+        util.apiGet({
+            api: 'scheme',
+            data: {
+                id: this.props.report,
+                exercise: true,
+                action: 'get',
+            }
+        }).then(function(result) {
+            this.setState({
+                exercise_list: result[0].exercise
+            });
+        }.bind(this));
     },
 
     render: function() {
-        if (typeof (this.state.exercise_list) == 'undefined') {
+        if (!this.state.exercise_list) {
             return (
                     <div>
                     <div className="list_view">
+                    <img src="./loading.gif" />
                     </div>
                     </div>
             );
         } else {
             return (
-                    <Report user={this.props.token}
+                    <Report token={this.props.token}
                             report={this.props.report}
                             solved={this.props.solved}
-                            unsolved={this.props.unsolved}
                             exercise_list={this.state.exercise_list}
-                            onclick={this.props.onclick}
+                            onCancel={this.props.onCancel}
                             posted={this.props.posted} />
             );
         }

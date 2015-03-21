@@ -1,10 +1,8 @@
 var React = require('react');
-var $ = require('jquery');
 
 var AnswerEdit = require('./answer_edit.js');
 var UserModule = require('./user.js');
-var Solved = UserModule.Solved;
-var Unsolved = UserModule.Unsolved;
+var util = require('../utility.js');
 
 var Solved = React.createClass({
     render: function() {
@@ -54,82 +52,57 @@ var AnswerView = React.createClass({
         return {
             solved: [],
             unsolved: [],
-            clicked: false,
+            editMode: false,
             mounted: false
         };
     },
 
     componentDidMount: function() {
-        $.get('../api/user.cgi',
-              {
-                  user: this.props.token,
-                  report: this.props.report,
-                  type: 'status',
-                  status: 'solved',
-                  action: 'get',
-              },
-              function(result) {
-                  var report = result[0].report
-
-                  if (typeof (report) === 'undefined') {
-                      this.setState({
-                          solved: this.state.solved
-                      });
-                  }
-                  else {
-                      this.setState({
-                          solved: result[0].report[this.props.report].solved
-                      });
-                  };
-              }.bind(this));
-        $.get('../api/user.cgi',
-              {
-                  user: this.props.token,
-                  report: this.props.report,
-                  type: 'status',
-                  status: 'record',
-                  action: 'get',
-              },
-              function(result) {
-                  var report = result[0].report
-
-                  if (typeof (report) === 'undefined') {
-                      this.setState({
-                          unsolved: this.state.unsolved_list,
-                          mounted: true
-                      });
-                  }
-                  else {
-                      this.setState({
-                          unsolved: result[0].report[this.props.report].unsolved,
-                          mounted: true
-                      });
-                  }
-              }.bind(this));
+        util.apiGet(
+            {
+                api: 'user',
+                data: {
+                    user: this.props.token,
+                    report: this.props.report,
+                    type: 'status',
+                    status: 'solved'
+                },
+            }, {
+                api: 'user',
+                data: {
+                    user: this.props.token,
+                    report: this.props.report,
+                    type: 'status',
+                    status: 'record'
+                }
+            }).then(function(solved, unsolved) {
+                this.setState({
+                    solved: solved[0].report[this.props.report].solved,
+                    unsolved: unsolved[0].report[this.props.report].unsolved,
+                    mounted: true
+                });
+            }.bind(this));
     },
 
-    onClick: function() {
-        this.setState({
-            clicked: !this.state.clicked
-        });
-    },
+    editModeOff: function() { this.setState({ editMode: false }); },
+    editModeOn: function() { this.setState({ editMode: true }); },
 
     toolBar: function() {
         return (
                 <ul className="status_toolbar">
                 <li className="toolbutton">
-                <a href="javascript:void(0)" onClick={this.onClick}>✏ 編集</a>
+                <a href="javascript:void(0)" onClick={this.editModeOn}>✏ 編集</a>
                 </li>
                 </ul>
         );
     },
 
-    posted: function(solved, unsolved) {
+    posted: function() {
         this.setState({
-            clicked: false,
-            solved: solved,
-            unsolved: unsolved,
+            editMode: false,
+            mounted: false
         });
+        this.componentDidMount();
     },
 
     render: function() {
@@ -142,8 +115,20 @@ var AnswerView = React.createClass({
                     </div>
             );
         }
-        else if(!this.state.clicked && this.state.mounted &&
-                this.state.solved.length === 0) {
+        else if (this.state.editMode) {
+            return (
+                    <div>
+                    <div className="status_view">
+                    <AnswerEdit token={this.props.token}
+                                report={this.props.report}
+                                solved={this.state.solved}
+                                onCancel={this.editModeOff}
+                                posted={this.posted} />
+                    </div>
+                    </div>
+            );
+        }
+        else if (this.state.solved.length === 0) {
             return (
                     <div>
                     <div className="status_view">
@@ -152,8 +137,7 @@ var AnswerView = React.createClass({
                     </div>
             );
         }
-        else if(!this.state.clicked && this.state.mounted &&
-                this.props.admin) {
+        else if (this.props.admin) {
             return (
                     <div>
                     <div className="status_header">{this.toolBar()}</div>
@@ -164,8 +148,7 @@ var AnswerView = React.createClass({
                     </div>
             );
         }
-        else if(!this.state.clicked && this.state.mounted &&
-                !this.props.admin) {
+        else {
             return (
                     <div>
                     <div className="status_header"></div>
@@ -176,25 +159,7 @@ var AnswerView = React.createClass({
                     </div>
             );
         }
-        else {
-            return (
-                    <div>
-                    <div className="status_view">
-                    <AnswerEdit token={this.props.token}
-                                report={this.props.report}
-                                solved={this.state.solved}
-                                unsolved={this.state.unsolved}
-                                onclick={this.onClick}
-                                posted={this.posted} />
-                    </div>
-                    </div>
-            );
-        };
     }
 });
 
-module.exports = {
-    answerView: AnswerView,
-    solved: Solved,
-    unsolved: Unsolved
-};
+module.exports = AnswerView;

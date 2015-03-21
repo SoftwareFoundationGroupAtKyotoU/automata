@@ -1,24 +1,12 @@
 var _ = require('lodash');
 var $ = require('jquery');
 var React = require('react');
-var URI = require('./uri2');
 
-var base = function() {
-    var uri = URI.location();
-    uri.local.pop(); uri.local.pop();
-    return uri;
-};
-
-var api = function(name, args) {
-    var uri = base();
-    uri.local.push('api');
-    uri.local.push(name+'.cgi');
-    uri.params = args || {};
-    uri.refresh = function() {
-        delete uri.params.timestamp;
-        return uri;
-    };
-    return uri;
+var api = function(name) {
+    var pathname = location.pathname.split('/');
+    pathname.pop(); pathname.pop();
+    return location.protocol + '//' + location.host +
+        pathname.join('/')+'/api/'+name+'.cgi';
 };
 
 var setTitle = function(template) {
@@ -90,23 +78,38 @@ var jsonpFailure = function(reason, jsonp, failed) {
     ]);
 };
 
-var apiGet = function() {
+var apiCall = function() {
     var params = _.toArray(arguments);
     var d = $.Deferred();
 
     $.when.apply($, params.map(function(p) { return $.ajax({
-        method: 'GET',
+        method: p.method,
         url:    api(p.api),
         data:   p.data,
         error:  jsonpFailure
     }); })).then(function() {
         d.resolve.apply(d, _.toArray(arguments).map(function (r) {
-            r[0].__original_response = r;
-            return r[0];
+            if (r.length === 3) {
+                r[0].__original_response = r;
+                r = r[0];
+            }
+            return r;
         }));
     });
 
     return d;
+};
+
+var apiGet = function() {
+    var params = _.toArray(arguments);
+    params.forEach(function (p) { p.method = 'GET'; });
+    return apiCall.apply(this, params);
+};
+
+var apiPost = function() {
+    var params = _.toArray(arguments);
+    params.forEach(function (p) { p.method = 'Post'; });
+    return apiCall.apply(this, params);
 };
 
 var transEx = function(ex) {
@@ -182,15 +185,16 @@ var ExerciseCheck = React.createClass({
 
         var p = this.props;
         var subComponents = subs.map(function(sub) {
+            var id = p.prefix+sub.name;
             var label = sub.required && p.ex.label !== 'all' ? 'all' : '';
                 
             return <li>
-                       <input id={p.prefix+sub.name} type='checkbox'
+                       <input id={id} type='checkbox'
                               name='ex[]' value={sub.name}
                               checked={this.checked(sub.name)}
                               required={sub.required}
                               onChange={this.onChangeChild} />
-                       <ExerciseLabel htmlFor={this.id()}
+                       <ExerciseLabel for={id}
                                       name={sub.name}
                                       level={sub.level}
                                       label={label} />
@@ -208,7 +212,7 @@ var ExerciseCheck = React.createClass({
                            value={p.ex.name} checked={this.checked(p.ex.name)}
                            required={p.ex.label === 'all'}
                            onChange={this.onChange} />
-                   <ExerciseLabel htmlFor={this.id()}
+                   <ExerciseLabel for={this.id()}
                                   name={p.ex.name}
                                   level={p.ex.level}
                                   label={p.ex.label}
@@ -235,6 +239,7 @@ module.exports = {
     setTitle: setTitle,
     addLinks: addLinks,
     apiGet: apiGet,
+    apiPost: apiPost,
     ExerciseCheckList: ExerciseCheckList,
     transformExercises: transExList
 };
