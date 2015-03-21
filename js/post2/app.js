@@ -1,7 +1,9 @@
 var _ = require('lodash');
 var $ = require('jquery');
 var React = require('react');
-var util = require('../utility');
+var api = require('../api');
+var exercise = require('../exercise');
+var ui = require('../ui2');
 
 var SubmitForm = React.createClass({
     getInitialState: function() {
@@ -111,11 +113,11 @@ var SubmitForm = React.createClass({
                         <li>再提出の場合は, すでに提出した問題もすべてチェックして下さい</li>
                     </ul>
                     <div id='list_view' className='list_view'>
-                        <util.ExerciseCheckList nodeID='ex'
-                                                prefix='ex'
-                                                exs={report.exercise}
-                                                checkedExs={report.checkedExs}
-                                                onChange={this.onChangeCheck} />
+                        <exercise.CheckList nodeID='ex'
+                                            prefix='ex'
+                                            exs={report.exercise}
+                                            checkedExs={report.checkedExs}
+                                            onChange={this.onChangeCheck} />
                     </div>
                 <h4>ファイルの選択</h4>
                     <h5>提出要件</h5>
@@ -133,15 +135,15 @@ var SubmitForm = React.createClass({
 });
 
 $(document).ready(function() {
-    util.apiGet(
+    api.get(
         { api: 'master',   data: { year: true, user: true, token: true } },
         { api: 'template', data: { type: 'none', links: true } },
         { api: 'scheme',   data: { type: 'post' } },
         { api: 'template', data: { type: 'post', requirements: true } }
-    ).then(function (master, template, scheme, reqs) {
+    ).done(function (master, template, scheme, reqs) {
         // template
-        util.setTitle(template);
-        util.addLinks(template.links);
+        ui.setTitle(template);
+        ui.addLinks(template.links);
 
         var reports = {};
         scheme.forEach(function(rep) {
@@ -164,7 +166,7 @@ $(document).ready(function() {
             };
         }));
 
-        util.apiGet.apply(null, params).then(function() {
+        api.get.apply(null, params).done(function() {
             var res = _.toArray(arguments);
 
             var user = res.shift()[0] || {};
@@ -180,7 +182,7 @@ $(document).ready(function() {
 
                 if (Object.keys(rep.checkedExs).length === 0) {
                     rep.checkedExs =
-                        util.transformExercises(rep.exercise).reduce(
+                        exercise.transform(rep.exercise).reduce(
                             function(r, ex) {
                                 r[ex.name] = ex.label === 'all';
                                 return ex.sub.reduce(function(r, sub) {

@@ -1,5 +1,6 @@
 var React = require('react');
-var util = require('../utility');
+var api = require('../api');
+var exercise = require('../exercise');
 
 var Report = React.createClass({
     getInitialState: function() {
@@ -24,14 +25,14 @@ var Report = React.createClass({
             return checked_list[ex];
         });
 
-        util.apiPost({
+        api.post({
             api: 'admin_solved',
             data: {
                 user: this.props.token,
                 report: this.props.report,
                 exercise: solved
             }
-        }).then(function() { this.props.posted(); }.bind(this));
+        }).done(function() { this.props.posted(); }.bind(this));
     },
 
     render: function() {
@@ -41,10 +42,10 @@ var Report = React.createClass({
         return <div>
                    <div className="list_view">
                    <ul className="ex">
-                       <util.ExerciseCheckList prefix={'ex_' + p.report}
-                                               exs={p.exercise_list}
-                                               checkedExs={s.checked}
-                                               onChange={this.handleChange} />
+                       <exercise.CheckList prefix={'ex_' + p.report}
+                                           exs={p.exercise_list}
+                                           checkedExs={s.checked}
+                                           onChange={this.handleChange} />
                    </ul>
                    </div>
                    <button onClick={this.onClick} >変更</button>
@@ -62,14 +63,14 @@ var AnswerEdit = React.createClass({
     },
 
     componentDidMount: function() {
-        util.apiGet({
+        api.get({
             api: 'scheme',
             data: {
                 id: this.props.report,
                 exercise: true,
                 action: 'get',
             }
-        }).then(function(result) {
+        }).done(function(result) {
             this.setState({
                 exercise_list: result[0].exercise
             });
