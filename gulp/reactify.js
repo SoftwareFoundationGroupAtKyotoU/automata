@@ -5,6 +5,9 @@ var watchify = require('watchify');
 var error = require('./error');
 var argv = require('yargs').argv;
 var debug = !!(argv.debug);
+var gulpif = require('gulp-if');
+var uglify = require('gulp-uglify');
+var buffer = require('vinyl-buffer');
 
 module.exports = function(entries, dest, isWatch) {
     var compiled_msg = 'compiled '
@@ -32,6 +35,8 @@ module.exports = function(entries, dest, isWatch) {
             return bundler.bundle()
                 .on('error', error)
                 .pipe(source('bundle.js'))
+                .pipe(gulpif(!debug, buffer()))
+                .pipe(gulpif(!debug, uglify()))
                 .pipe(gulp.dest(dest));
         }
         bundler.on('update', bundle);
