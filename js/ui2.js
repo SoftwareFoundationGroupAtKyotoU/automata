@@ -2,7 +2,9 @@ var $ = require('jquery');
 
 var setTitle = function(template) {
     [ 'title', 'subtitle', 'institute' ].forEach(function(x) {
-        $('#'+x).empty().text(template[x]);
+        var head = $('#'+x);
+        if (template[x]) head.empty().text(template[x]);
+        else head.remove();
     });
 
     document.title = [
