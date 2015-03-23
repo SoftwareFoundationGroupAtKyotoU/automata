@@ -76,11 +76,19 @@ var AnswerView = React.createClass({
                     status: 'record'
                 }
             }).done(function(solved, unsolved) {
-                this.setState({
-                    solved: solved[0].report[this.props.report].solved,
-                    unsolved: unsolved[0].report[this.props.report].unsolved,
-                    mounted: true
-                });
+                if (typeof solved[0].report === 'undefined' || typeof unsolved[0].report === 'undefined') {
+                    this.setState({
+                        solved: [],
+                        unsolved: [],
+                        mounted: true
+                    });
+                } else {
+                    this.setState({
+                        solved: solved[0].report[this.props.report].solved,
+                        unsolved: unsolved[0].report[this.props.report].unsolved,
+                        mounted: true
+                    });
+                }
             }.bind(this));
     },
 
