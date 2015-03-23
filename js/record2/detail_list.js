@@ -69,6 +69,8 @@ var ReportList = React.createClass({
             this.setState({
                 users: users,
             });
+            if (users.length === 0) return;
+
             var tokens = users.map(function(user) { return user.token; });
             api.get({
                 api: 'comment',
@@ -102,7 +104,7 @@ var ReportList = React.createClass({
             );
         });
         var users;
-        if (this.state) {
+        if (this.state && this.state.users.length > 0) {
             users = this.state.users.map(function(user) {
                 var tds = this.props.scheme.record.map(function(r) {
                     if (r.field === 'name') {
@@ -159,6 +161,12 @@ var ReportList = React.createClass({
                         <tr className="selectable" onClick={transTo}>{tds}</tr>
                 );
             }.bind(this));
+
+        // There are no users to show
+        } else if (this.state) {
+            users = <tr><td colSpan={ths.length}>
+                        表示すべきユーザーはいません
+                    </td></tr>;
         } else {
             users = (
                     <tr><td colSpan={ths.length}><img src="../image/loading.gif"/></td></tr>

@@ -29,6 +29,8 @@ module.exports = React.createClass({
                     users: users
                 });
             }
+            if (users.length === 0) return;
+
             var tokens = users.map(function(user) { return user.token; });
             this.props.scheme.forEach(function(s) {
                 api.get({
@@ -75,7 +77,7 @@ module.exports = React.createClass({
         });
         if (ths.length > 0) ths.unshift (<th>名前</th>);
         var users;
-        if (this.state) {
+        if (this.state && this.state.users.length > 0) {
             users = this.state.users.map(function(user) {
                 var kadais = scheme.map(function(s) {
                     var unreads = ['report', s.id, 'comment', 'unreads'].reduce(function(r, k) {
@@ -88,6 +90,12 @@ module.exports = React.createClass({
                         <tr key={user.token}><td className="name">{user.name}</td>{kadais}</tr>
                 );
             }.bind(this));
+
+        // There are no users to show
+        } else if (this.state) {
+            users = <tr><td colSpan={ths.length}>
+                        表示すべきユーザーはいません
+                    </td></tr>;
         } else {
             users = (
                     <tr><td colSpan={ths.length}><img src="../image/loading.gif"/></td></tr>
