@@ -8,6 +8,7 @@ var RouteHandler = Router.RouteHandler;
 var $ = require('jquery');
 require('jquery.cookie');
 var api = require('../api');
+var ui = require('../ui2');
 
 var DetailList = require('./detail_list.js');
 var SummaryList = require('./summary_list.js');
@@ -27,14 +28,10 @@ var Record = React.createClass({
     },
 
     componentDidMount: function() {
-        $.when(
-            $.get('../api/master.cgi', { admin: true, token: true }),
-            $.get('../api/template.cgi', { type: 'record', links: true }),
-            $.get('../api/scheme.cgi', { record: true })
-        ).done(function(master, template, scheme) {
-            master = master[0];
-            template = template[0];
-            scheme = scheme[0];
+        api.get(
+            { api: 'master',   data: { admin: true, token: true } },
+            { api: 'scheme',   data: { record: true } }
+        ).done(function(master, scheme) {
             var filtered = $.cookie('default-filtered');
             if (typeof filtered === 'undefined' || filtered === 'true') {
                 filtered = true;
@@ -44,7 +41,6 @@ var Record = React.createClass({
             $.cookie('default-filtered', filtered);
             this.setState({
                 admin: master.admin,
-                template: template,
                 scheme: scheme,
                 filtered: filtered
             });
@@ -84,20 +80,7 @@ var Record = React.createClass({
                 );
             }
         }
-        var institute = this.state.template.institute
-            ? (<h2 id="institute">{this.state.template.institute}</h2>)
-            : null;
-        var title = this.state.template.title
-            ? (<h1 id="title">{this.state.template.title}</h1>)
-            : null;
-        var subtitle = this.state.template.subtitle
-            ? (<h2 id="subtitle">{this.state.template.subtitle}</h2>)
-            : null;
-        return (
-                <div>
-                <div id="article">
-                {institute}{title}{subtitle}
-                <div id="record">
+        return (<div>
                 <div id="view_switch">
                 表示:<ul>
                 {filter}
@@ -109,12 +92,6 @@ var Record = React.createClass({
                               admin={this.state.admin}
                               scheme={this.state.scheme}
                               filtered={this.state.filtered && this.state.admin}/>
-                </div>
-                </div>
-                <div id="footer">
-                <a href={this.state.template.links[0].uri}>{this.state.template.links[0].label}</a>
-                <a href="../post/">提出ページ</a>
-                </div>
                 </div>
         );
     }
@@ -130,5 +107,13 @@ var routes = (
 );
 
 Router.run(routes, function(Handler) {
-    React.render(<Handler/>, document.body);
+    React.render(<Handler/>, document.getElementById('record'));
+});
+
+$(document).ready(function() {
+    api.get({ api: 'template', data: { type: 'record', links: true } }).
+        done(function(template) {
+            ui.setTitle(template);
+            ui.addLinks(template.links);
+        });
 });
