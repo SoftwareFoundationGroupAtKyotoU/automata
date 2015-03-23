@@ -1,7 +1,7 @@
 var React = require('react');
 window.React = React;
 var Router = require('react-router');
-var $ = require('jquery');
+var api = require('../api');
 
 var StatusCell = require('./status_cell.js');
 
@@ -62,35 +62,37 @@ var ReportList = React.createClass({
             log: true
         };
         if (this.props.filtered) data.filter = true;
-        $.get('../api/user.cgi',
-              data,
-              function(users) {
-                  this.setState({
-                      users: users,
-                  });
-                  var tokens = users.map(function(user) { return user.token; });
-                  $.get('../api/comment.cgi',
-                        {
-                            action: 'list_news',
-                            report: this.props.scheme.id,
-                            user: tokens
-                        },
-                        function(comments) {
-                            Object.keys(comments).map(function(key) {
-                                var user = users.filter(function(user) {
-                                    return user.token === key;
-                                })[0];
-                                ['report', this.props.scheme.id, 'comment'].reduce(function(r, k) {
-                                    if (!r[k]) r[k] = {};
-                                    return r[k];
-                                }, user);
-                                user['report'][this.props.scheme.id]['comment'] = comments[key];
-                            }, this);
-                            this.setState({
-                                users: users
-                            });
-                        }.bind(this));
-              }.bind(this));
+        api.get({
+            api: 'user',
+            data: data
+        }).done(function(users) {
+            this.setState({
+                users: users,
+            });
+            var tokens = users.map(function(user) { return user.token; });
+            api.get({
+                api: 'comment',
+                data: {
+                    action: 'list_news',
+                    report: this.props.scheme.id,
+                    user: tokens
+                }
+            }).done(function(comments) {
+                Object.keys(comments).map(function(key) {
+                    var user = users.filter(function(user) {
+                        return user.token === key;
+                    })[0];
+                    ['report', this.props.scheme.id, 'comment'].reduce(function(r, k) {
+                        if (!r[k]) r[k] = {};
+                        return r[k];
+                    }, user);
+                    user['report'][this.props.scheme.id]['comment'] = comments[key];
+                }, this);
+                this.setState({
+                    users: users
+                });
+            }.bind(this));
+        }.bind(this));
     },
 
     render: function() {

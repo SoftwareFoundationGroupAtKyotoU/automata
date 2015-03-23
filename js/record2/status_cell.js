@@ -2,7 +2,7 @@ var React = require('react');
 window.React = React;
 var Router = require('react-router');
 var Link = Router.Link;
-var $ = require('jquery');
+var api = require('../api');
 
 module.exports = React.createClass({
     mixins: [Router.Navigation],
@@ -40,21 +40,23 @@ module.exports = React.createClass({
             return r[k];
         }, this.props.user);
         var new_status = e.target.value;
-        $.post('../api/admin_log.cgi',
-               {
-                   id: id,
-                   user: this.props.user.token,
-                   report: this.props.report,
-                   status: new_status
-               },
-               function(result) {
-                   this.props.updateStatus(this.props.user.token,
-                                           this.props.report,
-                                           new_status);
-                   this.setState({
-                       editing: 'done'
-                   });
-               }.bind(this));
+        api.post({
+            api: 'admin_log',
+            data: {
+                id: id,
+                user: this.props.user.token,
+                report: this.props.report,
+                status: new_status
+            }
+        }).done(function() {
+            this.props.updateStatus(this.props.user.token,
+                                    this.props.report,
+                                    new_status);
+            this.setState({
+                editing: 'done'
+            });
+        }.bind(this));
+
         this.setState({
             editing: 'exec'
         });

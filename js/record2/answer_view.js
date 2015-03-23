@@ -2,7 +2,7 @@ var React = require('react');
 
 var AnswerEdit = require('./answer_edit.js');
 var UserModule = require('./user.js');
-var util = require('../utility.js');
+var api = require('../api');
 
 var Solved = React.createClass({
     render: function() {
@@ -58,7 +58,7 @@ var AnswerView = React.createClass({
     },
 
     componentDidMount: function() {
-        util.apiGet(
+        api.get(
             {
                 api: 'user',
                 data: {
@@ -75,7 +75,7 @@ var AnswerView = React.createClass({
                     type: 'status',
                     status: 'record'
                 }
-            }).then(function(solved, unsolved) {
+            }).done(function(solved, unsolved) {
                 this.setState({
                     solved: solved[0].report[this.props.report].solved,
                     unsolved: unsolved[0].report[this.props.report].unsolved,
