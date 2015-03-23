@@ -108,7 +108,7 @@ module API
              []
       unless reqs.all? { |r| files.include?(r) }
         FileUtils.rm_rf(src_dir.parent.to_s)
-        fail err[:prerequisite]
+        fail ERR[:prerequisite]
       end
 
       # convert file names to utf8
