@@ -1,5 +1,5 @@
 var React = require('react');
-var $ = require('jquery');
+var api = require('../api');
 
 var Log = React.createClass({
     render: function() {
@@ -78,12 +78,10 @@ var LogEdit = React.createClass ({
     },
 
     handleSubmit: function (e){
-        $.post('../api/admin_log.cgi',
-               this.state,
-               function (d) {return;},
-               function(xhr, status, err) {
-                   console.error(status, err.toString());
-               }.bind(this));
+        api.post({
+            api: 'admin_log',
+            data: this.state
+        });
         this.props.exit();
     },
 
@@ -167,26 +165,27 @@ var LogView = React.createClass({
     },
 
     componentDidMount: function () {
-        $.get('../api/user.cgi',
-              {
-                  user: this.props.token,
-                  type: 'status',
-                  status: 'record',
-                  log : true,
-                  report: this.props.report
-              },
-              function(result) {
-                  if (result[0].report) {
-                      this.setState({
-                          data: (result[0].report[this.props.report]),
-                          init: true
-                      });
-                  } else {
-                      this.setState({
-                          init: true
-                      });
-                  }
-              }.bind(this));
+        api.get({
+            api: 'user',
+            data: {
+                user: this.props.token,
+                type: 'status',
+                status: 'record',
+                log : true,
+                report: this.props.report
+            }
+        }).done(function(result) {
+            if (result[0].report) {
+                this.setState({
+                    data: (result[0].report[this.props.report]),
+                    init: true
+                });
+            } else {
+                this.setState({
+                    init: true
+                });
+            }
+        }.bind(this));
     },
 
     onEdit: function () {
@@ -198,19 +197,20 @@ var LogView = React.createClass({
         this.setState(
             {onEdit: !this.state.onEdit}
         );
-        $.get('../api/user.cgi',
-              {
-                  user: this.props.token,
-                  type: 'status',
-                  status: 'record',
-                  log : true,
-                  report: this.props.report
-              },
-              function(result) {
-                  this.setState({
-                      data: (result[0].report[this.props.report])
-                  });
-              }.bind(this));
+        api.get({
+            api: 'user',
+            data: {
+                user: this.props.token,
+                type: 'status',
+                status: 'record',
+                log : true,
+                report: this.props.report
+            }
+        }).done(function(result) {
+            this.setState({
+                data: (result[0].report[this.props.report])
+            });
+        }.bind(this));
     },
 
     toolBar: function () {

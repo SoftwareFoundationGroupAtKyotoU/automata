@@ -1,5 +1,5 @@
 var React = require('react');
-var $ = require('jquery');
+var api = require('../api');
 
 var EditableCellComponent = React.createClass({
     onEdit: function() {
@@ -9,18 +9,19 @@ var EditableCellComponent = React.createClass({
         };
         var text = this.refs.text.getDOMNode().value;
         data[this.props.label] = text;
-        $.post('../api/admin_user.cgi',
-               data,
-               function() {
-                   this.props.updateUserData(
-                       this.props.user,
-                       this.props.label,
-                       text
-                   );
-                   this.setState({
-                       editing: 'none'
-                   });
-               }.bind(this));
+        api.post({
+            api: 'admin_user',
+            data: data
+        }).done(function() {
+            this.props.updateUserData(
+                this.props.user,
+                this.props.label,
+                text
+            );
+            this.setState({
+                editing: 'none'
+            });
+        }.bind(this));
         this.setState({
             editing: 'exec'
         });
@@ -77,14 +78,15 @@ var EditableCell = React.createFactory(EditableCellComponent);
 var DeleteCellComponent = React.createClass({
     onDelete: function() {
         if (confirm('really delete the following user?\n' + this.props.text)) {
-            $.post('../api/admin_user.cgi',
-                   {
-                       method: 'delete',
-                       user: this.props.text
-                   },
-                   function() {
-                       this.props.delUser(this.props.text);
-                   }.bind(this));
+            api.post({
+                api: 'admin_user',
+                data: {
+                    method: 'delete',
+                    user: this.props.text
+                }
+            }).done(function() {
+                this.props.delUser(this.props.text);
+            }.bind(this));
             this.setState({
                 deleting: 'exec'
             });
@@ -175,16 +177,17 @@ var UserTableComponent = React.createClass({
     },
 
     componentDidMount: function() {
-        $.get('../api/user.cgi',
-              {
-                  email: true,
-                  assigned: true
-              },
-              function(users) {
-                  this.setState({
-                      users: users
-                  })
-              }.bind(this));
+        api.get({
+            api: 'user',
+            data: {
+                email: true,
+                assigned: true
+            }
+        }).done(function(users) {
+            this.setState({
+                users: users
+            })
+        }.bind(this));
     },
 
     render: function() {
@@ -229,17 +232,18 @@ var AdminComponent = React.createClass({
     },
 
     componentDidMount: function() {
-        $.get('../api/master.cgi',
-              {
-                  user: true,
-                  admin: true
-              },
-              function(result) {
-                  this.setState({
-                      user: result.user,
-                      admin: result.admin
-                  });
-              }.bind(this));
+        api.get({
+            api: 'master',
+            data: {
+                user: true,
+                admin: true
+            }
+        }).done(function(result) {
+            this.setState({
+                user: result.user,
+                admin: result.admin
+            });
+        }.bind(this));
     },
 
     render: function() {

@@ -1,5 +1,6 @@
 var React = require('react');
 var $ = require('jquery');
+var api = require('../api');
 
 var FileEntry = (function() {
     var humanReadableSize = function(size) {
@@ -187,20 +188,16 @@ var FileView = (function() {
 
     return React.createClass({
         browseAPI: function(path, success, error) {
-            $.ajax({
-                method: 'GET',
-                url:    '../api/browse.cgi',
+            api.get({
+                api: 'browse',
                 data: {
                     user:   this.props.token,
                     report: this.props.report,
                     path:   path,
                     type:   'highlight',
-                },
-                success: function(res) { success(res); },
-                error:   function(jqxhr, status, err) {
-                    error();
-                },
-            });
+                }
+            }).done(function(res) { success(res); }).
+               fail(error);
         },
 
         open: function(path, type) {

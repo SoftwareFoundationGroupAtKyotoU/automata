@@ -7,6 +7,7 @@ var Route = Router.Route;
 var RouteHandler = Router.RouteHandler;
 var $ = require('jquery');
 require('jquery.cookie');
+var api = require('../api');
 
 var DetailList = require('./detail_list.js');
 var SummaryList = require('./summary_list.js');

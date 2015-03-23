@@ -3,11 +3,11 @@ var sum_rep = "summary-report2";
 var React = require('react');
 window.React = React;
 var Router = require('react-router');
-var $ = require('jquery');
 var DefaultRoute = Router.DefaultRoute;
 var Link = Router.Link;
 var Route = Router.Route;
 var RouteHandler = Router.RouteHandler;
+var api = require('../api');
 
 var ACL_MESSAGE_FOR_ALL      = "全員に公開";
 var ACL_MESSAGE_FOR_USER     = "提出者に公開";
@@ -57,23 +57,24 @@ var Comment = React.createClass({
 
     reloadComment: function(cont) {
         this.loadingModeStart();
-        $.get('../api/comment.cgi',
-                {
-                    user: [this.props.token],
-                    report: this.props.report,
-                    action: 'get',
-                    id: this.props.comment.id,
-                    timestamp: this.props.comment.timestamp
-                },
-                function(result) {
-                    this.setCommentHTML(result[0].content);
-                    this.setState({
-                        aclUserFlag: result[0].acl.indexOf('user') !== -1,
-                        aclOtherFlag: result[0].acl.indexOf('other') !== -1
-                    });
-                    this.loadingModeEnd();
-                    cont();
-                }.bind(this));
+        api.get({
+            api: 'comment',
+            data: {
+                user: [this.props.token],
+                report: this.props.report,
+                action: 'get',
+                id: this.props.comment.id,
+                timestamp: this.props.comment.timestamp
+            }
+        }).done(function(result) {
+            this.setCommentHTML(result[0].content);
+            this.setState({
+                aclUserFlag: result[0].acl.indexOf('user') !== -1,
+                aclOtherFlag: result[0].acl.indexOf('other') !== -1
+            });
+            this.loadingModeEnd();
+            cont();
+        }.bind(this));
     },
     onCheckAclUser: function(event) {
         this.setState({ aclUserFlag: !this.state.aclUserFlag });
@@ -83,9 +84,8 @@ var Comment = React.createClass({
     },
 
     onComment: function() {
-        $.ajax({
-            type: 'POST',
-            url: '../api/comment.cgi',
+        api.post({
+            api: 'comment',
             data: {
                 user: [this.props.token],
                 report: this.props.report,
@@ -94,27 +94,28 @@ var Comment = React.createClass({
                 acl: formAclArgument(this.state.aclUserFlag,
                                      this.state.aclOtherFlag),
                 message: this.getCommentText()
-            },
-            complete: function(data) {
-                this.reloadComment(function() {
-                    this.normalMode();
-                }.bind(this));
-            }.bind(this)});
+            }
+        }).always(function() {
+            this.reloadComment(function() {
+                this.normalMode();
+            }.bind(this));
+        }.bind(this));
     },
 
     onEdit: function() {
-        $.get('../api/comment.cgi',
-                {
-                    user: [this.props.token],
-                    report: this.props.report,
-                    id: this.props.comment.id,
-                    action: 'get',
-                    type: 'raw'
-                },
-                function(result) {
-                    this.setCommentText(result[0].content);
-                    this.editMode();
-                }.bind(this));
+        api.get({
+            api: 'comment',
+            data: {
+                user: [this.props.token],
+                report: this.props.report,
+                id: this.props.comment.id,
+                action: 'get',
+                type: 'raw'
+            }
+        }).done(function(result) {
+            this.setCommentText(result[0].content);
+            this.editMode();
+        }.bind(this));
     },
 
     onDelete: function() {
@@ -123,32 +124,32 @@ var Comment = React.createClass({
                     + ': ' + this.props.comment.timestamp
                     + ']を削除しますか？';
         if (window.confirm(text)) {
-            $.ajax({
-                type: 'POST',
-                url: '../api/comment.cgi',
+            api.post({
+                api: 'comment',
                 data: {
                     user: [this.props.comment.user],
                     report: this.props.report,
                     action: 'delete',
                     id: this.props.comment.id
-                },
-                complete: function(data) {
-                    this.props.rerender();
-                }.bind(this)});
+                }
+            }).always(function(data) {
+                this.props.rerender();
+            }.bind(this));
         }
     },
 
     onPreview: function() {
         // from commentText to commentHTML
-        $.get('../api/comment.cgi',
-                {
-                    action: 'preview',
-                    message: this.getCommentText()
-                },
-                function(result) {
-                    this.setCommentHTML(result);
-                    this.previewMode();
-                }.bind(this));
+        api.get({
+            api: 'comment',
+            data: {
+                action: 'preview',
+                message: this.getCommentText()
+            }
+        }).done(function(result) {
+            this.setCommentHTML(result);
+            this.previewMode();
+        }.bind(this));
     },
 
     onCancel: function() {
@@ -320,9 +321,8 @@ var CommentForm = React.createClass({
     },
 
     onComment: function(event) {
-        $.ajax({
-            type: 'POST',
-            url: '../api/comment.cgi',
+        api.post({
+            api: 'comment',
             data: {
                 user: [this.props.token],
                 report: this.props.report,
@@ -330,11 +330,11 @@ var CommentForm = React.createClass({
                 acl:  formAclArgument(this.state.aclUserFlag,
                                       this.state.aclOtherFlag),
                 message: this.getTextValue()
-            },
-            complete: function(data) {
-                this.props.rerender();
-                this.resetValue();
-            }.bind(this)});
+            }
+        }).always(function() {
+            this.props.rerender();
+            this.resetValue();
+        }.bind(this));
     },
 
     render: function() {
@@ -398,15 +398,16 @@ var CommentView = React.createClass({
     },
 
     rerender: function() {
-        $.get('../api/comment.cgi',
-                {
-                    user: [this.props.token],
-                    report: this.props.report,
-                    action: 'get',
-                },
-                function(result) {
-                    this.setState({ comments: result});
-                }.bind(this));
+        api.get({
+            api: 'comment',
+            data: {
+                user: [this.props.token],
+                report: this.props.report,
+                action: 'get'
+            }
+        }).done(function(result) {
+            this.setState({ comments: result });
+        }.bind(this));
     },
 
     render: function() {

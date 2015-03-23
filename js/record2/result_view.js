@@ -1,5 +1,6 @@
 var React = require('react');
 var $ = require('jquery');
+var api = require('../api');
 
 function isPassed(t) {
     if (typeof t !== 'string') t = t.result;
@@ -36,14 +37,16 @@ var defs = [
 
 module.exports = React.createClass({
     runTest: function() {
-        $.post('../api/admin_runtest.cgi',
-               {
-                   user: this.props.token,
-                   report: this.props.report
-               },
-               function() {
-                   this.componentDidMount();
-               }.bind(this));
+        api.post({
+            api: 'admin_runtest',
+            data: {
+                user: this.props.token,
+                report: this.props.report
+            }
+        }).done(function() {
+            this.componentDidMount();
+        }.bind(this));
+
         this.setState({
             init: false
         });
@@ -67,19 +70,20 @@ module.exports = React.createClass({
     },
 
     componentDidMount: function() {
-        $.get('../api/test_result.cgi',
-              {
-                  user: this.props.token,
-                  report: this.props.report
-              },
-              function(result) {
-                  if (this.isMounted()) {
-                      this.setState({
-                          test_result: result,
-                          init: true
-                      });
-                  }
-              }.bind(this));
+        api.get({
+            api: 'test_result',
+            data: {
+                user: this.props.token,
+                report: this.props.report
+            }
+        }).done(function(result) {
+            if (this.isMounted()) {
+                this.setState({
+                    test_result: result,
+                    init: true
+                });
+            }
+        }.bind(this));
     },
 
     render: function() {
