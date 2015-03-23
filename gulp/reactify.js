@@ -3,6 +3,8 @@ var browserify = require('browserify');
 var source = require('vinyl-source-stream');
 var watchify = require('watchify');
 var error = require('./error');
+var argv = require('yargs').argv;
+var debug = !!(argv.debug);
 
 module.exports = function(entries, dest, isWatch) {
     var compiled_msg = 'compiled '
@@ -12,7 +14,8 @@ module.exports = function(entries, dest, isWatch) {
         + ': ';
     var opt = {
         entries: entries,
-        transform: ['reactify']
+        transform: ['reactify'],
+        debug: debug
     };
     return function() {
         var bundler;
