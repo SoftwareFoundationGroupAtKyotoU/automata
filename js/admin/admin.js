@@ -1,21 +1,22 @@
 var React = require('react');
+var _ = require('lodash');
 var api = require('../api');
 
-var EditableCellComponent = React.createClass({
+var TextCellComponent = React.createClass({
     onEdit: function() {
         var data = {
             method: 'modify',
             user: this.props.user
         };
         var text = this.refs.text.getDOMNode().value;
-        data[this.props.label] = text;
+        data[this.props.id] = text;
         api.post({
             api: 'admin_user',
             data: data
         }).done(function() {
             this.props.updateUserData(
                 this.props.user,
-                this.props.label,
+                this.props.id,
                 text
             );
             this.setState({
@@ -73,7 +74,7 @@ var EditableCellComponent = React.createClass({
     }
 });
 
-var EditableCell = React.createFactory(EditableCellComponent);
+var TextCell = React.createFactory(TextCellComponent);
 
 var DeleteCellComponent = React.createClass({
     onDelete: function() {
@@ -85,7 +86,7 @@ var DeleteCellComponent = React.createClass({
                     user: this.props.text
                 }
             }).done(function() {
-                this.props.delUser(this.props.text);
+                this.props.onDelete(this.props.text);
             }.bind(this));
             this.setState({
                 deleting: 'exec'
@@ -119,45 +120,54 @@ var DeleteCellComponent = React.createClass({
 
 var DeleteCell = React.createFactory(DeleteCellComponent);
 
+var attrs = [
+    { id: 'login',    name: 'ID',             form: 'delete' },
+    { id: 'name',     name: '名前',           form: 'text' },
+    { id: 'ruby',     name: 'ふりがな',       form: 'text' },
+    { id: 'email',    name: 'メールアドレス', form: 'text' },
+    { id: 'assigned', name: '担当TA',         form: 'text' },
+];
+
 var UserComponent = React.createClass({
+    createCellComponent: function(x) {
+        switch (x) {
+        case 'delete': return DeleteCell;
+        case 'text':   return TextCell;
+        default: return undefined;
+        }
+    },
+
+    find: function(data, id) {
+        return _.find(data, function(x) { return x.id === id; });
+    },
+
     render: function() {
-        var cells = this.props.data.map(function(c) {
-            if (c.label === 'login') {
-                return DeleteCell({
-                    key: c.label,
-                    text: c.data,
-                    delUser: this.props.delUser
-                });
-            } else {
-                return EditableCell({
-                    key: c.label,
-                    user: this.props.login,
-                    label: c.label,
-                    text: c.data,
-                    updateUserData: this.props.updateUserData
-                });
-            }
-        }, this);
-        return React.DOM.tr(null, cells);
+        var p = this.props;
+        var data = attrs.map(function(x) {
+            return {
+                user: p.user.login,
+                id: x.id,
+                text: p.user[x.id],
+                form: this.createCellComponent(x.form),
+                key: x.id, /* for React */
+                updateUserData: p.updateUserData
+            };
+        }.bind(this));
+
+        this.find(data, 'login').onDelete = p.delUser;
+
+        return React.DOM.tr(null, data.map(function(d) { return d.form(d); }));
     }
 });
 
 var User = React.createFactory(UserComponent);
 
-var attrs = [
-    { key: 'login', name: 'ID' },
-    { key: 'name',  name: '名前' },
-    { key: 'ruby',  name: 'ふりがな' },
-    { key: 'email', name: 'メールアドレス' },
-    { key: 'assigned', name: '担当TA' },
-];
-
 var UserTableComponent = React.createClass({
-    updateUserData: function(user, key, data) {
+    updateUserData: function(user, id, data) {
         this.setState({
             users: this.state.users.map(function(u) {
                 if (u.login === user) {
-                    u[key] = data
+                    u[id] = data
                 }
                 return u
             })
@@ -196,19 +206,15 @@ var UserTableComponent = React.createClass({
                 null,
                 attrs.map(function(x) {
                     return React.DOM.th(
-                        { key: x.key },
+                        { key: x.id },
                         x.name
                     );
                 })
             );
             var rows = this.state.users.map(function(u) {
-                var data = attrs.map(function(x) {
-                    return { label: x.key, data: u[x.key] };
-                });
                 return User({
                     key: u.token,
-                    login: u.login,
-                    data: data,
+                    user: u,
                     updateUserData: this.updateUserData,
                     delUser: this.delUser
                 });
