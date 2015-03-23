@@ -19,7 +19,7 @@ var addLinks = function(links) {
     links.reverse().forEach(function(l) {
         var a = $('<a />').
             text(l.label).
-            attr('href', encodeURIComponent(l.uri));
+            attr('href', l.uri);
         footer.prepend(a);
     });
 };
