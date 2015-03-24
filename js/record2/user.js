@@ -11,6 +11,7 @@ var api = require('../api');
 var LogView = require('./log_view.js');
 var SummaryList = require('./summary_list.js');
 var StatusHeader = require('./status_header.js');
+var NavButton = require('./nav_button.js');
 
 var User = React.createClass({
     mixins: [Router.State],
@@ -60,6 +61,7 @@ var User = React.createClass({
                 <StatusHeader reload={this.reloadView}/>
                 <RouteHandler token={token} report={report} admin={this.props.admin} key={token + report + this.state.counter}/>
                 </div>
+                <NavButton name={this.state.users[0].name}/>
                 </div>
         );
     }

@@ -1,0 +1,35 @@
+.nav {
+    display: table;
+    position: fixed;
+    bottom: 10px;
+    visibility: hidden;
+    background-color: #ded;
+    border-collapse: separate;
+    border-spacing: 5px;
+    border-top-left-radius: 30px;
+    border-bottom-left-radius: 30px;
+}
+
+.nav .button:hover {
+    border-color: #727f72;
+    color: #727f72;
+}
+
+.nav .button {
+    display: table-cell;
+    background-color: #fff;
+    font-size: 20px;
+    color: #9a9;
+    border: solid #9a9 2px;
+    border-radius: 20px;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.nav .tag {
+    display: table-cell;
+    vertical-align: middle;
+}
