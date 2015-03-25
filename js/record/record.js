@@ -1,3 +1,4 @@
+var _ = require('lodash');
 var React = require('react');
 var Router = require('react-router');
 var DefaultRoute = Router.DefaultRoute;
@@ -26,11 +27,104 @@ var Record = React.createClass({
         });
     },
 
+    updateStatus: function(token, report, status) {
+        this.setState({
+            users: this.state.users.map(function(user) {
+                if (user.token === token) {
+                    user.report[report].status = status;
+                }
+                return user;
+            })
+        });
+    },
+
+    lastUpdate: 0,
+    offsetTime: 0,
+
+    queryComments: function(users) {
+        var tokens = users.map(function(user) {
+            return user.token;
+        });
+        this.state.scheme.forEach(function(s) {
+            api.get({
+                api: 'comment',
+                data: {
+                    action: 'list_news',
+                    report: s.id,
+                    user: tokens,
+                    last: this.lastUpdate
+                }
+            }).done(function(result) {
+                if (typeof this.state.comments[s.id] === 'undefined') {
+                    this.state.comments[s.id] = {}
+                }
+                var comments = this.state.comments;
+                comments[s.id] = _.assign(this.state.comments[s.id], result);
+                if (this.isMounted()) {
+                    this.setState({
+                        comments: comments
+                    });
+                }
+            }.bind(this));
+        }, this);
+    },
+
+    queryUsers: function() {
+        api.get({
+            api: 'user',
+            data: {
+                type: 'status',
+                status: 'record',
+                log: true,
+                assigned: true,
+                last: this.lastUpdate - this.offsetTime
+            }
+        }).done(function(users) {
+            this.lastUpdate = new Date().getTime();
+
+            if (users.length > 0) {
+                var users = this.state.users.map(function(user) {
+                    var update = _.find(users, 'token', user.token);
+                    return typeof update !== 'undefined' ? update : user;
+                });
+                if (this.isMounted()) {
+                    this.setState({
+                        users: users
+                    });
+                }
+            }
+
+            if (this.state.users.length === 0) return;
+            this.queryComments(this.state.users)
+        }.bind(this));
+    },
+
     componentDidMount: function() {
         api.get(
-            { api: 'master',   data: { admin: true, token: true } },
-            { api: 'scheme',   data: { record: true } }
-        ).done(function(master, scheme) {
+            {
+                api: 'master',
+                data: {
+                    user: true,
+                    admin: true,
+                    token: true,
+                    reload: true,
+                    time: true
+                }
+            },
+            {
+                api: 'scheme',
+                data: { record: true }
+            },
+            {
+                api: 'user',
+                data: {
+                    type: 'status',
+                    status: 'record',
+                    log: true,
+                    assigned: true
+                }
+            }
+        ).done(function(master, scheme, users) {
             var filtered = $.cookie('default-filtered');
             if (typeof filtered === 'undefined' || filtered === 'true') {
                 filtered = true;
@@ -38,11 +132,17 @@ var Record = React.createClass({
                 filtered = false;
             }
             $.cookie('default-filtered', filtered);
-            this.setState({
-                admin: master.admin,
-                scheme: scheme,
-                filtered: filtered
-            });
+            if (this.isMounted()) {
+                this.setState({
+                    user: master.user,
+                    token: master.token,
+                    admin: master.admin,
+                    scheme: scheme,
+                    users: users,
+                    comments: {},
+                    filtered: filtered
+                });
+            }
             if (!master.admin && this.getPath() === '/') {
                 var report = $.cookie('default-report');
                 if (!report) report = scheme[0].id;
@@ -50,6 +150,12 @@ var Record = React.createClass({
                     token: master.token,
                     report: report
                 });
+            }
+            this.queryComments(users);
+            if (master.reload > 0) {
+                this.lastUpdate = new Date().getTime();
+                this.offsetTime = this.lastUpdate - master.time;
+                setInterval(this.queryUsers, master.reload);
             }
         }.bind(this));
     },
@@ -79,6 +185,29 @@ var Record = React.createClass({
                 );
             }
         }
+
+        var users = _.filter(this.state.users, function(user) {
+            return !this.state.admin
+                || !this.state.filtered
+                || user.token === this.state.token
+                || user.assigned === this.state.user;
+        }.bind(this));
+
+        Object.keys(this.state.comments).map(function(report_id) {
+            var comments = this.state.comments[report_id];
+            Object.keys(comments).map(function(key) {
+                var user = _.find(users, function(user) {
+                    return user.token === key;
+                });
+                if (typeof user === 'undefined') return;
+                ['report', report_id, 'comment'].reduce(function(r, k) {
+                    if (typeof r[k] === 'undefined') r[k] = {};
+                    return r[k]
+                }, user);
+                user.report[report_id].comment = comments[key];
+            });
+        }, this);
+
         return (<div>
                 <div id="view_switch">
                 表示:<ul>
@@ -87,10 +216,10 @@ var Record = React.createClass({
                 <li><Link to="summary" id="sw_view_summary">一覧</Link></li>
                 </ul>
                 </div>
-                <RouteHandler key={this.state.filtered}
-                              admin={this.state.admin}
+                <RouteHandler admin={this.state.admin}
                               scheme={this.state.scheme}
-                              filtered={this.state.filtered && this.state.admin}/>
+                              users={users}
+                              updateStatus={this.updateStatus}/>
                 </div>
         );
     }

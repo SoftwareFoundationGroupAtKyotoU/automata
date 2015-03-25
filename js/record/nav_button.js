@@ -27,12 +27,29 @@ module.exports = React.createClass({
         }
     },
 
-    componentDidMount: function() {
+    resetNavWidth: function() {
         var nav = $(this.refs.nav.getDOMNode());
-        this.offset = '-' + nav.width() + 'px';
-        nav.css('right', this.offset);
-        nav.css('visibility', 'visible');
+        if (nav.css('visibility') === 'hidden') {
+            this.visible = false;
+            this.offset = '-' + nav.width() + 'px';
+            nav.css('right', this.offset);
+            nav.css('visibility', 'visible');
+        }
+    },
+
+    componentDidMount: function() {
+        this.resetNavWidth();
         $(window).on('scroll', this.onScroll);
+    },
+
+    componentWillReceiveProps: function(nextProps) {
+        if (nextProps.name !== this.props.name) {
+            $(this.refs.nav.getDOMNode()).css('visibility', 'hidden');
+        }
+    },
+
+    componentDidUpdate: function() {
+        this.resetNavWidth();
     },
 
     componentWillUnmount: function() {
