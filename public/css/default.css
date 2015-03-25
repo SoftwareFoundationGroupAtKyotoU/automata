@@ -236,8 +236,6 @@ td.unsolved {
 
 .status_view {
    clear: both;
-   overflow: scroll;
-   max-height: 600px;
    padding: 0.5em 1em;
    background-color: #eefff5;
    -moz-border-radius-topleft:      6px;

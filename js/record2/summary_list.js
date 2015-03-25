@@ -15,50 +15,54 @@ module.exports = React.createClass({
         });
     },
 
-    componentDidMount: function() {
-        var data = {
-            type: 'status',
-        };
-        if (this.props.token) data.user = this.props.token;
-        if (this.props.filtered) data.filter = true;
-        api.get({
-            api: 'user', data: data
-        }).done(function(users) {
-            if (this.isMounted()) {
-                this.setState({
-                    users: users
-                });
-            }
-            if (users.length === 0) return;
+    setUsers: function(users) {
+        if (this.isMounted()) {
+            this.setState({
+                users: users
+            });
+        }
+        if (users.length === 0) return;
 
-            var tokens = users.map(function(user) { return user.token; });
-            this.props.scheme.forEach(function(s) {
-                api.get({
-                    api: 'comment',
-                    data: {
-                        action: 'list_news',
-                        report: s.id,
-                        user: tokens
-                    }
-                }).done(function(result) {
-                    Object.keys(result).map(function(key) {
-                        var user = users.filter(function(user) {
-                            return user.token === key;
-                        })[0];
-                        ['report', s.id, 'comment'].reduce(function(r, k) {
-                            if (!r[k]) r[k] = {};
-                            return r[k];
-                        }, user);
-                        user['report'][s.id]['comment'] = result[key];
-                    }, this);
-                    if (this.isMounted()) {
-                        this.setState({
-                            users: users,
-                        });
-                    }
-                }.bind(this));
-            }, this);
-        }.bind(this));
+        var tokens = users.map(function(user) { return user.token; });
+        this.props.scheme.forEach(function(s) {
+            api.get({
+                api: 'comment',
+                data: {
+                    action: 'list_news',
+                    report: s.id,
+                    user: tokens
+                }
+            }).done(function(result) {
+                Object.keys(result).map(function(key) {
+                    var user = users.filter(function(user) {
+                        return user.token === key;
+                    })[0];
+                    ['report', s.id, 'comment'].reduce(function(r, k) {
+                        if (!r[k]) r[k] = {};
+                        return r[k];
+                    }, user);
+                    user['report'][s.id]['comment'] = result[key];
+                }, this);
+                if (this.isMounted()) {
+                    this.setState({
+                        users: users,
+                    });
+                }
+            }.bind(this));
+        }, this);
+    },
+
+    componentDidMount: function() {
+        if (this.props.users) {
+            this.setUsers(this.props.users);
+        } else {
+            var data = {
+                type: 'status',
+            };
+            if (this.props.token) data.user = this.props.token;
+            if (this.props.filtered) data.filter = true;
+            api.get({ api: 'user', data: data }).done(this.setUsers);
+        }
     },
 
     render: function() {
