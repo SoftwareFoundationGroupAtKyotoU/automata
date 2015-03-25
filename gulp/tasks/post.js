@@ -1,7 +1,7 @@
 module.exports = function(b) {
     return require('../reactify')(
-        ['./js/record2/record.js'],
-        'public/record2',
+        ['./js/post/app.js'],
+        'public/post',
         b
     );
 };
