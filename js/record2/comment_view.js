@@ -127,7 +127,7 @@ var Comment = React.createClass({
             api.post({
                 api: 'comment',
                 data: {
-                    user: [this.props.comment.user],
+                    user: [this.props.token],
                     report: this.props.report,
                     action: 'delete',
                     id: this.props.comment.id
@@ -415,7 +415,8 @@ var CommentView = React.createClass({
             return (
                 <Comment comment={comment} admin={this.props.admin}
                          token={this.props.token} report={this.props.report}
-                         acl={comment.acl} rerender={this.rerender}/>
+                         acl={comment.acl} rerender={this.rerender}
+                         key={comment.id}/>
             );
         }.bind(this));
         return (
