@@ -8,13 +8,14 @@ module API
   # Usage: master [year] [user]
   #   基本設定を取得
   # Options:
-  #   user      ログインユーザ名を取得
-  #   admin     ログインユーザが管理者かどうか
-  #   token     レコードの所有ユーザ名を隠す設定の際に使用されるユーザ識別子
-  #   year      年度を取得
+  #   user       ログインユーザ名を取得
+  #   admin      ログインユーザが管理者かどうか
+  #   token      レコードの所有ユーザ名を隠す設定の際に使用されるユーザ識別子
+  #   year       年度を取得
+  #   all_admins 全ての管理者ユーザーを取得
   class Master
     KEY = []
-    OPTIONAL = [:year, :user, :admin, :token]
+    OPTIONAL = [:year, :user, :admin, :token, :all_admins]
 
     def call(env)
       helper = ::Helper.new(env)
@@ -24,6 +25,7 @@ module API
       conf[:user] = env['REMOTE_USER']
       conf[:admin] = app.su?
       conf[:token] = ::User.make_token(app.user)
+      conf[:all_admins] = conf['su']
 
       entry = {}
       keys = KEY.dup
