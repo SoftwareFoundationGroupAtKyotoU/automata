@@ -4,7 +4,7 @@ function watch(s) {
     return s + '.watch';
 }
 
-var old = ['account', 'post', 'record'];
+var old = ['account'];
 old.forEach(function(name) {
     gulp.task(name, require('./gulp/tasks/' + name));
     gulp.task(watch(name), [name], function() {
