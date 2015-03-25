@@ -1,5 +1,4 @@
 var React = require('react');
-window.React = React;
 var Router = require('react-router');
 var DefaultRoute = Router.DefaultRoute;
 var Link = Router.Link;
