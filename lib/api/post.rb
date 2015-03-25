@@ -116,6 +116,8 @@ module API
 
       # solved exercises
       exs = helper.params['ex']
+      return helper.bad_request(ERR[:require] % 'ex') if exs.nil?
+
       exs = [exs] unless exs.is_a?(Array)
       exs = exs.map { |ex| ex.respond_to?(:read) ? ex.read : ex }
       exs = exs.sort { |a, b| a.to_ex <=> b.to_ex }
