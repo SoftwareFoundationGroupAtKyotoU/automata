@@ -2,27 +2,54 @@ var React = require('react');
 var _ = require('lodash');
 var api = require('../api');
 
+api.modify = function(param) {
+    var data = {
+        method: 'modify',
+        user: param.user
+    };
+    data[param.id] = param.value;
+
+    return api.post({
+        api: 'admin_user',
+        data: data
+    }).done(param.callback);
+};
+
+var createButton = function(text, icon) {
+    return React.createFactory(React.createClass({
+        render: function() {
+            return React.DOM.a({
+                href: 'javascript:void(0)',
+                style: { textDecoration: 'none' },
+                title: text,
+                onClick: this.props.onClick
+            }, icon);
+        }
+    }));
+};
+
+var EditButton = createButton('変更する', '✏');
+var CancelButton = createButton('キャンセル', '✖');
+var OKButton = createButton('実行', '✔');
+
 var TextCellComponent = React.createClass({
     onEdit: function() {
-        var data = {
-            method: 'modify',
-            user: this.props.user
-        };
         var text = this.refs.text.getDOMNode().value;
-        data[this.props.id] = text;
-        api.post({
-            api: 'admin_user',
-            data: data
-        }).done(function() {
-            this.props.updateUserData(
-                this.props.user,
-                this.props.id,
-                text
-            );
-            this.setState({
-                editing: 'none'
-            });
-        }.bind(this));
+        api.modify({
+            user:  this.props.user,
+            id:    this.props.id,
+            value: text,
+            callback: function() {
+                this.props.updateUserData(
+                    this.props.user,
+                    this.props.id,
+                    text
+                );
+                this.setState({
+                    editing: 'none'
+                });
+            }.bind(this)});
+
         this.setState({
             editing: 'exec'
         });
@@ -36,22 +63,16 @@ var TextCellComponent = React.createClass({
 
     render: function() {
         if (this.state.editing === 'edit') {
-            var cancel = React.DOM.a({
-                href: 'javascript:void(0)',
-                style: { textDecoration: 'none' },
-                title: 'キャンセル',
+            var cancel = CancelButton({
                 onClick: function() { this.setState({ editing: 'none' }); }.bind(this)
-            }, '✖');
-            var ok = React.DOM.a({
-                href: 'javascript:void(0)',
-                style: { textDecoration: 'none' },
-                title: '実行',
+            });
+            var ok = OKButton({
                 onClick: this.onEdit
-            }, '✔');
+            });
             var textbox = React.DOM.input({
                 type: 'text',
                 ref: 'text',
-                defaultValue: this.props.text,
+                defaultValue: this.props.value,
                 size: 40
             });
             return React.DOM.td(null, cancel, ' ', ok, ' ', textbox);
@@ -60,16 +81,13 @@ var TextCellComponent = React.createClass({
                 null,
                 React.DOM.img({ src: '../image/loading.gif' }),
                 ' ',
-                this.props.text
+                this.props.value
             );
         } else {
-            var edit = React.DOM.a({
-                href: 'javascript:void(0)',
-                style: { textDecoration: 'none' },
-                title: '変更する',
+            var edit = EditButton({
                 onClick: function() { this.setState({ editing: 'edit' }); }.bind(this)
-            }, '✏');
-            return React.DOM.td(null, edit, ' ', this.props.text);
+            });
+            return React.DOM.td(null, edit, ' ', this.props.value);
         }
     }
 });
@@ -78,15 +96,15 @@ var TextCell = React.createFactory(TextCellComponent);
 
 var DeleteCellComponent = React.createClass({
     onDelete: function() {
-        if (confirm('really delete the following user?\n' + this.props.text)) {
+        if (confirm('really delete the following user?\n' + this.props.value)) {
             api.post({
                 api: 'admin_user',
                 data: {
                     method: 'delete',
-                    user: this.props.text
+                    user: this.props.value
                 }
             }).done(function() {
-                this.props.onDelete(this.props.text);
+                this.props.onDelete(this.props.value);
             }.bind(this));
             this.setState({
                 deleting: 'exec'
@@ -114,29 +132,87 @@ var DeleteCellComponent = React.createClass({
                 src: '../image/loading.gif'
             });
         }
-        return React.DOM.td(null, del, ' ', this.props.text);
+        return React.DOM.td(null, del, ' ', this.props.value);
     }
 });
 
 var DeleteCell = React.createFactory(DeleteCellComponent);
 
+var SelectCellComponent = React.createClass({
+    getInitialState: function() {
+        return { editing: 'none' };
+    },
+
+    onChange: function(e) {
+        var val = e.target.value;
+        var p = this.props;
+        api.modify({
+            user:  p.user,
+            id:    p.id,
+            value: val,
+            callback: function() {
+                this.setState({ editing: 'none' });
+                p.updateUserData(p.user, p.id, val);
+            }.bind(this)
+        });
+
+        this.setState({
+            editing: 'exec'
+        });
+    },
+
+    render: function() {
+        var p = this.props;
+        if (this.state.editing === 'edit') {
+            var options = p.values.map(function(v) {
+                return React.DOM.option({
+                    key: v,
+                    value: v,
+                }, v);
+            });
+            options.push(React.DOM.option({ value: '' }, '(なし)'));
+
+            var select = React.DOM.select({
+                defaultValue: p.value,
+                onChange: this.onChange,
+            }, options);
+
+            var cancel = CancelButton({
+                onClick: function() {
+                    this.setState({ editing: 'none' });
+                }.bind(this)
+            });
+
+            return React.DOM.td(null, cancel, ' ', select);
+        } else if (this.state.editing === 'exec') {
+            return React.DOM.td(
+                null,
+                React.DOM.img({ src: '../image/loading.gif' }),
+                ' ',
+                this.props.value
+            );
+        } else {
+            var edit = EditButton({
+                onClick: function() {
+                    this.setState({ editing: 'edit' });
+                }.bind(this)
+            });
+            return React.DOM.td(null, edit, ' ', this.props.value);
+        }
+    }
+});
+
+var SelectCell = React.createFactory(SelectCellComponent);
+
 var attrs = [
-    { id: 'login',    name: 'ID',             form: 'delete' },
-    { id: 'name',     name: '名前',           form: 'text' },
-    { id: 'ruby',     name: 'ふりがな',       form: 'text' },
-    { id: 'email',    name: 'メールアドレス', form: 'text' },
-    { id: 'assigned', name: '担当TA',         form: 'text' },
+    { id: 'login',    name: 'ID',             form: DeleteCell },
+    { id: 'name',     name: '名前',           form: TextCell },
+    { id: 'ruby',     name: 'ふりがな',       form: TextCell },
+    { id: 'email',    name: 'メールアドレス', form: TextCell },
+    { id: 'assigned', name: '担当TA',         form: SelectCell }
 ];
 
 var UserComponent = React.createClass({
-    createCellComponent: function(x) {
-        switch (x) {
-        case 'delete': return DeleteCell;
-        case 'text':   return TextCell;
-        default: return undefined;
-        }
-    },
-
     find: function(data, id) {
         return _.find(data, function(x) { return x.id === id; });
     },
@@ -147,14 +223,15 @@ var UserComponent = React.createClass({
             return {
                 user: p.user.login,
                 id: x.id,
-                text: p.user[x.id],
-                form: this.createCellComponent(x.form),
+                value: p.user[x.id],
+                form: x.form,
                 key: x.id, /* for React */
                 updateUserData: p.updateUserData
             };
         }.bind(this));
 
         this.find(data, 'login').onDelete = p.delUser;
+        this.find(data, 'assigned').values = p.admins;
 
         return React.DOM.tr(null, data.map(function(d) { return d.form(d); }));
     }
@@ -215,6 +292,7 @@ var UserTableComponent = React.createClass({
                 return User({
                     key: u.token,
                     user: u,
+                    admins: this.props.admins,
                     updateUserData: this.updateUserData,
                     delUser: this.delUser
                 });
@@ -242,12 +320,14 @@ var AdminComponent = React.createClass({
             api: 'master',
             data: {
                 user: true,
-                admin: true
+                admin: true,
+                all_admins: true
             }
         }).done(function(result) {
             this.setState({
                 user: result.user,
-                admin: result.admin
+                admin: result.admin,
+                all_admins: result.all_admins
             });
         }.bind(this));
     },
@@ -257,7 +337,7 @@ var AdminComponent = React.createClass({
             return React.DOM.div(
                 null,
                 React.DOM.h2(null, 'ユーザ管理'),
-                UserTable(null)
+                UserTable({ admins: this.state.all_admins })
             );
         } else if (this.state.admin === false) {
             return React.DOM.div(
