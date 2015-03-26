@@ -168,17 +168,20 @@ $(document).ready(function() {
 
         api.get.apply(null, params).done(function() {
             var res = _.toArray(arguments);
-
             var user = res.shift()[0] || {};
-            if (user.token === master.token) {
-                _.values(reports, function(rep) {
-                    rep.checkedExs = user.report[rep.id] || {};
-                });
-            }
 
             res.forEach(function (r) {
                 var rep = reports[r[0].id];
                 rep.exercise = r[0].exercise;
+
+                // Add solved exercises to checkedExs.
+                if (user.token === master.token &&
+                    typeof user.report[r[0].id] !== 'undefined') {
+                    var solvedExs = user.report[r[0].id].solved;
+                    solvedExs.forEach(function (solved) {
+                        rep.checkedExs[solved] = true;
+                    });
+                }
 
                 if (Object.keys(rep.checkedExs).length === 0) {
                     rep.checkedExs =
@@ -191,14 +194,6 @@ $(document).ready(function() {
                                 }, r);
                             }, {}
                         );
-                }
-
-                // Add solved exercises to checkedExs.
-                if (typeof user.report[r[0].id] !== 'undefined') {
-                    var solvedExs = user.report[r[0].id].solved;
-                    solvedExs.forEach(function (solved) {
-                        rep.checkedExs[solved] = true;
-                    });
                 }
             });
 
