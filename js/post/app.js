@@ -176,7 +176,8 @@ $(document).ready(function() {
 
                 // Add solved exercises to checkedExs.
                 if (user.token === master.token &&
-                    typeof user.report[r[0].id] !== 'undefined') {
+                    _.has(user, 'report') &&
+                    _.has(user.report, r[0].id)) {
                     var solvedExs = user.report[r[0].id].solved;
                     solvedExs.forEach(function (solved) {
                         rep.checkedExs[solved] = true;
