@@ -10,7 +10,7 @@ require_relative '../helper'
 module API
   # Usage:
   #   comment report=<report-id> user=<login> action=<action> ...
-  #   comment action=list_news report=<report-id> user[]=<login>
+  #   comment action=list_news user[]=<login>
   #   comment action=config
   #   comment action=preview mesage=<content>
   # Actions:
@@ -84,7 +84,7 @@ module API
 
       # report ID must be specified
       report_id = helper.params['report']
-      return helper.bad_request unless report_id
+      return helper.bad_request unless report_id || action == 'list_news'
 
       # check the number of specified users
       if users.length != 1
@@ -105,15 +105,19 @@ module API
       end
 
       begin
-        comments = users.map do |u|
-          group = app.su? ? :super : (app.user == u ? :user : :other)
-          dir = App::KADAI + report_id + u + 'comment'
-          FileUtils.mkdir_p(dir) unless dir.exist?
-          {
-            user:    u,
-            comment: ::Comment.new(app.user, group, dir, config)
-          }
-        end
+        report_ids = report_id ? [report_id] : app.conf[:scheme, :scheme].map{|r| r['id']}
+        comments = Hash[*report_ids.map do |id|
+                          c = users.map do |u|
+                            group = app.su? ? :super : (app.user == u ? :user : :other)
+                            dir = App::KADAI + id + u + 'comment'
+                            FileUtils.mkdir_p(dir) unless dir.exist?
+                            {
+                              user:    u,
+                              comment: ::Comment.new(app.user, group, dir, config)
+                            }
+                          end
+                          [id, c]
+                        end.flatten(1)]
 
         case action
         when 'get'
@@ -122,7 +126,7 @@ module API
           offset  = convert(helper.params['offset'], &:to_i)
           limit   = convert(helper.params['limit'], &:to_i)
           args    = { type: type, id: id, offset: offset, limit: limit }
-          content = comments[0][:comment].retrieve(args)
+          content = comments[report_id][0][:comment].retrieve(args)
           # Get user names
           user_names = app.user_names_from_tokens(content.map { |entry| entry['user'] })
           content = content.map do |entry|
@@ -134,7 +138,7 @@ module API
           content = helper.params['message']
           ref = helper.params['ref']
           acl = convert(helper.params['acl']) { |a| a.split(',') }
-          comments[0][:comment].add(content: content, ref: ref, acl: acl)
+          comments[report_id][0][:comment].add(content: content, ref: ref, acl: acl)
 
           return helper.ok('done')
         when 'edit'
@@ -144,7 +148,7 @@ module API
           content = helper.params['message']
           ref = helper.params['ref']
           acl = convert(helper.params['acl']) { |a| a.split(',') }
-          comments[0][:comment] \
+          comments[report_id][0][:comment] \
             .edit(id: id, content: content, ref: ref, acl: acl)
 
           return helper.ok('done')
@@ -152,32 +156,35 @@ module API
           id = convert(helper.params['id'], &:to_i)
           return helper.bad_request unless id
 
-          comments[0][:comment].delete(id)
+          comments[report_id][0][:comment].delete(id)
 
           helper.ok('done')
         when 'read'
           id = convert(helper.params['id'], &:to_i)
           return helper.bad_request unless id
 
-          comments[0][:comment].read(id)
+          comments[report_id][0][:comment].read(id)
 
           return helper.ok('done')
         when 'unread'
           id = convert(helper.params['id'], &:to_i)
           return helper.bad_request unless id
 
-          comments[0][:comment].unread(id)
+          comments[report_id][0][:comment].unread(id)
 
           return helper.ok('done')
         when 'news'
-          content = comments[0][:comment].news
+          content = comments[report_id][0][:comment].news
 
           return helper.json_response(content)
         when 'list_news'
           name_to_token = Hash[*app.users.map { |u| [u.real_login, u.token] }.flatten]
-          content = Hash[*comments.map do |c|
-                            [name_to_token[c[:user]], c[:comment].news]
-                          end.flatten]
+          content = Hash[*report_ids.map do |id|
+                           c = Hash[*comments[id].map do |c|
+                                      [name_to_token[c[:user]], c[:comment].news]
+                                    end.flatten]
+                           [id, c]
+                         end.flatten]
 
           return helper.json_response(content)
         end

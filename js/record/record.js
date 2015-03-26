@@ -41,32 +41,31 @@ var Record = React.createClass({
     lastUpdate: 0,
     offsetTime: 0,
 
-    queryComments: function(users) {
-        var tokens = users.map(function(user) {
-            return user.token;
-        });
-        this.state.scheme.forEach(function(s) {
-            api.get({
-                api: 'comment',
-                data: {
-                    action: 'list_news',
-                    report: s.id,
-                    user: tokens,
-                    last: this.lastUpdate
-                }
-            }).done(function(result) {
-                if (typeof this.state.comments[s.id] === 'undefined') {
-                    this.state.comments[s.id] = {}
-                }
-                var comments = this.state.comments;
-                comments[s.id] = _.assign(this.state.comments[s.id], result);
-                if (this.isMounted()) {
-                    this.setState({
-                        comments: comments
-                    });
-                }
-            }.bind(this));
-        }, this);
+    queryComments: function(tokens) {
+        api.get({
+            api: 'comment',
+            data: {
+                action: 'list_news',
+                user: tokens
+            }
+        }).done(function(result) {
+            var isUpdated = _.some(result, function(comments, report_id) {
+                return _.some(comments, function(c, user_token) {
+                    var now = [report_id, user_token].reduce(function(r, k) {
+                        if (!_.has(r, k)) r[k] = {};
+                        return r[k];
+                    }, this.state.comments);
+                    var f = now.unreads !== c.unreads
+                        || now.comments !== c.comments;
+                    return f;
+                }, this);
+            }, this);
+            if (this.isMounted() && isUpdated) {
+                this.setState({
+                    comments: _.assign(this.state.comments, result)
+                });
+            }
+        }.bind(this));
     },
 
     queryUsers: function() {
@@ -95,7 +94,9 @@ var Record = React.createClass({
             }
 
             if (this.state.users.length === 0) return;
-            this.queryComments(this.state.users)
+            this.queryComments(this.state.users.map(function(user) {
+                return user.token;
+            }));
         }.bind(this));
     },
 
@@ -151,7 +152,9 @@ var Record = React.createClass({
                     report: report
                 });
             }
-            this.queryComments(users);
+            this.queryComments(users.map(function(user) {
+                return user.token;
+            }));
             if (master.reload > 0) {
                 this.lastUpdate = new Date().getTime();
                 this.offsetTime = this.lastUpdate - master.time;
