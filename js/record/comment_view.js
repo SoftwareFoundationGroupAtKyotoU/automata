@@ -102,6 +102,20 @@ var Comment = React.createClass({
         }.bind(this));
     },
 
+    onUnread: function() {
+        api.post({
+            api: 'comment',
+            data: {
+                user: [this.props.token],
+                report: this.props.report,
+                action: 'unread',
+                id: this.props.comment.id
+            }
+        }).always(function() {
+            //TODO: rerender unread marks
+        }.bind(this));
+    },
+
     onEdit: function() {
         api.get({
             api: 'comment',
@@ -254,6 +268,7 @@ var Comment = React.createClass({
         if (this.props.admin || this.props.token == "dummy" ) {
             editButtons = (
                 <p className="edit">
+                    <a title="未読にする" onClick={this.onUnread}>🙈</a>
                     <a title="編集する" onClick={this.onEdit}>✏</a>
                     <a title="削除する" onClick={this.onDelete}>✖</a>
                 </p>
@@ -411,7 +426,9 @@ var CommentView = React.createClass({
     },
 
     render: function() {
+        var last_id;
         var comments = this.state.comments.map(function(comment) {
+            last_id = comment.id;
             return (
                 <Comment comment={comment} admin={this.props.admin}
                          token={this.props.token} report={this.props.report}
@@ -419,6 +436,19 @@ var CommentView = React.createClass({
                          key={comment.id}/>
             );
         }.bind(this));
+        if (!(typeof last_id === "undefined")) {
+            api.post({
+                api: 'comment',
+                data: {
+                    user: [this.props.token],
+                    report: this.props.report,
+                    action: 'read',
+                    id: last_id
+                }
+            }).always(function() {
+                // TODO: rerender unread marks
+            }.bind(this));
+        }
         return (
             <div>
                 <div className="status_view">
