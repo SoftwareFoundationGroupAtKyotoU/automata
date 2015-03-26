@@ -1,228 +1,205 @@
-var init = function() {
-    // Import functions.
-    var $ = GNN.UI.$,
-        $new = GNN.UI.$new,
-        $node = GNN.UI.$node,
-        $text = GNN.UI.$text,
-        Observer = GNN.UI.Observer;
+var _ = require('lodash');
+var $ = require('jquery');
+var React = require('react');
+var api = require('../api');
+var exercise = require('../exercise');
+var ui = require('../ui2');
 
-    var Uploader = function() {
-        var self = {};
-
-        var form = $('form');
-        new Observer(form, 'onsubmit', function(e) {
-            if ($('file').value == '') {
-                e.stop();
-                alert('ファイルを選択して下さい');
-            }
-        });
-
-        self.reset = function() {
-            self.unselectAll();
-            if (!self.selected) {
-                var selected = $('report_id').value;
-                if (selected && selected.length && self.scheme) {
-                    self.selected = self.scheme.reduce(function(r, x) {
-                        return x.id == selected ? x : r;
-                    }, null);
-                }
-            }
-            self.select(self.selected || (self.scheme||[])[0]);
+var SubmitForm = React.createClass({
+    getInitialState: function() {
+        return {
+            reports: this.props.reports,
+            id: this.props.initial_id,
+            fileSelected: false
         };
+    },
 
-        self.setScheme = function(scheme) {
-            scheme.forEach(function(report) {
-                var selector = $('selector');
-                var li = $new('li', { id: 'button_'+report.id });
-                selector.appendChild(li);
+    report: function() { return this.state.reports[this.state.id]; },
 
-                var button = $new('a', {
-                    attr: { href: '.' },
-                    child: $text(report.name)
-                });
-                new Observer(button, 'onclick', function(e) {
-                    e.stop();
-                    self.unselectAll();
-                    self.select(report);
-                });
-                li.appendChild(button);
-            });
-            self.scheme = scheme;
-            return self;
-        };
+    reactOfReq: function(req, child) {
+        switch (req.type) {
+        case 'code': return <code>{req.value}</code>;
+        case 'html':
+          return <div style={ {display: 'inline'} }
+                      dangerouslySetInnerHTML={ {__html: req.value} } />;
+        case 'text': return req.value;
+        default:     return undefined;
+        }
+    },
 
-        self.setSolved = function(solved) {
-            self.solved = solved;
-            return self;
-        };
+    liOfReq: function(req) {
+        return <li>{this.reactOfReq(req)}</li>;
+    },
 
-        self.unselect = function(id) {
-            var button = $('button_'+id);
-            button.className = '';
-        };
+    reqOf: function(key) {
+        return (this.report().requirements || {})[key] || [];
+    },
 
-        self.unselectAll = function() {
-            if (!self.scheme) return;
-            self.scheme.forEach(function(report){
-                self.unselect(report.id);
-            });
-        };
+    reactOfStaticReq: function() {
+        return this.reqOf('static').map(this.liOfReq);
+    },
 
-        self.select = function(report) {
-            if (!report) return;
-            self.selected = report;
-            $('report_id').value = report.id;
+    reactOfDynamicReq: function() {
+        return this.reqOf('dynamic').map(function(d) {
+            var target = d.target;
+            var list = d['default'];
 
-            // report selector
-            var button = $('button_'+report.id);
-            button.className = 'selected';
-
-            // show selected report
-            var selected = $('selected_report');
-            GNN.UI.removeAllChildren(selected);
-            selected.appendChild($node(report.name));
-
-            // requirements depending on selected exercises
-            var nodeOfReq = function(r) {
-                var li = $new('li');
-                switch (r.type) {
-                case 'code':
-                    li.appendChild($new('code', { child: $node(r.value) }));
-                    break;
-                case 'html':
-                    li.innerHTML = r.value;
-                    break;
-                case 'text':
-                    li.appendChild($node(r.value));
-                    break;
-                default:
-                    return;
-                }
-                return li;
-            };
-            var updateReqs = function() {
-                var reqs = report.requirements;
-                if (reqs && reqs.dynamic) {
-                    reqs.dynamic.forEach(function(d) {
-                        var target = $(d.target);
-                        if (!target) return;
-                        GNN.UI.removeAllChildren(target);
-
-                        var list = d['default'];
-                        for (var x in d) {
-                            var node = $('ex'+x);
-                            if (node && node.checked) {
-                                d[x].forEach(function(r) {
-                                    list = list.map(function(s) {
-                                        return s.name == r.name ? r : s;
-                                    });
-                                });
-                                var rest = d[x].filter(function(r) {
-                                    return !list.some(function(s) {
-                                        return s.name == r.name;
-                                    });
-                                });
-                                list = list.concat(rest);
-                            }
-                        }
-
-                        list.forEach(function(r) {
-                            var node = nodeOfReq(r);
-                            if (node) target.appendChild(node);
+            for (var x in d) {
+                if (this.report().checkedExs[x]) {
+                    d[x].forEach(function(r) {
+                        list = list.map(function(s) {
+                            return s.name == r.name ? r : s;
                         });
                     });
-                }
-            };
-
-            // exercise selector
-            var ul = $('ex');
-            GNN.UI.removeAllChildren(ul);
-
-            var solved = self.solved || {};
-            solved = (solved[report.id]||{}).solved || [];
-            if (solved.length <= 0) solved = null;
-            var exercises = report.exercise||[];
-            makeExerciseSelector(ul, exercises, solved, 'ex', updateReqs);
-
-            // requirements
-            reqs = $('requirements');
-            GNN.UI.removeAllChildren(reqs);
-            if (report.requirements) {
-                var sttc = report.requirements['static'];
-                if (sttc) {
-                    sttc.forEach(function(r) {
-                        node = nodeOfReq(r);
-                        if (node) reqs.appendChild(node);
+                    var rest = d[x].filter(function(r) {
+                        return !list.some(function(s) {
+                            return s.name == r.name;
+                        });
                     });
+                    list = list.concat(rest);
                 }
             }
-            updateReqs();
-        };
 
-        return self;
-    };
+            return <li id={target.name}>
+                       {this.reactOfReq(target)}
+                       <ul id={target.name}>{list.map(this.liOfReq)}</ul>
+                   </li>;
+        }.bind(this));
+    },
 
-    var uploader = new Uploader();
+    onChangeCheck: function(checkedExs, checked) {
+        var rep = this.report();
+        checkedExs.forEach(function (ex) {
+            rep.checkedExs[ex] = checked;
+        });
+        var reports = this.state.reports;
+        reports[rep.id] = rep;
 
-    var async = {
-        template: function(json) {
-            // fill page template
-            setTitle(json.template);
-            addLinks(json.template.links);
-        },
-        master: function(json) {
-            // set login name
-            var login = $('login');
-            login.appendChild($node(json.master.user));
+        this.setState({ reports: reports });
+    },
 
-            // load solved data
-            new GNN.XHR.json(api('user', {
-                user: json.master.user,
+    onChangeFile: function(e) {
+        this.setState({ fileSelected: e.target.value !== '' });
+    },
+
+    render: function() {
+        var s = this.state;
+        var report = this.report();
+        var selectors = _.values(s.reports).map(function(rep) {
+            var clickHandler = function(e) {
+                e.preventDefault();
+                this.setState({ id: rep.id });
+            }.bind(this);
+
+            return <li className={rep.id === report.id ? 'selected' : ''}>
+                       <a href='.' onClick={clickHandler}>{rep.name}</a></li>;
+        }.bind(this));
+
+        return (<div>
+                <input type='hidden' id='report_id'
+                       name='report_id' value={report.id} />
+                <h4>課題の選択</h4>
+                    <ul id='selector'>{selectors}</ul>
+                    <h4>提出情報</h4>
+                    <dl className='info'>
+                        <dt>アカウント名</dt>
+                        <dd>{this.props.user}</dd>
+                        <dt>提出する課題</dt>
+                        <dd id='selected_report'>{report.name}</dd>
+                    </dl>
+                <h4>解いた問題にチェックして下さい</h4>
+                    <ul>
+                        <li>はじめは必修課題にはチェックがついています(間に合わなかった問題はチェックを外して下さい)</li>
+                        <li>再提出の場合は, すでに提出した問題もすべてチェックして下さい</li>
+                    </ul>
+                    <div id='list_view' className='list_view'>
+                        <exercise.CheckList nodeID='ex'
+                                            prefix='ex'
+                                            exs={report.exercise}
+                                            checkedExs={report.checkedExs}
+                                            onChange={this.onChangeCheck} />
+                    </div>
+                <h4>ファイルの選択</h4>
+                    <h5>提出要件</h5>
+                    <ul id='requirements'>
+                        {this.reactOfStaticReq()}
+                        {this.reactOfDynamicReq()}
+                    </ul>
+                    <label htmlFor='file'>zipファイル: </label>
+                    <input type='file' id='file' name='report_file'
+                           onChange={this.onChangeFile}/>
+                    <input type='submit' id='submit' value='提出'
+                           disabled={!s.fileSelected} />
+                </div>);
+    }
+});
+
+$(document).ready(function() {
+    api.get(
+        { api: 'master',   data: { year: true, user: true, token: true } },
+        { api: 'template', data: { type: 'none', links: true } },
+        { api: 'scheme',   data: { type: 'post' } },
+        { api: 'template', data: { type: 'post', requirements: true } }
+    ).done(function (master, template, scheme, reqs) {
+        // template
+        ui.setTitle(template);
+        ui.addLinks(template.links);
+
+        var reports = {};
+        scheme.forEach(function(rep) {
+            rep.requirements = reqs.requirements[rep.id]
+            rep.checkedExs = {}
+            reports[rep.id] = rep;
+        });
+
+        var params = [{
+            api: 'user',
+            data: {
+                user: master.user,
                 type: 'status',
                 status: 'solved'
-            }), function(user) {
-                user = user[0]||{};
-                var report;
-                if (user.token==json.master.token) report=user.report;
-                uploader.setSolved(report||{});
-                uploader.reset();
-            });
-        },
-        scheme: function(json) {
-            uploader.setScheme(json.scheme);
-            uploader.reset();
-
-            // get exercise list
-            var apis = { async: {} };
-            json.scheme.forEach(function(report, i) {
-                apis[report.id] = api('scheme', {
-                    id: report.id, type: 'post',
-                    exercise: true
-                });
-                apis.async[report.id] = function(r) {
-                    report.exercise = r[report.id][0].exercise;
-                    uploader.reset();
-                };
-            });
-            GNN.XHR.json.retrieve(apis, null, jsonpFailure);
-        },
-        reqs: {
-            keys: 'scheme reqs'.split(' '),
-            callback: function(json) {
-                json.scheme.forEach(function(rep) {
-                    var req = json.reqs.requirements[rep.id];
-                    if (req) rep.requirements = req;
-                });
-                uploader.reset();
             }
-        }
-    };
+        }].concat(scheme.map(function(report) {
+            return {
+                api: 'scheme',
+                data: { id: report.id, type: 'post', exercise: true },
+            };
+        }));
 
-    GNN.XHR.json.retrieve({
-        master: api('master', { year: true, user: true, token: true }),
-        template: api('template', { type: 'none', links: true }),
-        scheme: api('scheme', { type: 'post' }),
-        reqs: api('template', { type: 'post', requirements: true }),
-        async: async
-    }, null, jsonpFailure);
-};
+        api.get.apply(null, params).done(function() {
+            var res = _.toArray(arguments);
+
+            var user = res.shift()[0] || {};
+            if (user.token === master.token) {
+                _.values(reports, function(rep) {
+                    rep.checkedExs = user.report[rep.id] || {};
+                });
+            }
+
+            res.forEach(function (r) {
+                var rep = reports[r[0].id];
+                rep.exercise = r[0].exercise;
+
+                if (Object.keys(rep.checkedExs).length === 0) {
+                    rep.checkedExs =
+                        exercise.transform(rep.exercise).reduce(
+                            function(r, ex) {
+                                r[ex.name] = ex.label === 'all';
+                                return ex.sub.reduce(function(r, sub) {
+                                    r[sub.name] = sub.required;
+                                    return r;
+                                }, r);
+                            }, {}
+                        );
+                }
+            });
+
+            React.render(
+                <SubmitForm user={master.user}
+                            reports={reports}
+                            initial_id={(scheme[0]||{}).id} />,
+                document.getElementById('form')
+            );
+        });
+    });
+});

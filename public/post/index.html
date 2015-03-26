@@ -10,7 +10,7 @@
   <link rev="made" href="mailto:ina@kuis.kyoto-u.ac.jp" />
   <title>Submission</title>
 </head>
-<body onload="init()">
+<body>
   <div id="article">
     <h2 id="institute"></h2>
     <h1 id="title"></h1>
@@ -38,41 +38,7 @@
       <li>不明な点はTAに問い合わせること</li>
     </ul>
 
-    <form id="form" method="post" action="../api/post.cgi" enctype="multipart/form-data">
-      <div>
-        <input type="hidden" id="report_id" name="report_id" value="" />
-
-        <h4>課題の選択</h4>
-        <ul id="selector"></ul>
-
-        <h4>提出情報</h4>
-        <dl class="info">
-          <dt>アカウント名</dt>
-          <dd id="login"></dd>
-          <dt>提出する課題</dt>
-          <dd id="selected_report"></dd>
-        </dl>
-
-        <h4>解いた問題にチェックして下さい</h4>
-        <ul>
-          <li>はじめは必修課題にはチェックがついています(間に合わなかった問題はチェックを外して下さい)</li>
-          <li>再提出の場合は, すでに提出した問題もすべてチェックして下さい</li>
-        </ul>
-
-        <div id="list_view" class="list_view">
-          <ul id="ex" class="ex"></ul>
-        </div>
-
-        <h4>ファイルの選択</h4>
-
-        <h5>提出要件</h5>
-        <ul id="requirements"></ul>
-
-        <label for="file">zipファイル:</label>
-        <input type="file" id="file" name="report_file" />
-        <input type="submit" id="submit" value="提出" />
-      </div>
-    </form>
+    <form id="form" method="post" action="../api/post.cgi" enctype="multipart/form-data" />
   </div>
   <div id="footer">
     <a href="../record/">提出状況確認</a>

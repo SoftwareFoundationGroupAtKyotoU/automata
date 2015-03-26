@@ -4,7 +4,7 @@ function watch(s) {
     return s + '.watch';
 }
 
-var old = ['account', 'post', 'record'];
+var old = ['account'];
 old.forEach(function(name) {
     gulp.task(name, require('./gulp/tasks/' + name));
     gulp.task(watch(name), [name], function() {
@@ -12,7 +12,7 @@ old.forEach(function(name) {
     });
 });
 
-var modern = ['admin', 'post2', 'record2'];
+var modern = ['admin', 'post', 'record'];
 modern.forEach(function(name) {
     gulp.task(name, require('./gulp/tasks/' + name)(false));
     gulp.task(watch(name), require('./gulp/tasks/' + name)(true));
