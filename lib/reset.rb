@@ -15,7 +15,7 @@ class App
   # @param [String] email email address of a user
   # @param [Symbol] tmpl template used in mail body (:passwd_issue or :passwd_reset)
   def reset(email, tmpl)
-    user = users.find {|u| u.email == email}
+    user = users(true).find {|u| u.email == email}
     raise UserNotFound unless user
 
     passwd = String.random(8)

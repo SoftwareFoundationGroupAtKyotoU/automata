@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 require 'bundler/setup'
-require 'mail'
 
 require_relative '../app'
 require_relative '../helper'
@@ -13,10 +12,6 @@ module Account
     def call(env)
       helper = Helper.new(env)
       app = App.new(env['REMOTE_USER'])
-
-      def app.su?
-        true
-      end
 
       begin
         email = helper.params['email']
