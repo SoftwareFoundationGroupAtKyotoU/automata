@@ -1,10 +1,11 @@
-if (typeof GNN.UI == 'undefined') GNN.UI = {};
+var Hash = require('./hash');
+var UI = {};
 
 (function(ns) {
-    var forEach = GNN.Hash.forEach;
+    var forEach = Hash.forEach;
     ns.doc = function(){ return ns.document || document; };
-    ns.isNode = function(x){ return x && typeof x.nodeType == 'number'; };
-    ns.text = function(node){ return node.textContent||node.innerText||''; };
+    ns.isNode = function(x){ return x && typeof x.nodeType === 'number'; };
+    ns.text = function(node){ return node.textContent || node.innerText || ''; };
     ns._$ = function(id){ return ns.doc().getElementById(id); };
     ns.$ = function(id){ return ns.isNode(id) ? id : ns._$(id); };
     ns.$new = function(tag, args) {
@@ -12,15 +13,15 @@ if (typeof GNN.UI == 'undefined') GNN.UI = {};
         args = args || {};
         if (args.id) elm.id = args.id;
         if (args.klass) elm.className = args.klass;
-        forEach(args.style||{}, function(k,s){ elm.style[k] = s; });
+        forEach(args.style || {}, function(k ,s){ elm.style[k] = s; });
         if (args.attr) {
             for (var attr in args.attr) {
                 elm.setAttribute(attr, args.attr[attr]);
             }
         }
-        if (typeof args.child != 'undefined') {
+        if (typeof args.child !== 'undefined') {
             if (!(args.child instanceof Array)) args.child = [ args.child ];
-            for (var i=0; i < args.child.length; i++) {
+            for (var i = 0; i < args.child.length; i++) {
                 var child = ns.$node(args.child[i]);
                 elm.appendChild(child);
             }
@@ -28,8 +29,8 @@ if (typeof GNN.UI == 'undefined') GNN.UI = {};
         return elm;
     };
     ns.$text = function(str) {
-        if (typeof str == 'undefined' || str == null) str = '';
-        return ns.doc().createTextNode(str+'');
+        if (typeof str === 'undefined' || str === null) str = '';
+        return ns.doc().createTextNode(str + '');
     };
     ns.$node = function(x){ return ns.isNode(x) ? x : ns.$text(x); };
     ns.$select = function(args) {
@@ -47,19 +48,19 @@ if (typeof GNN.UI == 'undefined') GNN.UI = {};
         return result;
     };
     ns.classNames = function(e) {
-        return (e.className||'').split(/\s+/);
+        return (e.className || '').split(/\s+/);
     };
     ns.hasClass = function(e, klass) {
         return ns.classNames(e).indexOf(klass) >= 0;
     };
     ns.appendClass = function(e, klass) {
         e.className = ns.classNames(e).filter(function(k) {
-            return k != klass;
+            return k !== klass;
         }).concat([klass]).join(' ');
     };
     ns.removeClass = function(e, klass) {
         e.className = ns.classNames(e).filter(function(k) {
-            return k != klass;
+            return k !== klass;
         }).join(' ');
     };
     ns.removeAllChildren = function(node) {
@@ -73,7 +74,7 @@ if (typeof GNN.UI == 'undefined') GNN.UI = {};
     ns.insertText = function(node, text) {
         var start = node.selectionStart;
         var end = node.selectionEnd;
-        if (typeof start == 'number' && typeof end == 'number') {
+        if (typeof start === 'number' && typeof end === 'number') {
             var before = node.value.substring(0, start);
             var after = node.value.substring(end);
             node.value = before + text + after;
@@ -83,7 +84,7 @@ if (typeof GNN.UI == 'undefined') GNN.UI = {};
         }
     };
     ns.getStyle = function(node, name) {
-        var style = (node.style||{})[name];
+        var style = (node.style || {})[name];
         if (!style) {
             var dv = ns.doc().defaultView || {};
             if (dv.getComputedStyle) { try {
@@ -99,7 +100,7 @@ if (typeof GNN.UI == 'undefined') GNN.UI = {};
         return style;
     };
     ns.getPosition = function(node) {
-        var pos = { x:0, y:0 };
+        var pos = { x: 0, y: 0 };
         do {
             pos.x += node.offsetLeft;
             pos.y += node.offsetTop;
@@ -161,9 +162,9 @@ if (typeof GNN.UI == 'undefined') GNN.UI = {};
     ns.Observer = function(node, event, obj, m) {
         var self = { node: node, event: event };
         var fun = obj;
-        if (typeof m == 'string') {
+        if (typeof m === 'string') {
             fun = obj[m];
-        } else if (typeof m != 'undefined') {
+        } else if (typeof m !== 'undefined') {
             fun = m;
         }
         var callback = function(e){ return fun.call(obj, new ns.Event(e)); };
@@ -185,4 +186,6 @@ if (typeof GNN.UI == 'undefined') GNN.UI = {};
         self.start();
         return self;
     };
-})(GNN.UI);
+})(UI);
+
+module.exports = UI;
