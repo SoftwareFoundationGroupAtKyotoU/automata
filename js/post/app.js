@@ -147,8 +147,8 @@ $(document).ready(function() {
 
         var reports = {};
         scheme.forEach(function(rep) {
-            rep.requirements = reqs.requirements[rep.id]
-            rep.checkedExs = {}
+            rep.requirements = reqs.requirements[rep.id];
+            rep.checkedExs = {};
             reports[rep.id] = rep;
         });
 
@@ -191,6 +191,14 @@ $(document).ready(function() {
                                 }, r);
                             }, {}
                         );
+                }
+
+                // Add solved exercises to checkedExs.
+                if (typeof user.report[r[0].id] !== 'undefined') {
+                    var solvedExs = user.report[r[0].id].solved;
+                    solvedExs.forEach(function (solved) {
+                        rep.checkedExs[solved] = true;
+                    });
                 }
             });
 
