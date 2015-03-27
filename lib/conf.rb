@@ -19,7 +19,7 @@ class Conf
   def reload
     local = begin load_yaml(FILES[:local]) rescue {} end
     @conf = {
-      'master' => load_yaml(FILES[:master], FILES[:master_schema]).merge(local),
+      'master' => load_yaml(FILES[:master]).merge(local),
       'scheme' => load_yaml(FILES[:scheme]),
       'template' => load_yaml(FILES[:template]).merge(local)
     }
@@ -37,6 +37,11 @@ class Conf
       fail "Unknown config files: #{keys[0]}"
     end
     keys.inject(@conf) { |acc, key| (acc || {})[key.to_s] }
+  end
+
+  # Verify config files.
+  def verify_config
+    verify_yaml(FILES[:master], FILES[:master_schema])
   end
 
   private
@@ -60,22 +65,25 @@ class Conf
     fail message if errors && !errors.empty?
   end
 
+  # Validate yaml file with a given schema file.
+  # @param [Pathname] pathname the path of the yaml file.
+  # @param [Pathname] schema_file the path of the schema file.
+  def verify_yaml(pathname, schema_file)
+    yml = File.open(pathname, 'r:utf-8') { |f| YAML.load(f, pathname) }
+    schema = File.open(schema_file, 'r:utf-8') { |f| YAML.load(f, schema_file) }
+    invoke_errors(
+      Kwalify::MetaValidator.instance.validate(schema),
+      "Internal error: schema '#{schema}'"
+    )
+    invoke_errors(
+      Kwalify::Validator.new(schema).validate(yml),
+      "Config file error: '#{pathname}'"
+    )
+  end
+
   # Load yaml files and if schema is given validate the yaml.
   # @param [Pathname] pathname
-  # @param [Pathname] schema
-  def load_yaml(pathname, schema = nil)
-    yml = File.open(pathname, 'r:utf-8') { |f| YAML.load(f, pathname) }
-    if schema
-      schema_yml = load_yaml(schema)
-      invoke_errors(
-        Kwalify::MetaValidator.instance.validate(schema_yml),
-        "Internal error: schema '#{schema_yml}'"
-      )
-      invoke_errors(
-        Kwalify::Validator.new(schema_yml).validate(yml),
-        "Config file error: '#{pathname}'"
-      )
-    end
-    yml
+  def load_yaml(pathname)
+    File.open(pathname, 'r:utf-8') { |f| YAML.load(f, pathname) }
   end
 end

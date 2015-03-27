@@ -91,3 +91,7 @@ Require valid-user
     # remove auth files
   end
 end
+
+task 'verify' do
+  Conf.new.verify_config
+end
