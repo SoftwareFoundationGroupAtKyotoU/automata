@@ -91,3 +91,8 @@ Require valid-user
     # remove auth files
   end
 end
+
+task 'verify' do
+  # config files are validated in initializer.
+  Conf.new
+end
