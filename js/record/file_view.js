@@ -15,10 +15,11 @@ var FileEntry = (function() {
 
     return React.createClass({
         onclick: function (e) {
-            e.preventDefault();
 
             var p = this.props;
             if (p.entry.type === 'bin' && p.entry.name.indexOf('.class') < 0) return;
+
+            e.preventDefault();
 
             p.open(p.path+'/'+p.entry.name, p.entry.type);
         },
