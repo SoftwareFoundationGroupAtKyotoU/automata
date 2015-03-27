@@ -1,3 +1,4 @@
+var _ = require('lodash');
 var React = require('react');
 var api = require('../api');
 
@@ -85,7 +86,7 @@ module.exports = React.createClass({
             users = this.state.users.map(function(user) {
                 var kadais = scheme.map(function(s) {
                     var unreads = ['report', s.id, 'comment', 'unreads'].reduce(function(r, k) {
-                        if (!r[k]) r[k] = {};
+                        if (!_.has(r, k)) r[k] = {};
                         return r[k];
                     }, user);
                     return (<StatusCell user={user} report={s.id} isButton={true} admin={this.props.admin} updateStatus={this.updateStatus} unRead={unreads} isSelected={this.props.report === s.id}/>);

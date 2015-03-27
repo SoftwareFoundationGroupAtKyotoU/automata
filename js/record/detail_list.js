@@ -108,7 +108,7 @@ var ReportList = React.createClass({
                 var tds = this.props.scheme.record.map(function(r) {
                     if (r.field === 'name') {
                         var unreads = ['report', this.props.scheme.id, 'comment', 'unreads'].reduce(function(r, k) {
-                            if (!r[k]) r[k] = {};
+                            if (!_.has(r, k)) r[k] = {};
                             return r[k];
                         }, user);
                         if (unreads > 0) {
