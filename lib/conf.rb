@@ -19,7 +19,7 @@ class Conf
   def reload
     local = begin load_yaml(FILES[:local]) rescue {} end
     @conf = {
-      'master' => load_yaml(FILES[:master], FILES[:master_schema]).merge(local),
+      'master' => load_yaml(FILES[:master]).merge(local),
       'scheme' => load_yaml(FILES[:scheme]),
       'template' => load_yaml(FILES[:template]).merge(local)
     }
@@ -37,6 +37,11 @@ class Conf
       fail "Unknown config files: #{keys[0]}"
     end
     keys.inject(@conf) { |acc, key| (acc || {})[key.to_s] }
+  end
+
+  # Verify config files.
+  def verify_config
+    verify_yaml(FILES[:master], FILES[:master_schema])
   end
 
   private
@@ -78,10 +83,7 @@ class Conf
 
   # Load yaml files and if schema is given validate the yaml.
   # @param [Pathname] pathname
-  # @param [Pathname] schema
-  def load_yaml(pathname, schema = nil)
-    yml = File.open(pathname, 'r:utf-8') { |f| YAML.load(f, pathname) }
-    verify_yaml(pathname, schema) if schema
-    yml
+  def load_yaml(pathname)
+    File.open(pathname, 'r:utf-8') { |f| YAML.load(f, pathname) }
   end
 end

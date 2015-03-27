@@ -93,6 +93,5 @@ Require valid-user
 end
 
 task 'verify' do
-  # config files are validated in initializer.
-  Conf.new
+  Conf.new.verify_config
 end
