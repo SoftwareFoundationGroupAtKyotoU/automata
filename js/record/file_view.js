@@ -18,7 +18,7 @@ var FileEntry = (function() {
             e.preventDefault();
 
             var p = this.props;
-            if (p.entry.type === 'bin') return;
+            if (p.entry.type === 'bin' && p.entry.name.indexOf('.class') < 0) return;
 
             p.open(p.path+'/'+p.entry.name, p.entry.type);
         },
@@ -201,7 +201,7 @@ var FileView = (function() {
         },
 
         open: function(path, type) {
-            if (type === 'bin') return;
+            if (type === 'bin' && path.indexOf('.class') < 0) return;
 
             this.browseAPI(path, function(res) {
                 if (type === 'dir') {
