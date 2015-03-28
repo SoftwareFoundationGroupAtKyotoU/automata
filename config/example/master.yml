@@ -29,6 +29,13 @@ record:
 comment:
   enable: true
 
+interact:
+  default:
+    run: # commands to start an interpreter
+    sandbox: "URI of interactor.cgi."
+  example_report:
+    run: # another commands to start an interpreter
+
 check:
   default:
     require: # prerequisite files

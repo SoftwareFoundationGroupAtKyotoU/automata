@@ -421,6 +421,15 @@ ul.comments > li.private {
    margin-left: 2em;
 }
 
+.interact textarea {
+   width: 100%;
+   font-size: 150%;
+   margin-bottom: 1em;
+}
+.interact .response {
+   margin-top: 2em;
+}
+
 #persistent {
    display: none;
 }

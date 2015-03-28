@@ -46,11 +46,15 @@ var User = React.createClass({
                              users={[user]}
                              updateStatus={this.props.updateStatus}/>
                 <div className="status_window">
-                <StatusHeader comments={comments} reload={this.reloadView}/>
+                <StatusHeader comments={comments}
+                              reload={this.reloadView}
+                              admin={this.props.admin}
+                              interact={this.props.interact} />
                 <RouteHandler key={token + report + this.state.counter}
                               token={token}
                               report={report}
                               admin={this.props.admin}
+                              interact={this.props.interact}
                               loginUser={this.props.loginUser}
                               updateNews={_.partial(this.props.updateNews, token, report)}/>
                 </div>

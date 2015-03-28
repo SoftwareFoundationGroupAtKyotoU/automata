@@ -23,11 +23,12 @@ class App
   SCRIPT = base_dir + 'script'
 
   FILES = {
-    data:        DB + 'data.yml',
-    log:         'log.yml',
-    build:       SCRIPT + 'build.rb',
-    sandbox:     SCRIPT + 'test.rb',
-    test_script: SCRIPT + 'test'
+    data:            DB + 'data.yml',
+    log:             'log.yml',
+    build:           SCRIPT + 'build.rb',
+    sandbox:         SCRIPT + 'test.rb',
+    test_script:     SCRIPT + 'test',
+    interact_script: SCRIPT + 'interact'
   }
 
   LOGGER_LEVEL = {

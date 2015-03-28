@@ -7,20 +7,24 @@ var AnswerView = require('./answer_view.js');
 var ResultView = require('./result_view.js');
 var FileView = require('./file_view.js');
 var CommentView = require('./comment_view.js');
+var InteractView = require('./interact_view.js');
 
 var tabs = [
     { path: 'log',      name: 'ログ',         handler: LogView },
     { path: 'answer',   name: '解答状況',     handler: AnswerView },
     { path: 'result',   name: 'テスト結果',   handler: ResultView },
     { path: 'file',     name: 'ファイル一覧', handler: FileView },
-    { path: 'comment',  name: 'コメント',     handler: CommentView }
+    { path: 'comment',  name: 'コメント',     handler: CommentView },
+    { path: 'interact', name: '対話',         handler: InteractView }
 ];
 
 module.exports = React.createClass({
     mixins: [Router.State],
 
     render: function() {
-        var _tabs = tabs.map(function(tab) {
+        var _tabs = tabs.filter(function(tab) {
+            return !(tab.handler.visible) || tab.handler.visible(this.props);
+        }, this).map(function(tab) {
             var className = 'status_tabbar_button';
             var tabName = this.getPath().split('/')[3];
             if (!tabName) tabName = 'log';

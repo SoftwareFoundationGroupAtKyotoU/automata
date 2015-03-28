@@ -99,6 +99,25 @@ mapping:
         type: bool
         required: yes
 
+  "interact":
+    type: map
+    mapping:
+      "default":
+        type: map
+        required: yes
+        mapping:
+          "sandbox":
+            type: str
+            required: yes
+          "run": &run
+            type: seq
+            sequence:
+              - type: str
+      =:
+        type: map
+        mapping:
+          "run": &run
+
   "check":
     type: map
     required: yes

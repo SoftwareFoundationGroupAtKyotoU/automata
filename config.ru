@@ -7,6 +7,7 @@ require 'lib/api/admin_log'
 require 'lib/api/admin_runtest'
 require 'lib/api/admin_solved'
 require 'lib/api/admin_user'
+require 'lib/api/admin_interact'
 require 'lib/api/browse'
 require 'lib/api/comment'
 require 'lib/api/master'
@@ -18,6 +19,7 @@ require 'lib/api/user'
 require 'lib/account/reset'
 require 'lib/account/register'
 require 'lib/sandbox/tester'
+require 'lib/sandbox/interactor'
 require 'authenticator'
 require 'router'
 
@@ -71,6 +73,7 @@ map relative_uri do
     { pattern: '/api/admin_runtest.cgi', controller: API::AdminRuntest.new },
     { pattern: '/api/admin_solved.cgi', controller: API::AdminSolved.new },
     { pattern: '/api/admin_user.cgi', controller: API::AdminUser.new },
+    { pattern: '/api/admin_interact.cgi', controller: API::AdminInteract.new },
     { pattern: '/api/browse.cgi', controller: API::Browse.new },
     { pattern: '/api/comment.cgi', controller: API::Comment.new },
     { pattern: '/api/master.cgi', controller: API::Master.new },
@@ -83,7 +86,8 @@ map relative_uri do
 
   if ENV['WITH_SANDBOX']
     routes.concat([
-      { pattern: '/sandbox/tester.cgi', controller: Sandbox::Tester.new }
+      { pattern: '/sandbox/tester.cgi', controller: Sandbox::Tester.new },
+      { pattern: '/sandbox/interactor.cgi', controller: Sandbox::Interactor.new }
     ])
   end
 

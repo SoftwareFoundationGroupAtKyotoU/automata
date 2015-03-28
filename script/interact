@@ -1,0 +1,56 @@
+#! /usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+oldwd = Dir.pwd
+Dir.chdir(File.dirname(File.expand_path($0)))
+
+require 'zip'
+require 'shellwords'
+
+require_relative 'helper'
+require_relative '../lib/permission'
+
+helper = Helper.parse_args($*)
+if helper.nil?
+  print Helper.help_message
+  exit
+end
+
+dir = {}
+dir[:interact] = helper.dir[:user] + 'interact'
+dir[:target]   = dir[:interact] + 'src'
+
+# sudo su www-data -c "command args..."
+Dir.chdir(oldwd){ Permission.ensure_writable(helper.dir[:user].to_s) }
+
+# copy files
+FileUtils.rm_r(dir[:interact].to_s) if File.exist?(dir[:interact].to_s)
+helper.copy_src_files(dir[:target].to_s)
+
+ZIP = 'interact.zip'
+
+conf = helper.merged_conf(:master, :interact, :default)
+
+run = conf['run']
+run = [run] unless run.is_a?(Array)
+run = run.join('&&');
+
+inputs = STDIN.read
+
+cmd =
+  [ 'curl',
+    "-F 'file=@#{ZIP}'",
+    "-F cmd=#{Shellwords.escape(run)}",
+    "-F input=#{Shellwords.escape(inputs)}",
+    conf['sandbox'],
+  ].compact.join(' ')
+
+result = Dir.chdir(dir[:interact].to_s) do
+  Zip::File.open(ZIP, Zip::File::CREATE) do |zf|
+    Dir.glob('src/*').map{|x| zf.add(File.basename(x), x) }
+  end
+
+  `#{cmd}`
+end
+
+puts result
