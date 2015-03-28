@@ -13,6 +13,7 @@ var ui = require('../ui2');
 var DetailList = require('./detail_list.js');
 var SummaryList = require('./summary_list.js');
 var UserRoute = require('./user.js');
+var AutoReload = require('./auto_reload.js');
 
 var Record = React.createClass({
     mixins: [
@@ -38,72 +39,30 @@ var Record = React.createClass({
         });
     },
 
-    lastUpdate: 0,
-    offsetTime: 0,
-
     queryComments: function(tokens) {
-        api.get({
-            api: 'comment',
-            data: {
-                action: 'list_news',
-                user: tokens
-            }
-        }).done(function(result) {
-            var isUpdated = _.some(result, function(comments, report_id) {
-                return _.some(comments, function(c, user_token) {
-                    var now = [report_id, user_token].reduce(function(r, k) {
-                        if (!_.has(r, k)) r[k] = {};
-                        return r[k];
-                    }, this.state.comments);
-                    var f = now.unreads !== c.unreads
-                        || now.comments !== c.comments;
-                    return f;
-                }, this);
-            }, this);
-            if (this.isMounted() && isUpdated) {
-                this.setState({
-                    comments: _.assign(this.state.comments, result)
-                });
-            }
-        }.bind(this));
+        api.get({ api: 'comment', data: { action: 'list_news', user: tokens } })
+           .done(function(comments) {
+               if (this.isMounted) this.setState({ comments: comments });
+           }.bind(this));
     },
 
-    queryUsers: function() {
-        var lastUpdate = this.lastUpdate;
-        if (this.prevReturned) this.lastUpdate = new Date().getTime();
-        this.prevReturned = false;
-        api.get({
-            api: 'user',
-            data: {
-                type: 'status',
-                status: 'record',
-                log: true,
-                assigned: true,
-                last: lastUpdate - this.offsetTime
-            }
-        }).done(function(users) {
-            this.prevReturned = true;
-            if (users.length > 0) {
-                var users = this.state.users.map(function(user) {
-                    var update = _.find(users, 'token', user.token);
-                    return typeof update !== 'undefined' ? update : user;
-                });
-                if (this.isMounted()) {
-                    this.setState({
-                        users: users
-                    });
-                }
-            }
+    setComments: function(comments) {
+        if (this.isMounted) {
+            this.setState({
+                comments: comments
+            })
+        }
+    },
 
-            if (this.state.users.length === 0) return;
-            this.queryComments(this.state.users.map(function(user) {
-                return user.token;
-            }));
-        }.bind(this));
+    setUsers: function(users) {
+        if (this.isMounted) {
+            this.setState({
+                users: users
+            })
+        }
     },
 
     componentDidMount: function() {
-        this.lastUpdate = new Date().getTime();
         api.get(
             {
                 api: 'master',
@@ -111,8 +70,7 @@ var Record = React.createClass({
                     user: true,
                     admin: true,
                     token: true,
-                    reload: true,
-                    time: true
+                    reload: true
                 }
             },
             {
@@ -129,8 +87,6 @@ var Record = React.createClass({
                 }
             }
         ).done(function(master, scheme, users) {
-            this.offsetTime = new Date().getTime() - master.time;
-            this.prevReturned = true;
             var filtered = $.cookie('default-filtered');
             if (typeof filtered === 'undefined' || filtered === 'true') {
                 filtered = true;
@@ -143,12 +99,14 @@ var Record = React.createClass({
                     user: master.user,
                     token: master.token,
                     admin: master.admin,
+                    reload: master.reload,
                     scheme: scheme,
                     users: users,
                     comments: {},
                     filtered: filtered
                 });
             }
+            this.queryComments(users.map(_.partial(_.result, _, 'token')));
             if (!master.admin && this.getPath() === '/') {
                 var report = $.cookie('default-report');
                 if (!report) report = scheme[0].id;
@@ -156,12 +114,6 @@ var Record = React.createClass({
                     token: master.token,
                     report: report
                 });
-            }
-            this.queryComments(users.map(function(user) {
-                return user.token;
-            }));
-            if (master.reload > 0) {
-                setInterval(this.queryUsers, master.reload);
             }
         }.bind(this));
     },
@@ -214,19 +166,27 @@ var Record = React.createClass({
             });
         }, this);
 
-        return (<div>
+        return (
+            <div>
                 <div id="view_switch">
-                表示:<ul>
-                {filter}
-                <li><Link to="detail" id="sw_view_report">課題ごと</Link></li>
-                <li><Link to="summary" id="sw_view_summary">一覧</Link></li>
-                </ul>
+                    表示:<ul>
+                        <li>
+                            <AutoReload interval={this.state.reload}
+                                        comments={this.state.comments}
+                                        users={this.state.users}
+                                        setComments={this.setComments}
+                                        setUsers={this.setUsers}/>
+                        </li>
+                        {filter}
+                        <li><Link to="detail" id="sw_view_report">課題ごと</Link></li>
+                        <li><Link to="summary" id="sw_view_summary">一覧</Link></li>
+                    </ul>
                 </div>
                 <RouteHandler admin={this.state.admin}
                               scheme={this.state.scheme}
                               users={users}
                               updateStatus={this.updateStatus}/>
-                </div>
+            </div>
         );
     }
 });

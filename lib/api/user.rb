@@ -46,7 +46,8 @@ module API
         end
       end
 
-      last = helper.params['last'].to_i
+      time = Time.now.to_f
+      last = helper.params['last'].to_f
 
       if helper.params['type'] == 'status'
         schemes = app.conf[:scheme, :scheme].reject do |s|
@@ -61,15 +62,18 @@ module API
             }
             report = app.report(option, s['id'], u.real_login)
             if last && report
-              time = Time.parse(report.to_hash['timestamp'])
-              report = nil if time.to_f * 1000 < last
+              report = nil if Time.parse(report.to_hash['timestamp']).to_f < last
             end
             u[s['id']] = report
           end
         end
       end
 
-      users.map!(&:to_hash)
+      users.map! do |u|
+        u = u.to_hash
+        u['lastUpdate'] = time
+        u
+      end
 
       if last > 0
         users.reject!{|u| !u.has_key?('report')}

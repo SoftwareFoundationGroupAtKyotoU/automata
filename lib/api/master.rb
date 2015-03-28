@@ -14,10 +14,9 @@ module API
   #   year       年度を取得
   #   all_admins 全ての管理者ユーザーを取得
   #   reload     リロード時間を取得
-  #   time       サーバーの現在時刻を取得
   class Master
     KEY = []
-    OPTIONAL = [:year, :user, :admin, :token, :all_admins, :reload, :time]
+    OPTIONAL = [:year, :user, :admin, :token, :all_admins, :reload]
 
     def call(env)
       helper = ::Helper.new(env)
@@ -29,7 +28,6 @@ module API
       conf[:token] = ::User.make_token(app.user)
       conf[:all_admins] = conf['su']
       conf[:reload] = app.conf[:master, :record, :reload] || 0
-      conf[:time] = (Time.now.to_f * 1000).to_i
 
       entry = {}
       keys = KEY.dup
