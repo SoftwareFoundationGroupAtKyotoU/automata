@@ -69,6 +69,9 @@ var Record = React.createClass({
     },
 
     queryUsers: function() {
+        var lastUpdate = this.lastUpdate;
+        if (this.prevReturned) this.lastUpdate = new Date().getTime();
+        this.prevReturned = false;
         api.get({
             api: 'user',
             data: {
@@ -76,11 +79,10 @@ var Record = React.createClass({
                 status: 'record',
                 log: true,
                 assigned: true,
-                last: this.lastUpdate - this.offsetTime
+                last: lastUpdate - this.offsetTime
             }
         }).done(function(users) {
-            this.lastUpdate = new Date().getTime();
-
+            this.prevReturned = true;
             if (users.length > 0) {
                 var users = this.state.users.map(function(user) {
                     var update = _.find(users, 'token', user.token);
@@ -101,6 +103,7 @@ var Record = React.createClass({
     },
 
     componentDidMount: function() {
+        this.lastUpdate = new Date().getTime();
         api.get(
             {
                 api: 'master',
@@ -126,6 +129,8 @@ var Record = React.createClass({
                 }
             }
         ).done(function(master, scheme, users) {
+            this.offsetTime = new Date().getTime() - master.time;
+            this.prevReturned = true;
             var filtered = $.cookie('default-filtered');
             if (typeof filtered === 'undefined' || filtered === 'true') {
                 filtered = true;
@@ -156,8 +161,6 @@ var Record = React.createClass({
                 return user.token;
             }));
             if (master.reload > 0) {
-                this.lastUpdate = new Date().getTime();
-                this.offsetTime = this.lastUpdate - master.time;
                 setInterval(this.queryUsers, master.reload);
             }
         }.bind(this));
