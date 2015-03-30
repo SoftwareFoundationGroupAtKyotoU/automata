@@ -52,11 +52,16 @@ module.exports = React.createClass({
     },
 
     submitComment: function() {
+        var aclUser = _.has(this.refs, 'aclUser') ?
+                      this.refs.aclUser.getDOMNode().checked :
+                      true;
+        var aclOther = _.has(this.refs, 'aclOther') ?
+                       this.refs.aclOther.getDOMNode().checked :
+                       false;
         var data = {
             user: [this.props.token],
             report: this.props.report,
-            acl:  formAclArgument(this.refs.aclUser.getDOMNode().checked,
-                                  this.refs.aclOther.getDOMNode().checked),
+            acl:  formAclArgument(aclUser, aclOther),
             message: this.state.text
         }
         if (_.isUndefined(this.props.comment_id)) {
