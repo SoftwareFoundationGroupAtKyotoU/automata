@@ -58,13 +58,13 @@ module.exports = React.createClass({
                 timeout: 300 * 1000
             })
         ).done(function(users, comments) {
-            if (this.isMounted) this.setState({ request: 'done' });
+            if (this.isMounted()) this.setState({ request: 'done' });
             this.updateUsers(users[0]);
             this.updateComments(comments[0]);
         }.bind(this)).fail(function() {
-            if (this.isMounted) this.setState({ request: 'failed' });
+            if (this.isMounted()) this.setState({ request: 'failed' });
         }.bind(this)).always(function() {
-            if (this.isMounted && this.props.interval > 0) {
+            if (this.isMounted() && this.props.interval > 0) {
                 setTimeout(this.reload, this.props.interval);
             }
         }.bind(this));

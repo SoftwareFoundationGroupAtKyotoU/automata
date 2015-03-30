@@ -42,12 +42,12 @@ var Record = React.createClass({
     queryComments: function(tokens) {
         api.get({ api: 'comment', data: { action: 'list_news', user: tokens } })
            .done(function(comments) {
-               if (this.isMounted) this.setState({ comments: comments });
+               if (this.isMounted()) this.setState({ comments: comments });
            }.bind(this));
     },
 
     setComments: function(comments) {
-        if (this.isMounted) {
+        if (this.isMounted()) {
             this.setState({
                 comments: comments
             })
@@ -55,7 +55,7 @@ var Record = React.createClass({
     },
 
     setUsers: function(users) {
-        if (this.isMounted) {
+        if (this.isMounted()) {
             this.setState({
                 users: users
             })
