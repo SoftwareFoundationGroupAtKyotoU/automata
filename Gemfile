@@ -10,6 +10,7 @@ gem 'mail'
 gem 'kwalify'
 gem 'shared-mime-info'
 gem 'haml'
+gem 'rack-rewrite'
 
 group :development, :test do
   gem 'rake'

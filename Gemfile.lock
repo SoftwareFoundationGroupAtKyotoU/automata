@@ -17,6 +17,7 @@ GEM
       nokogiri
     power_assert (0.2.3)
     rack (1.6.0)
+    rack-rewrite (1.5.1)
     rack-test (0.6.3)
       rack (>= 1.0)
     rake (10.4.2)
@@ -42,6 +43,7 @@ DEPENDENCIES
   kwalify
   mail
   rack
+  rack-rewrite
   rack-test
   rake
   rr
