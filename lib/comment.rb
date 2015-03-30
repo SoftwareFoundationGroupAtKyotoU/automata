@@ -112,8 +112,23 @@ class Comment
     raise PermissionDenied unless @group == :super || @group == :user
 
     db_read.transaction do |r|
-      max = r[@user] || 0
-      r[@user] = id if max < id
+      r[@user] = {} if r[@user].nil?
+      db_index.ro.transaction do |db|
+        entries = db[:entries] || []
+        entries.each do |e|
+          is_read = (e['id'] <= id)
+          r[@user][e['id']] = is_read
+        end
+      end
+    end
+  end
+
+  def unread(id)
+    raise PermissionDenied unless @group == :super || @group == :user
+
+    db_read.transaction do |r|
+      is_read = false
+      r[@user][id] = is_read
     end
   end
 
@@ -121,11 +136,10 @@ class Comment
     raise PermissionDenied unless @group == :super || @group == :user
 
     db_read.ro.transaction do |r|
-      max = r[@user] || 0
       db_index.ro.transaction do |db|
         entries = filter_forbidden(db[:entries] || [])
         return {
-          'unreads'  => entries.count { |e| e['id'] > max },
+          'unreads'  => entries.count { |e| !r[@user][e['id']] },
           'comments' => entries.size
         }
       end

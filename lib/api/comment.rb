@@ -24,6 +24,8 @@ module API
   #           コメントを削除
   #   read    id=<comment-id>
   #           コメントを既読にする
+  #   unread  id=<comment-id>
+  #           コメントを未読にする
   #   news
   #           未読コメント情報を取得
   #   list_news
@@ -158,6 +160,13 @@ module API
           return helper.bad_request unless id
 
           comments[0][:comment].read(id)
+
+          return helper.ok('done')
+        when 'unread'
+          id = convert(helper.params['id'], &:to_i)
+          return helper.bad_request unless id
+
+          comments[0][:comment].unread(id)
 
           return helper.ok('done')
         when 'news'
