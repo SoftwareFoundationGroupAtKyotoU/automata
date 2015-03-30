@@ -23,18 +23,18 @@ class Helper
   end
 
   def json_response(message)
-    Response.new([json(message)], 200, header)
+    Response.new([json(message)], 200, json_header)
   end
 
-  def header
+  def json_header
     {
       'Content-Type' => @callback ? 'text/javascript' : 'application/json',
       'charset' => 'utf-8'
     }
   end
 
-  def ok(message = nil)
-    response(200, message)
+  def ok(message = nil, header = {})
+    response(200, message, header)
   end
 
   def bad_request(message = nil)
@@ -91,7 +91,7 @@ class Helper
     return data
   end
 
-  def response(status, message = nil)
-    Response.new(message ? [message] : [], status)
+  def response(status, message = nil, header = {})
+    Response.new(message ? [message] : [], status, header)
   end
 end
