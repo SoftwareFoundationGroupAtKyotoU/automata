@@ -91,7 +91,7 @@ module.exports = React.createClass({
         if (this.props.isSelected) {
             props.className += ' selected';
         }
-        if (this.props.isButton) {
+        if (!this.props.isSelected && this.props.isButton) {
             var transTo = function() {
                 this.transitionTo('user', {
                     token: this.props.user.token,
@@ -119,6 +119,8 @@ module.exports = React.createClass({
                     {opts}
                     </select>
             );
+        } else if (this.props.isSelected) {
+            content = this.status_map[status];
         } else {
             content = (
                     <Link to="user" params={{
