@@ -185,7 +185,8 @@ var Record = React.createClass({
                 <RouteHandler admin={this.state.admin}
                               scheme={this.state.scheme}
                               users={users}
-                              updateStatus={this.updateStatus}/>
+                              updateStatus={this.updateStatus}
+                              loginUser={this.state.user}/>
             </div>
         );
     }

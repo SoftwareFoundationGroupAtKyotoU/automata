@@ -48,7 +48,8 @@ var User = React.createClass({
                 <RouteHandler key={token + report + this.state.counter}
                               token={token}
                               report={report}
-                              admin={this.props.admin}/>
+                              admin={this.props.admin}
+                              loginUser={this.props.loginUser}/>
                 </div>
                 <NavButton name={user.name}/>
                 </div>
