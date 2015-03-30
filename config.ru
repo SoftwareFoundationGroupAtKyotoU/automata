@@ -3,28 +3,31 @@ require 'bundler/setup'
 require 'rack/rewrite'
 
 $LOAD_PATH << '.'
-require 'lib/conf.rb'
-require 'lib/api/admin_log.rb'
-require 'lib/api/admin_runtest.rb'
-require 'lib/api/admin_solved.rb'
-require 'lib/api/admin_user.rb'
-require 'lib/api/browse.rb'
-require 'lib/api/comment.rb'
-require 'lib/api/master.rb'
-require 'lib/api/post.rb'
-require 'lib/api/scheme.rb'
-require 'lib/api/template.rb'
-require 'lib/api/test_result.rb'
-require 'lib/api/user.rb'
-require 'lib/account/reset.rb'
-require 'lib/account/register.rb'
+require 'lib/conf'
+require 'lib/api/admin_log'
+require 'lib/api/admin_runtest'
+require 'lib/api/admin_solved'
+require 'lib/api/admin_user'
+require 'lib/api/browse'
+require 'lib/api/comment'
+require 'lib/api/master'
+require 'lib/api/post'
+require 'lib/api/scheme'
+require 'lib/api/template'
+require 'lib/api/test_result'
+require 'lib/api/user'
+require 'lib/account/reset'
+require 'lib/account/register'
 require 'authenticator'
 require 'router'
 
 use Rack::CommonLogger
-use Rack::ShowExceptions
-use Rack::Lint
-use Rack::Reloader, 10
+
+if ENV['RACK_ENV'] == 'development'
+  use Rack::Lint
+  use Rack::ShowExceptions
+  use Rack::Reloader, 10
+end
 
 use Authenticator
 
@@ -47,7 +50,7 @@ use Rack::Rewrite do
   rewrite %r{/browse/([^/]+)/([^/]+)/(.+)},
           '/api/browse.cgi?user=$1&report=$2$3',
           if: proc { |env| env['QUERY_STRING'] =~ /(?:^|&)path=/ }
-  # path is included not as a query parameter
+  # path is included in uri but not as a query parameter
   rewrite %r{/browse/([^/]+)/([^/]+)/(.+)},
           '/api/browse.cgi?user=$1&report=$2&path=$3',
           if: proc { |env| env['QUERY_STRING'] !~ /(?:^|&)path=/ }
