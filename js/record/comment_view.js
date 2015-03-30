@@ -234,17 +234,7 @@ var CommentView = React.createClass({
         })
     },
 
-    getInitialState: function() {
-        return {
-            comments: []
-        }
-    },
-
-    componentDidMount: function() {
-        this.rerender();
-    },
-
-    rerender: function() {
+    refleshComments: function() {
         api.get({
             api: 'comment',
             data: {
@@ -253,14 +243,43 @@ var CommentView = React.createClass({
                 action: 'get'
             }
         }).done(function(result) {
+            var last_id;
+            result.forEach(function(comment) { last_id = comment.id; });
+            if (!_.isUndefined(last_id)) {
+                api.post({
+                    api: 'comment',
+                    data: {
+                        user: [this.props.token],
+                        report: this.props.report,
+                        action: 'read',
+                        id: last_id
+                    }
+                }).done(function() {
+                    this.state.comments.forEach(function(comment) {
+                        if (comment.id <= last_id) comment.readFlag = true;
+                    });
+                    if (this.isMounted()) {
+                        this.setState({ comments: this.state.comments });
+                    }
+                }.bind(this));
+            }
+
             this.setState({ comments: result });
         }.bind(this));
     },
 
+    getInitialState: function() {
+        return {
+            comments: []
+        }
+    },
+
+    componentDidMount: function() {
+        this.refleshComments();
+    },
+
     render: function() {
-        var last_id;
         var comments = this.state.comments.map(function(comment) {
-            last_id = comment.id;
             return (
                 <Comment comment={comment} admin={this.props.admin}
                          token={this.props.token} report={this.props.report}
@@ -272,19 +291,7 @@ var CommentView = React.createClass({
                          loginUser={this.props.loginUser}/>
             );
         }.bind(this));
-        if (!(typeof last_id === "undefined")) {
-            api.post({
-                api: 'comment',
-                data: {
-                    user: [this.props.token],
-                    report: this.props.report,
-                    action: 'read',
-                    id: last_id
-                }
-            }).always(function() {
-                // TODO: rerender unread marks
-            }.bind(this));
-        }
+
         return (
             <div>
                 <div className="status_view">
@@ -294,7 +301,7 @@ var CommentView = React.createClass({
                             <CommentForm admin={this.props.admin}
                                          token={this.props.token}
                                          report={this.props.report}
-                                         afterSubmit={this.rerender} />
+                                         afterSubmit={this.refleshComments} />
                         </li>
                     </ul>
                 </div>
