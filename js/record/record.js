@@ -1,5 +1,5 @@
+var _ = require('lodash');
 var React = require('react');
-window.React = React;
 var Router = require('react-router');
 var DefaultRoute = Router.DefaultRoute;
 var Link = Router.Link;
@@ -13,6 +13,7 @@ var ui = require('../ui2');
 var DetailList = require('./detail_list.js');
 var SummaryList = require('./summary_list.js');
 var UserRoute = require('./user.js');
+var AutoReload = require('./auto_reload.js');
 
 var Record = React.createClass({
     mixins: [
@@ -27,11 +28,65 @@ var Record = React.createClass({
         });
     },
 
+    updateStatus: function(token, report, status) {
+        this.setState({
+            users: this.state.users.map(function(user) {
+                if (user.token === token) {
+                    user.report[report].status = status;
+                }
+                return user;
+            })
+        });
+    },
+
+    queryComments: function(tokens) {
+        api.get({ api: 'comment', data: { action: 'list_news', user: tokens } })
+           .done(function(comments) {
+               if (this.isMounted) this.setState({ comments: comments });
+           }.bind(this));
+    },
+
+    setComments: function(comments) {
+        if (this.isMounted) {
+            this.setState({
+                comments: comments
+            })
+        }
+    },
+
+    setUsers: function(users) {
+        if (this.isMounted) {
+            this.setState({
+                users: users
+            })
+        }
+    },
+
     componentDidMount: function() {
         api.get(
-            { api: 'master',   data: { admin: true, token: true } },
-            { api: 'scheme',   data: { record: true } }
-        ).done(function(master, scheme) {
+            {
+                api: 'master',
+                data: {
+                    user: true,
+                    admin: true,
+                    token: true,
+                    reload: true
+                }
+            },
+            {
+                api: 'scheme',
+                data: { record: true }
+            },
+            {
+                api: 'user',
+                data: {
+                    type: 'status',
+                    status: 'record',
+                    log: true,
+                    assigned: true
+                }
+            }
+        ).done(function(master, scheme, users) {
             var filtered = $.cookie('default-filtered');
             if (typeof filtered === 'undefined' || filtered === 'true') {
                 filtered = true;
@@ -39,11 +94,19 @@ var Record = React.createClass({
                 filtered = false;
             }
             $.cookie('default-filtered', filtered);
-            this.setState({
-                admin: master.admin,
-                scheme: scheme,
-                filtered: filtered
-            });
+            if (this.isMounted()) {
+                this.setState({
+                    user: master.user,
+                    token: master.token,
+                    admin: master.admin,
+                    reload: master.reload,
+                    scheme: scheme,
+                    users: users,
+                    comments: {},
+                    filtered: filtered
+                });
+            }
+            this.queryComments(users.map(_.partial(_.result, _, 'token')));
             if (!master.admin && this.getPath() === '/') {
                 var report = $.cookie('default-report');
                 if (!report) report = scheme[0].id;
@@ -80,19 +143,50 @@ var Record = React.createClass({
                 );
             }
         }
-        return (<div>
+
+        var users = _.filter(this.state.users, function(user) {
+            return !this.state.admin
+                || !this.state.filtered
+                || user.token === this.state.token
+                || user.assigned === this.state.user;
+        }.bind(this));
+
+        Object.keys(this.state.comments).map(function(report_id) {
+            var comments = this.state.comments[report_id];
+            Object.keys(comments).map(function(key) {
+                var user = _.find(users, function(user) {
+                    return user.token === key;
+                });
+                if (typeof user === 'undefined') return;
+                ['report', report_id, 'comment'].reduce(function(r, k) {
+                    if (typeof r[k] === 'undefined') r[k] = {};
+                    return r[k]
+                }, user);
+                user.report[report_id].comment = comments[key];
+            });
+        }, this);
+
+        return (
+            <div>
                 <div id="view_switch">
-                表示:<ul>
-                {filter}
-                <li><Link to="detail" id="sw_view_report">課題ごと</Link></li>
-                <li><Link to="summary" id="sw_view_summary">一覧</Link></li>
-                </ul>
+                    表示:<ul>
+                        <li>
+                            <AutoReload interval={this.state.reload}
+                                        comments={this.state.comments}
+                                        users={this.state.users}
+                                        setComments={this.setComments}
+                                        setUsers={this.setUsers}/>
+                        </li>
+                        {filter}
+                        <li><Link to="detail" id="sw_view_report">課題ごと</Link></li>
+                        <li><Link to="summary" id="sw_view_summary">一覧</Link></li>
+                    </ul>
                 </div>
-                <RouteHandler key={this.state.filtered}
-                              admin={this.state.admin}
+                <RouteHandler admin={this.state.admin}
                               scheme={this.state.scheme}
-                              filtered={this.state.filtered && this.state.admin}/>
-                </div>
+                              users={users}
+                              updateStatus={this.updateStatus}/>
+            </div>
         );
     }
 });

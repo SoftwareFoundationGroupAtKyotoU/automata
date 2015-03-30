@@ -1,5 +1,4 @@
 var React = require('react');
-window.React = React;
 var Router = require('react-router');
 var Link = Router.Link;
 var api = require('../api');

@@ -1,7 +1,6 @@
+var _ = require('lodash');
 var React = require('react');
-window.React = React;
 var Router = require('react-router');
-var api = require('../api');
 
 var StatusCell = require('./status_cell.js');
 
@@ -43,60 +42,6 @@ var OptionalCell = React.createClass({
 var ReportList = React.createClass({
     mixins: [Router.Navigation],
 
-    updateStatus: function(token, report, status) {
-        this.setState({
-            users: this.state.users.map(function(user) {
-                if (user.token === token) {
-                    user.report[report].status = status;
-                }
-                return user;
-            })
-        });
-    },
-
-    componentDidMount: function() {
-        var data = {
-            type: 'status',
-            report: this.props.scheme.id,
-            status: 'record',
-            log: true
-        };
-        if (this.props.filtered) data.filter = true;
-        api.get({
-            api: 'user',
-            data: data
-        }).done(function(users) {
-            this.setState({
-                users: users,
-            });
-            if (users.length === 0) return;
-
-            var tokens = users.map(function(user) { return user.token; });
-            api.get({
-                api: 'comment',
-                data: {
-                    action: 'list_news',
-                    report: this.props.scheme.id,
-                    user: tokens
-                }
-            }).done(function(comments) {
-                Object.keys(comments).map(function(key) {
-                    var user = users.filter(function(user) {
-                        return user.token === key;
-                    })[0];
-                    ['report', this.props.scheme.id, 'comment'].reduce(function(r, k) {
-                        if (!r[k]) r[k] = {};
-                        return r[k];
-                    }, user);
-                    user['report'][this.props.scheme.id]['comment'] = comments[key];
-                }, this);
-                this.setState({
-                    users: users
-                });
-            }.bind(this));
-        }.bind(this));
-    },
-
     render: function() {
         var ths = this.props.scheme.record.map(function(r) {
             return (
@@ -104,12 +49,12 @@ var ReportList = React.createClass({
             );
         });
         var users;
-        if (this.state && this.state.users.length > 0) {
-            users = this.state.users.map(function(user) {
+        if (this.props.users.length > 0) {
+            users = this.props.users.map(function(user) {
                 var tds = this.props.scheme.record.map(function(r) {
                     if (r.field === 'name') {
                         var unreads = ['report', this.props.scheme.id, 'comment', 'unreads'].reduce(function(r, k) {
-                            if (!r[k]) r[k] = {};
+                            if (!_.has(r, k)) r[k] = {};
                             return r[k];
                         }, user);
                         if (unreads > 0) {
@@ -117,7 +62,7 @@ var ReportList = React.createClass({
                         }
                         return (<td className="name">{unreads}{user.name}</td>);
                     } else if (r.field === 'status') {
-                        return (<StatusCell user={user} report={this.props.scheme.id} admin={this.props.admin} updateStatus={this.updateStatus}/>);
+                        return (<StatusCell user={user} report={this.props.scheme.id} admin={this.props.admin} updateStatus={this.props.updateStatus}/>);
                     } else if (/^optional/.test(r.field)) {
                         var answered = ['report', this.props.scheme.id, 'optional'].reduce(function(r, k) {
                             if (typeof r[k] === 'undefined') r[k] = {};
@@ -163,14 +108,10 @@ var ReportList = React.createClass({
             }.bind(this));
 
         // There are no users to show
-        } else if (this.state) {
+        } else {
             users = <tr><td colSpan={ths.length}>
                         表示すべきユーザーはいません
                     </td></tr>;
-        } else {
-            users = (
-                    <tr><td colSpan={ths.length}><img src="../image/loading.gif"/></td></tr>
-            );
         }
         return (
                 <table className="record">
@@ -189,7 +130,10 @@ var DetailList = React.createClass({
     render: function() {
         var reports = this.props.scheme.map(function(s) {
             return (
-                    <ReportList scheme={s} admin={this.props.admin} filtered={this.props.filtered}/>
+                    <ReportList scheme={s}
+                                admin={this.props.admin}
+                                updateStatus={this.props.updateStatus}
+                                users={this.props.users}/>
             );
         }.bind(this));
         return (

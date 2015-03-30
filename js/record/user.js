@@ -1,12 +1,11 @@
+var _ = require('lodash');
 var React = require('react');
-window.React = React;
 var Router = require('react-router');
 var Route = Router.Route;
 var DefaultRoute = Router.DefaultRoute;
 var RouteHandler = Router.RouteHandler;
 var $ = require('jquery');
 require('jquery.cookie');
-var api = require('../api');
 
 var LogView = require('./log_view.js');
 var SummaryList = require('./summary_list.js');
@@ -29,39 +28,29 @@ var User = React.createClass({
         };
     },
 
-    componentDidMount: function() {
-        api.get({
-            api: 'user',
-            data: {
-                type: 'status',
-                user: this.getParams().token
-            }
-        }).done(function(users) {
-            this.setState({
-                users: users
-            });
-        }.bind(this));
-    },
-
     render: function() {
         var token = this.getParams().token;
         var report = this.getParams().report;
         $.cookie('default-report', report);
 
-        if (!this.state.users) return (<img src="../image/loading.gif"/>);
-
+        var user = _.find(this.props.users, function(user) {
+            return user.token === token
+        });
         return (
                 <div>
-                <SummaryList token={token}
-                             report={report}
+                <SummaryList report={report}
                              admin={this.props.admin}
                              scheme={this.props.scheme}
-                             users={this.state.users}/>
+                             users={[user]}
+                             updateStatus={this.props.updateStatus}/>
                 <div className="status_window">
                 <StatusHeader reload={this.reloadView}/>
-                <RouteHandler token={token} report={report} admin={this.props.admin} key={token + report + this.state.counter}/>
+                <RouteHandler key={token + report + this.state.counter}
+                              token={token}
+                              report={report}
+                              admin={this.props.admin}/>
                 </div>
-                <NavButton name={this.state.users[0].name}/>
+                <NavButton name={user.name}/>
                 </div>
         );
     }

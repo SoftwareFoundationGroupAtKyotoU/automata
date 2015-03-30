@@ -1,7 +1,6 @@
 var sum_rep = "summary-report2";
 
 var React = require('react');
-window.React = React;
 var Router = require('react-router');
 var DefaultRoute = Router.DefaultRoute;
 var Link = Router.Link;
