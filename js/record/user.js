@@ -49,7 +49,8 @@ var User = React.createClass({
                               token={token}
                               report={report}
                               admin={this.props.admin}
-                              loginUser={this.props.loginUser}/>
+                              loginUser={this.props.loginUser}
+                              updateNews={_.partial(this.props.updateNews, token, report)}/>
                 </div>
                 <NavButton name={user.name}/>
                 </div>
