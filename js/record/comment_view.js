@@ -263,8 +263,7 @@ var Comment = React.createClass({
         }
 
         var editButtons;
-        // TODO: "this.comment.user_token"的なのが欲しい．
-        if (this.props.admin || this.props.token == "dummy" ) {
+        if (this.props.admin || this.props.comment.user === this.props.loginUser) {
             editButtons = (
                 <p className="edit">
                     <a title="未読にする" onClick={this.onUnread}>🙈</a>
@@ -432,7 +431,8 @@ var CommentView = React.createClass({
                 <Comment comment={comment} admin={this.props.admin}
                          token={this.props.token} report={this.props.report}
                          acl={comment.acl} rerender={this.rerender}
-                         key={comment.id}/>
+                         key={comment.id}
+                         loginUser={this.props.loginUser}/>
             );
         }.bind(this));
         if (!(typeof last_id === "undefined")) {
