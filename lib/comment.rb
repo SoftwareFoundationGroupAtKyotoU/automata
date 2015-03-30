@@ -117,7 +117,8 @@ class Comment
         entries = db[:entries] || []
         entries.each do |e|
           is_read = (e['id'] <= id)
-          r[@user][e['id']] = is_read
+          is_star = r[@user][e['id']] && r[@user][e['id']]['star']
+          r[@user][e['id']] = { "read" => is_read, "star" => is_star }
         end
       end
     end
@@ -128,7 +129,41 @@ class Comment
 
     db_read.transaction do |r|
       is_read = false
-      r[@user][id] = is_read
+      is_star = r[@user][id]['star']
+      r[@user][id] = { "read" => is_read, "star" => is_star }
+    end
+  end
+
+  def star(id)
+    raise PermissionDenied unless @group == :super || @group == :user
+
+    db_read.transaction do |r|
+      is_read = r[@user][id]['read']
+      is_star = true
+      r[@user][id] = { "read" => is_read, "star" => is_star }
+    end
+  end
+
+  def unstar(id)
+    raise PermissionDenied unless @group == :super || @group == :user
+
+    db_read.transaction do |r|
+      is_read = r[@user][id]['read']
+      is_star = false
+      r[@user][id] = { "read" => is_read, "star" => is_star }
+    end
+  end
+
+  def stars
+    raise PermissionDenied unless @group == :super || @group == :user
+
+    db_read.ro.transaction do |r|
+      db_index.ro.transaction do |db|
+        entries = filter_forbidden(db[:entries] || [])
+        return Hash[*entries.map do |e|
+                      [ e['id'], r[@user] && r[@user][e['id']] && r[@user][e['id']]['star'] == true ]
+                    end.flatten]
+      end
     end
   end
 
@@ -139,7 +174,8 @@ class Comment
       db_index.ro.transaction do |db|
         entries = filter_forbidden(db[:entries] || [])
         return {
-          'unreads'  => entries.count {|e| r[@user] && r[@user][e['id']] == false },
+          'unreads'  => entries.count {|e| r[@user] && r[@user][e['id']]['read'] == false },
+          'stars'    => entries.count {|e| r[@user] && r[@user][e['id']]['star'] == true },
           'comments' => entries.size
         }
       end

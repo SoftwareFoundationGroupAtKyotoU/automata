@@ -385,12 +385,8 @@ ul.comments > li.private {
    display: inline-block;
 }
 .comments div.meta .edit {
-   visibility: hidden;
    display: inline;
    float: right;
-}
-.comments li:hover div.meta .edit {
-   visibility: visible;
 }
 .comments div.meta .edit a {
    margin-left: 0.5em;

@@ -29,7 +29,8 @@ var Comment = React.createClass({
             commentText: '',
             aclUserFlag: this.props.acl.indexOf('user') !== -1,
             aclOtherFlag: this.props.acl.indexOf('other') !== -1,
-            loadingFlag: false
+            loadingFlag: false,
+            starFlag: this.props.comment.starFlag
         };
     },
     setMode: function(mode_text) {
@@ -53,6 +54,8 @@ var Comment = React.createClass({
 
     loadingModeStart: function()  { this.setState({ loadingFlag: true }); },
     loadingModeEnd: function()    { this.setState({ loadingFlag: false }); },
+
+    toggleStar: function()        { this.setState({ starFlag: !this.state.starFlag }) },
 
     reloadComment: function(cont) {
         this.loadingModeStart();
@@ -112,6 +115,23 @@ var Comment = React.createClass({
             }
         }).always(function() {
             //TODO: rerender unread marks
+        }.bind(this));
+    },
+
+    onStar: function() {
+        var actionName = this.state.starFlag ? 'unstar' : 'star';
+        this.toggleStar();
+
+        api.post({
+            api: 'comment',
+            data: {
+                user: [this.props.token],
+                report: this.props.report,
+                action: actionName,
+                id: this.props.comment.id
+            }
+        }).always(function() {
+            //TODO: rerender star marks
         }.bind(this));
     },
 
@@ -264,9 +284,11 @@ var Comment = React.createClass({
 
         var editButtons;
         if (this.props.admin || this.props.comment.user === this.props.loginUser) {
+            var starChar = this.state.starFlag ? "fa fa-star" : "fa fa-star-o";
             editButtons = (
                 <p className="edit">
                     <a title="未読にする" onClick={this.onUnread}>🙈</a>
+                    <a title="印を付ける" onClick={this.onStar}><i className={starChar}></i></a>
                     <a title="編集する" onClick={this.onEdit}>✏</a>
                     <a title="削除する" onClick={this.onDelete}>✖</a>
                 </p>
