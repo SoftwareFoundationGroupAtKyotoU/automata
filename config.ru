@@ -29,7 +29,10 @@ use Rack::Reloader, 10
 use Authenticator
 
 use Rack::Rewrite do
-  rewrite %r{^/([a-zA-Z]+)$}, '/$1/index.html'
+  r301 %r{^/([a-zA-Z]+)$}, '/$1/'
+end
+
+use Rack::Rewrite do
   rewrite %r{(.*)/$}, '$1/index.html'
 end
 
