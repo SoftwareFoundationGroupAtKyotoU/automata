@@ -28,17 +28,21 @@ module.exports = React.createClass({
                 token: this.getParams().token,
                 report: this.getParams().report
             };
+            var name = tab.name;
+            if (tab.path === 'comment' && this.props.comments > 0) {
+                name += '(' + this.props.comments + ')';
+            }
             if (tab.path === tabName) {
                 return (
                         <li className={className + ' selected'} key={tab.path}>
                         <Link to={tab.path} params={params}
-                              onClick={this.props.reload}>{tab.name}</Link>
+                              onClick={this.props.reload}>{name}</Link>
                         </li>
                 );
             } else {
                 return (
                         <li className={className} key={tab.path}>
-                        <Link to={tab.path} params={params}>{tab.name}</Link>
+                        <Link to={tab.path} params={params}>{name}</Link>
                         </li>
                 );
             }

@@ -198,7 +198,8 @@ var Record = React.createClass({
                               users={users}
                               updateStatus={this.updateStatus}
                               loginUser={this.state.user}
-                              updateNews={this.updateNews}/>
+                              updateNews={this.updateNews}
+                              comments={this.state.comments}/>
             </div>
         );
     }
