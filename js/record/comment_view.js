@@ -8,6 +8,8 @@ var Route = Router.Route;
 var RouteHandler = Router.RouteHandler;
 var api = require('../api');
 
+var CommentForm = require('./comment_form.js');
+
 var ACL_MESSAGE_FOR_ALL      = "全員に公開";
 var ACL_MESSAGE_FOR_USER     = "提出者に公開";
 var ACL_MESSAGE_FOR_OTHER    = "提出者以外に公開";
@@ -171,20 +173,6 @@ var Comment = React.createClass({
         }
     },
 
-    onPreview: function() {
-        // from commentText to commentHTML
-        api.get({
-            api: 'comment',
-            data: {
-                action: 'preview',
-                message: this.getCommentText()
-            }
-        }).done(function(result) {
-            this.setCommentHTML(result);
-            this.previewMode();
-        }.bind(this));
-    },
-
     onCancel: function() {
         this.reloadComment(function () { this.normalMode(); }.bind(this));
     },
@@ -323,102 +311,6 @@ var Comment = React.createClass({
                 </li>
             );
         }
-    }
-});
-
-var CommentForm = React.createClass({
-    getInitialState: function() {
-        return {
-            isPreview: false,
-            textValue: "",
-            aclUserFlag: true,
-            aclOtherFlag: false
-        };
-    },
-    setIsPreview: function(b)   { this.setState({isPreview: b}); },
-    getIsPreview: function()    { return this.state.isPreview; },
-    setTextValue: function(txt) { this.setState({ textValue: txt }); },
-    getTextValue: function()    { return this.state.textValue; },
-    resetValue: function()      { this.setTextValue('');
-                                  this.setIsPreview(false); },
-
-    onCheckAclUser: function(event) {
-        this.setState({aclUserFlag: !this.state.aclUserFlag });
-    },
-    onCheckAclOther: function(event) {
-        this.setState({ aclOtherFlag: !this.state.aclOtherFlag });
-    },
-
-    onPreview: function(event) {
-        this.setIsPreview(!this.getIsPreview());
-    },
-    handleChange: function(event) {
-        this.setTextValue(event.target.value);
-    },
-
-    onComment: function(event) {
-        api.post({
-            api: 'comment',
-            data: {
-                user: [this.props.token],
-                report: this.props.report,
-                action: 'post',
-                acl:  formAclArgument(this.state.aclUserFlag,
-                                      this.state.aclOtherFlag),
-                message: this.getTextValue()
-            }
-        }).always(function() {
-            this.props.rerender();
-            this.resetValue();
-        }.bind(this));
-    },
-
-    render: function() {
-        var preview_reedit_text = this.getIsPreview()?"再編集":"プレビュー";
-        var comment_area;
-        if (!this.getIsPreview()) {
-            comment_area = (
-                <textarea rows="6" value={this.getTextValue()}
-                          onChange={this.handleChange} />
-            );
-        } else {
-            comment_area = (
-                <div className="preview messsage">
-                    <p>{this.getTextValue()}</p>
-                </div>
-            );
-        }
-        var checkBox;
-        if (this.props.admin) {
-            checkBox = (
-                <span>
-                    <input id="summary-report2_comment_acl_user"
-                           type="checkbox" name="user"
-                           checked={this.state.aclUserFlag}
-                           onClick={this.onCheckAclUser} />
-                    <label htmlFor="summary-report2_comment_acl_user">
-                        {ACL_MESSAGE_FOR_USER}
-                    </label>
-                    <input id="summary-report2_comment_acl_other"
-                           type="checkbox" name="other"
-                           checked={this.state.aclOtherFlag}
-                           onClick={this.onCheckAclOther} />
-                    <label htmlFor="summary-report2_comment_acl_other">
-                        {ACL_MESSAGE_FOR_OTHER}
-                    </label>
-                </span>
-            );
-        }
-        return (
-            <div className="form">
-                {comment_area}
-                <input type="submit" onClick={this.onComment}
-                       value="コメントする"/>
-                <input type="button" onClick={this.onPreview}
-                       value={preview_reedit_text} />
-                {checkBox}
-            </div>
-        );
     }
 });
 
