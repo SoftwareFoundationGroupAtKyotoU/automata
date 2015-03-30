@@ -53,12 +53,11 @@ var ReportList = React.createClass({
             users = this.props.users.map(function(user) {
                 var tds = this.props.scheme.record.map(function(r) {
                     if (r.field === 'name') {
-                        var unreads = ['report', this.props.scheme.id, 'comment', 'unreads'].reduce(function(r, k) {
-                            if (!_.has(r, k)) r[k] = {};
-                            return r[k];
-                        }, user);
+                        var unreads = ['report', this.props.scheme.id, 'comment', 'unreads'].reduce(_.ary(_.result, 2), user);
                         if (unreads > 0) {
                             unreads = (<div className="unread">{unreads}</div>);
+                        } else {
+                            unreads = null
                         }
                         return (<td className="name">{unreads}{user.name}</td>);
                     } else if (r.field === 'status') {
