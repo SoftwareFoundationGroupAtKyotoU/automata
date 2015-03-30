@@ -52,18 +52,21 @@ module.exports = React.createClass({
     },
 
     submitComment: function() {
-        api.post({
-            api: 'comment',
-            data: {
-                user: [this.props.token],
-                report: this.props.report,
-                action: 'post',
-                acl:  formAclArgument(this.refs.aclUser.getDOMNode().value,
-                                      this.refs.aclOther.getDOMNode().value),
-                message: this.state.text
-            }
-        }).done(function() {
-            this.props.rerender();
+        var data = {
+            user: [this.props.token],
+            report: this.props.report,
+            acl:  formAclArgument(this.refs.aclUser.getDOMNode().checked,
+                                  this.refs.aclOther.getDOMNode().checked),
+            message: this.state.text
+        }
+        if (_.isUndefined(this.props.comment_id)) {
+            data.action = 'post';
+        } else {
+            data.action = 'edit';
+            data.id = this.props.comment_id;
+        }
+        api.post({ api: 'comment', data: data }).done(function() {
+            this.props.afterSubmit();
             if (this.isMounted()) {
                 this.setState({
                     mode: 'editing',
