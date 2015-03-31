@@ -114,7 +114,7 @@ module API
           i.close
           o.read
         end
-        return helper.ok(result)
+        return helper.ok(result, { 'Content-Type' => 'text/html' })
       elsif '.class' == path.extname && 'highlight' == helper.params['type']
         # return html including applet tag when .class file is selected
 

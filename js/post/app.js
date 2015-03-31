@@ -169,6 +169,7 @@ $(document).ready(function() {
         api.get.apply(null, params).done(function() {
             var res = _.toArray(arguments);
             var user = res.shift()[0] || {};
+            res = _.take(res, scheme.length);
 
             res.forEach(function (r) {
                 var rep = reports[r[0].id];

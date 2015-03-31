@@ -1,4 +1,7 @@
+var _ = require('lodash');
 var React = require('react');
+var Router = require('react-router');
+var Link = Router.Link;
 var $ = require('jquery');
 var api = require('../api');
 var CopyToClipboard = require('./copy_to_clipboard.js');
@@ -15,29 +18,26 @@ var FileEntry = (function() {
     };
 
     return React.createClass({
-        onclick: function (e) {
-
-            var p = this.props;
-            if (p.entry.type === 'bin' && p.entry.name.indexOf('.class') < 0) return;
-
-            e.preventDefault();
-
-            p.open(p.path+'/'+p.entry.name, p.entry.type);
-        },
-
         render: function() {
             var p = this.props;
             var entry = p.entry;
             var uri = FileView.rawPath(p.token, p.report, p.path+'/'+p.entry.name);
-            var onclick = this.onclick;
             var suffix = entry.type === 'dir' ? '/' : '';
 
+            var params = {
+                token: p.token,
+                report: p.report,
+                splat: p.path + '/' + p.entry.name
+            };
+            var link = (entry.type === 'bin')
+                ? (<a href={uri}>{entry.name + suffix}</a>)
+                : (<Link to="file-pathParam" params={params}>{entry.name + suffix}</Link>);
             return (
                 <tr>
                     <td className="file">
                         <img className="icon"
                              src={"./" + entry.type + ".png"} />
-                        <a href={uri} onClick={onclick}>{entry.name + suffix}</a>
+                        {link}
                     </td>
                     <td className="size">{humanReadableSize(entry.size)}</td>
                     <td className="time">{entry.time}</td>
@@ -86,12 +86,12 @@ var Breadcrum = (function() {
             var items = list.map(function(loc) {
                 if (loc.name == '.') loc.name = p.report;
 
-                var onclick = function(e) {
-                    e.preventDefault();
-                    p.open(loc.path, loc.type);
+                var params = {
+                    token: p.token,
+                    report: p.report,
+                    splat: loc.path
                 };
-                var uri = self.rawPath(loc.path);
-                return <li><a href={uri} onClick={onclick}>{loc.name}</a></li>;
+                return <li><Link to={'file-pathParam'} params={params}>{loc.name}</Link></li>;
             });
 
             return (<ul id={"summary-" + p.report + "_status_toolbar"}
@@ -116,7 +116,6 @@ var FileBrowser = React.createClass({
                                token={p.token}
                                report={p.report}
                                parent={self}
-                               open={p.open}
                     />);
         });
 
@@ -198,70 +197,73 @@ var FileView = (function() {
     };
 
     return React.createClass({
-        browseAPI: function(path, type, success, error) {
-            api.get({
-                api: 'browse',
-                data: {
-                    user:   this.props.token,
-                    report: this.props.report,
-                    path:   path,
-                    type:   type,
+        mixins: [Router.State],
+
+        open: function(path) {
+            var data = _.chain({
+                user: this.props.token,
+                report: this.props.report,
+                path: path
+            });
+            api.get(
+                { api: 'browse', data: data.clone().assign({ type: 'highlight' }).value() },
+                { api: 'browse', data: data.clone().assign({ type: 'raw' }).value() }
+            ).done(function() {
+                var args = _.toArray(arguments);
+                var newState = {
+                    path: path,
+                    rawContent: args[1]
                 }
-            }).done(function(res) { success(res); }).
-               fail(error);
-        },
-
-        open: function(path, type) {
-            if (type === 'bin' && path.indexOf('.class') < 0) return;
-
-            if (type !== 'dir') {
-                this.browseAPI(path, 'raw', function(res) {
-                    var rawContent = res;
-                    this.setState({
-                        rawContent: rawContent
-                    });
-                }.bind(this));
-            }
-
-            this.browseAPI(path, 'highlight', function(res) {
-                if (type === 'dir') {
-                    this.setState({
-                        path: path,
-                        type: 'dir',
-                        entries: res
-                    });
-                } else {
-                    var div = $('<div />')[0];
-                    var content = res.replace(/<pre>\n/, '<pre>');
-                    div.innerHTML = content;
-                    var pre = div.getElementsByTagName('pre')[0];
-                    if (content.charAt(content.length-1) != "\n") {
-                        content += "\n";
-                    }
-                    applyStyleFromSource(res);
-
-                    this.setState({
-                        path: path,
-                        type: type,
-                        content: pre.innerHTML+''
-                    });
+                switch (args[4].getResponseHeader('content-type')) {
+                    case 'application/json':
+                        _.assign(newState, {
+                            type: 'dir',
+                            entries: args[0]
+                        });
+                        break;
+                    case 'text/html':
+                        var div = $('<div />')[0];
+                        var content = args[0].replace('<pre>\n', '<pre>');
+                        div.innerHTML = content;
+                        var pre = div.getElementsByTagName('pre')[0];
+                        if (content.charAt(content.length-1) != "\n") {
+                            content += "\n";
+                        }
+                        applyStyleFromSource(args[0]);
+                        _.assign(newState, {
+                            type: 'highlight',
+                            content: pre.innerHTML+''
+                        });
+                        break;
+                    default:
+                        _.assign(newState, {
+                            error: true
+                        });
+                        break;
                 }
-            }.bind(this), function() {
+                this.setState(newState);
+            }.bind(this)).fail(function() {
                 this.setState({
                     path:  path,
-                    type:  type,
                     error: true
                 });
             }.bind(this));
         },
 
         getInitialState: function() {
-            this.open('.', 'dir');
             return {
                 path: '.',
                 type: 'dir',
                 entries: []
             };
+        },
+
+        componentDidMount: function() {
+            this.open(_.result(this.getParams(), 'splat', '.'));
+        },
+
+        componentWillReceiveProps: function() {
+            this.open(_.result(this.getParams(), 'splat', '.'));
         },
 
         render: function() {
@@ -274,7 +276,6 @@ var FileView = (function() {
                                   report={p.report}
                                   path={s.path}
                                   type={s.type}
-                                  open={open}
                                   rawContent={s.rawContent}/>;
             }.bind(this);
 
@@ -288,8 +289,7 @@ var FileView = (function() {
                   <FileBrowser token={p.token}
                                report={p.report}
                                path={s.path}
-                               entries={s.entries}
-                               open={open} /> ] :
+                               entries={s.entries}/> ] :
                 <FileViewer  content={s.content} />;
 
             return (<div id={"summary-" + p.report + "_status_window"}

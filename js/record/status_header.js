@@ -13,7 +13,7 @@ var tabs = [
     { path: 'log',      name: 'ログ',         handler: LogView },
     { path: 'answer',   name: '解答状況',     handler: AnswerView },
     { path: 'result',   name: 'テスト結果',   handler: ResultView },
-    { path: 'file',     name: 'ファイル一覧', handler: FileView },
+    { path: 'file',     name: 'ファイル一覧', handler: FileView,    pathParam: true },
     { path: 'comment',  name: 'コメント',     handler: CommentView },
     { path: 'interact', name: '対話',         handler: InteractView }
 ];
