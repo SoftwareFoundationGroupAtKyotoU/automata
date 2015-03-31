@@ -32,6 +32,9 @@ module.exports = React.createClass({
                 token: this.getParams().token,
                 report: this.getParams().report
             };
+            if (tab.pathParam) {
+                params.splat = '';
+            }
             var name = tab.name;
             if (tab.path === 'comment' && this.props.comments > 0) {
                 name += '(' + this.props.comments + ')';

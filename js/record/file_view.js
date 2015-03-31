@@ -21,17 +21,18 @@ var FileEntry = (function() {
         render: function() {
             var p = this.props;
             var entry = p.entry;
-            var uri = FileView.rawPath(p.token, p.report, p.path+'/'+p.entry.name);
+            var uri = FileView.rawPath(p.token, p.report, p.path+p.entry.name);
             var suffix = entry.type === 'dir' ? '/' : '';
+            var name = entry.name + suffix;
 
             var params = {
                 token: p.token,
                 report: p.report,
-                splat: p.path + '/' + p.entry.name
+                splat: p.path + name
             };
             var link = (entry.type === 'bin')
-                ? (<a href={uri}>{entry.name + suffix}</a>)
-                : (<Link to="file-pathParam" params={params}>{entry.name + suffix}</Link>);
+                ? (<a href={uri}>{name}</a>)
+                : (<Link to="file" params={params}>{name}</Link>);
             return (
                 <tr>
                     <td className="file">
@@ -63,37 +64,39 @@ var Breadcrum = (function() {
 
         render: function() {
             var p = this.props;
-            var list = descend(p.path).map(function(loc) {
-                if (loc.name === '.') loc.name = p.report;
-                return loc;
-            });
 
-            var copyButton = last.type === 'dir' ? null : (
-                <li className="toolbutton">
-                    <CopyToClipboard text={this.props.rawContent}
-                                     selector={'.file .content'}/>
-                </li>
-            );
+            var list = descend(p.path);
+            list.unshift({ name: p.report, path: '' });
 
             var self = this;
             var last = list.pop();
+            var type;
+            if (last.name === '') {
+                type = 'dir';
+                last = list.pop();
+            }
             var items = list.map(function(loc) {
                 var params = {
                     token: p.token,
                     report: p.report,
                     splat: loc.path
                 };
-                return <li><Link to={'file-pathParam'} params={params}>{loc.name}</Link></li>;
+                return <li><Link to={'file'} params={params}>{loc.name}</Link></li>;
             });
             items.push(<li>{last.name}</li>);
+            if (type === 'dir') items.push(<li/>);
 
-            var toolButton = p.type === 'dir' ? null :
+            var toolButton = type === 'dir' ? null :
                 <li className="toolbutton">
-                    <a href={this.rawPath(last.path)}>⏎ 直接開く</a>
-                    <ReactZeroClipboard text={this.props.rawContent}>
-                        <button>Copy</button>
-                    </ReactZeroClipboard>
+                    <a href={this.rawPath(p.path)}>⏎ 直接開く</a>
                 </li>;
+
+            var copyButton = type === 'dir' ? null : (
+                <li className="toolbutton">
+                    <CopyToClipboard text={this.props.rawContent}
+                                     selector={'.file .content'}/>
+                </li>
+            );
 
             return (<ul id={"summary-" + p.report + "_status_toolbar"}
                          className="status_toolbar">
@@ -246,6 +249,7 @@ var FileView = (function() {
                 this.setState(newState);
             }.bind(this)).fail(function() {
                 this.setState({
+                    path: path,
                     mode: 'error'
                 });
             }.bind(this));
@@ -257,40 +261,34 @@ var FileView = (function() {
 
         getInitialState: function() {
             return {
-                path: '.',
-                type: 'dir',
-                entries: [],
                 mode: 'loading'
             };
         },
 
         componentDidMount: function() {
-            this.open(_.result(this.getParams(), 'splat', '.'));
+            this.open(_.result(this.getParams(), 'splat', ''));
         },
 
         componentWillReceiveProps: function() {
-            this.open(_.result(this.getParams(), 'splat', '.'));
+            this.open(_.result(this.getParams(), 'splat', ''));
         },
 
         render: function() {
             var s = this.state;
             var p = this.props;
-            var open = this.open;
 
-            var toolBar = function() {
-                return <Breadcrum token={p.token}
-                                  report={p.report}
-                                  path={s.path}
-                                  type={s.type}
-                                  rawContent={s.rawContent}/>;
-            }.bind(this);
-
+            var toolBar;
             var render;
             switch (s.mode) {
                 case 'loading':
                     render = <i className="fa fa-spinner fa-pulse"/>;
                     break;
                 case 'show':
+                    toolBar = <Breadcrum token={p.token}
+                                         report={p.report}
+                                         path={s.path}
+                                         rawContent={s.rawContent}/>;
+
                     if (s.type === 'dir') {
                         render = [
                             (
@@ -311,12 +309,17 @@ var FileView = (function() {
                     }
                     break;
                 default:
+                    toolBar = <Breadcrum token={p.token}
+                                         report={p.report}
+                                         path={s.path}
+                                         rawContent={s.rawContent}/>;
+
                     render = 'なし';
             }
 
             return (<div id={"summary-" + p.report + "_status_window"}
                          style={ {display: "block"} }>
-                          <div className="status_header">{toolBar()}</div>
+                          <div className="status_header">{toolBar}</div>
                           <div id={"summary-" + p.report + "_status_view"}
                                className="status_view">
                               {render}

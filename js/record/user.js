@@ -64,21 +64,16 @@ var User = React.createClass({
     }
 });
 
-var routes = [];
-StatusHeader.tabs.forEach(function(tab) {
-    routes.push(
-        <Route name={tab.path} path={tab.path} handler={tab.handler} key={tab.path}/>
-    );
+var routes = StatusHeader.tabs.map(function(tab) {
     if (tab.pathParam) {
-        var name = tab.path + '-pathParam';
-        routes.push(
-            <Route name={name} path={tab.path + '/*'} handler={tab.handler} key={name}/>
-        );
+        return <Route name={tab.path} path={tab.path + '/*'} handler={tab.handler} key={tab.path}/>;
+    } else {
+        return <Route name={tab.path} path={tab.path + '/'} handler={tab.handler} key={tab.path}/>;
     }
 });
 
 var UserRoute = (
-        <Route name="user" path=":token/:report" handler={User}>
+        <Route name="user" path=":token/:report/" handler={User}>
         {routes}
         <DefaultRoute handler={LogView}/>
         </Route>
