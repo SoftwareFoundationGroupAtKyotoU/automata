@@ -1,7 +1,7 @@
 var React = require('react');
 var $ = require('jquery');
 var api = require('../api');
-var ReactZeroClipboard = require('react-zeroclipboard')
+var CopyToClipboard = require('./copy_to_clipboard.js');
 
 var FileEntry = (function() {
     var humanReadableSize = function(size) {
@@ -73,10 +73,14 @@ var Breadcrum = (function() {
             var toolButton = last.type === 'dir' ? null :
                 <li className="toolbutton">
                     <a href={this.rawPath(last.path)}>⏎ 直接開く</a>
-                    <ReactZeroClipboard text={this.props.rawContent}>
-                        <button>Copy</button>
-                    </ReactZeroClipboard>
                 </li>;
+
+            var copyButton = last.type === 'dir' ? null : (
+                <li className="toolbutton">
+                    <CopyToClipboard text={this.props.rawContent}
+                                     selector={'.file .content'}/>
+                </li>
+            );
 
             var self = this;
             var items = list.map(function(loc) {
@@ -97,6 +101,7 @@ var Breadcrum = (function() {
                                 className='breadcrums'>{items}</ul>
                         </li>
                         {toolButton}
+                        {copyButton}
                     </ul>);
         }
     });

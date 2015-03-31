@@ -549,3 +549,19 @@ ul.ex li ul li
 #fatalerror ul {
    margin-bottom: 3em;
 }
+
+.clipboard {
+    color: darkblue;
+    cursor: pointer;
+}
+
+.clipboard.zeroclipboard-is-hover {
+    background-color: #d0e0ff;
+    outline: solid 1px blue;
+}
+
+.clipboard.zeroclipboard-is-active {
+    background-color: #ffe0e0;
+    outline: solid 1px red;
+    color: red;
+}
