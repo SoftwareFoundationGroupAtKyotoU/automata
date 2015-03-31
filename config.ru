@@ -1,4 +1,3 @@
-
 require 'bundler/setup'
 require 'rack/rewrite'
 
@@ -18,6 +17,7 @@ require 'lib/api/test_result'
 require 'lib/api/user'
 require 'lib/account/reset'
 require 'lib/account/register'
+require 'lib/sandbox/tester'
 require 'authenticator'
 require 'router'
 
@@ -58,7 +58,7 @@ end
 
 use Rack::Session::Pool, key: 'rack.session', secret: 'account-secret-key'
 
-run Router.new([
+routes = [
   { pattern: '/account/register.cgi', controller: Account::Register.new },
   { pattern: '/account/reset.cgi', controller: Account::Reset.new },
   { pattern: '/api/admin_log.cgi', controller: API::AdminLog.new },
@@ -73,4 +73,12 @@ run Router.new([
   { pattern: '/api/template.cgi', controller: API::Template.new },
   { pattern: '/api/test_result.cgi', controller: API::TestResult.new },
   { pattern: '/api/user.cgi', controller: API::User.new },
-])
+]
+
+if ENV['WITH_SANDBOX']
+  routes.concat([
+    { pattern: '/sandbox/tester.cgi', controller: Sandbox::Tester.new }
+  ])
+end
+
+run Router.new(routes)
