@@ -12,7 +12,8 @@ class Comment
 
   FILE = {
     index: 'index.db',
-    read:  'read.db'
+    read:  'read.db',
+    star: 'star.db'
   }
 
   def initialize(user, group, path, config)
@@ -29,6 +30,10 @@ class Comment
 
   def db_read()
     return Store.new(@path + FILE[:read])
+  end
+
+  def db_star()
+    return Store.new(@path + FILE[:star])
   end
 
   def retrieve(args)
@@ -117,8 +122,7 @@ class Comment
         entries = db[:entries] || []
         entries.each do |e|
           is_read = (e['id'] <= id)
-          is_star = r[@user][e['id']] && r[@user][e['id']]['star']
-          r[@user][e['id']] = { "read" => is_read, "star" => is_star }
+          r[@user][e['id']] = is_read
         end
       end
     end
@@ -129,39 +133,37 @@ class Comment
 
     db_read.transaction do |r|
       is_read = false
-      is_star = r[@user][id]['star']
-      r[@user][id] = { "read" => is_read, "star" => is_star }
+      r[@user][id] = is_read
     end
   end
 
   def star(id)
     raise PermissionDenied unless @group == :super || @group == :user
 
-    db_read.transaction do |r|
-      is_read = r[@user][id]['read']
+    db_star.transaction do |s|
+      s[@user] = {} if s[@user].nil?
       is_star = true
-      r[@user][id] = { "read" => is_read, "star" => is_star }
+      s[@user][id] = is_star
     end
   end
 
   def unstar(id)
     raise PermissionDenied unless @group == :super || @group == :user
 
-    db_read.transaction do |r|
-      is_read = r[@user][id]['read']
+    db_star.transaction do |s|
       is_star = false
-      r[@user][id] = { "read" => is_read, "star" => is_star }
+      s[@user][id] = is_star
     end
   end
 
   def stars
     raise PermissionDenied unless @group == :super || @group == :user
 
-    db_read.ro.transaction do |r|
+    db_star.ro.transaction do |s|
       db_index.ro.transaction do |db|
         entries = filter_forbidden(db[:entries] || [])
         return Hash[*entries.map do |e|
-                      [ e['id'], r[@user] && r[@user][e['id']] && r[@user][e['id']]['star'] == true ]
+                      [ e['id'], s[@user] && s[@user][e['id']] == true ]
                     end.flatten]
       end
     end
@@ -171,13 +173,15 @@ class Comment
     raise PermissionDenied unless @group == :super || @group == :user
 
     db_read.ro.transaction do |r|
-      db_index.ro.transaction do |db|
-        entries = filter_forbidden(db[:entries] || [])
-        return {
-          'unreads'  => entries.count {|e| r[@user] && r[@user][e['id']]['read'] == false },
-          'stars'    => entries.count {|e| r[@user] && r[@user][e['id']]['star'] == true },
-          'comments' => entries.size
-        }
+      db_star.ro.transaction do |s|
+        db_index.ro.transaction do |db|
+          entries = filter_forbidden(db[:entries] || [])
+          return {
+            'unreads'  => entries.count {|e| r[@user] && r[@user][e['id']] == false },
+            'stars'    => entries.count {|e| s[@user] && s[@user][e['id']] == true },
+            'comments' => entries.size
+          }
+        end
       end
     end
   end
