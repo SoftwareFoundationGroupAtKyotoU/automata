@@ -127,7 +127,6 @@ module Account
       end
       mail.charset = 'utf-8'
       mail_options = Conf.new[:master, :mail]
-      p mail_options
       mail.delivery_method(:smtp, mail_options)
       mail.deliver
 
