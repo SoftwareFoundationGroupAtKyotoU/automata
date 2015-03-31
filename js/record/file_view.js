@@ -1,6 +1,7 @@
 var React = require('react');
 var $ = require('jquery');
 var api = require('../api');
+var ReactZeroClipboard = require('react-zeroclipboard')
 
 var FileEntry = (function() {
     var humanReadableSize = function(size) {
@@ -71,7 +72,11 @@ var Breadcrum = (function() {
 
             var toolButton = last.type === 'dir' ? null :
                 <li className="toolbutton">
-                    <a href={this.rawPath(last.path)}>⏎ 直接開く</a></li>;
+                    <a href={this.rawPath(last.path)}>⏎ 直接開く</a>
+                    <ReactZeroClipboard text={this.props.rawContent}>
+                        <button>Copy</button>
+                    </ReactZeroClipboard>
+                </li>;
 
             var self = this;
             var items = list.map(function(loc) {
@@ -188,14 +193,14 @@ var FileView = (function() {
     };
 
     return React.createClass({
-        browseAPI: function(path, success, error) {
+        browseAPI: function(path, type, success, error) {
             api.get({
                 api: 'browse',
                 data: {
                     user:   this.props.token,
                     report: this.props.report,
                     path:   path,
-                    type:   'highlight',
+                    type:   type,
                 }
             }).done(function(res) { success(res); }).
                fail(error);
@@ -204,9 +209,18 @@ var FileView = (function() {
         open: function(path, type) {
             if (type === 'bin' && path.indexOf('.class') < 0) return;
 
-            this.browseAPI(path, function(res) {
+            if (type !== 'dir') {
+                this.browseAPI(path, 'raw', function(res) {
+                    var rawContent = res;
+                    this.setState({
+                        rawContent: rawContent
+                    });
+                }.bind(this));
+            }
+
+            this.browseAPI(path, 'highlight', function(res) {
                 if (type === 'dir') {
-                    this.replaceState({
+                    this.setState({
                         path: path,
                         type: 'dir',
                         entries: res
@@ -221,14 +235,14 @@ var FileView = (function() {
                     }
                     applyStyleFromSource(res);
 
-                    this.replaceState({
+                    this.setState({
                         path: path,
                         type: type,
                         content: pre.innerHTML+''
                     });
                 }
             }.bind(this), function() {
-                this.replaceState({
+                this.setState({
                     path:  path,
                     type:  type,
                     error: true
@@ -255,7 +269,8 @@ var FileView = (function() {
                                   report={p.report}
                                   path={s.path}
                                   type={s.type}
-                                  open={open}/>;
+                                  open={open}
+                                  rawContent={s.rawContent}/>;
             }.bind(this);
 
             var render = s.error ?
