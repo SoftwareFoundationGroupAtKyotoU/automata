@@ -63,17 +63,10 @@ var Breadcrum = (function() {
 
         render: function() {
             var p = this.props;
-            var list = descend(p.path).map(function(p) {
-                p.type = 'dir';
-                return p;
+            var list = descend(p.path).map(function(loc) {
+                if (loc.name === '.') loc.name = p.report;
+                return loc;
             });
-            last = list[list.length-1];
-            last.type = p.type;
-
-            var toolButton = last.type === 'dir' ? null :
-                <li className="toolbutton">
-                    <a href={this.rawPath(last.path)}>⏎ 直接開く</a>
-                </li>;
 
             var copyButton = last.type === 'dir' ? null : (
                 <li className="toolbutton">
@@ -83,9 +76,8 @@ var Breadcrum = (function() {
             );
 
             var self = this;
+            var last = list.pop();
             var items = list.map(function(loc) {
-                if (loc.name == '.') loc.name = p.report;
-
                 var params = {
                     token: p.token,
                     report: p.report,
@@ -93,6 +85,15 @@ var Breadcrum = (function() {
                 };
                 return <li><Link to={'file-pathParam'} params={params}>{loc.name}</Link></li>;
             });
+            items.push(<li>{last.name}</li>);
+
+            var toolButton = p.type === 'dir' ? null :
+                <li className="toolbutton">
+                    <a href={this.rawPath(last.path)}>⏎ 直接開く</a>
+                    <ReactZeroClipboard text={this.props.rawContent}>
+                        <button>Copy</button>
+                    </ReactZeroClipboard>
+                </li>;
 
             return (<ul id={"summary-" + p.report + "_status_toolbar"}
                          className="status_toolbar">
