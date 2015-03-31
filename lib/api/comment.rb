@@ -135,7 +135,8 @@ module API
           user_names = app.user_names_from_tokens(content.map { |entry| entry['user'] })
           starList = comments[report_id][0][:comment].stars()
           content = content.map do |entry|
-            entry.merge(user_name: user_names[entry['user']], starFlag: starList[entry['id']])
+            entry.merge(user_name: user_names[entry['user']],
+                        starFlag: starList[entry['id']])
           end
 
           return helper.json_response(content)
