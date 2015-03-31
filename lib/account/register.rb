@@ -126,6 +126,9 @@ module Account
         body    "ページに戻って，次のトークンを入力してください．\n\n#{token}"
       end
       mail.charset = 'utf-8'
+      mail_options = Conf.new[:master, :mail]
+      p mail_options
+      mail.delivery_method(:smtp, mail_options)
       mail.deliver
 
       Haml::Engine.new(page).render do
