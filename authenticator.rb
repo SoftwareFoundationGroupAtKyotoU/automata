@@ -12,13 +12,15 @@ class Authenticator
   end
 
   def call(env)
-    if env['PATH_INFO'] =~ /^\/account/
+    if env['PATH_INFO'] =~ /^\/account/ && @conf[:master, :authn_account]
       md5 = Rack::Auth::Digest::MD5.new(
         @app,
         realm: @conf[:master, :authn_account, :realm],
         opaque: '',
         passwords_hashed: true
       ) do |_|
+        # Load authenticate information from master.yml directory instead using
+        # WEBrick::HTTPAuth::Htdigest.
         Digest::MD5.hexdigest([
           @conf[:master, :authn_account, :user],
           @conf[:master, :authn_account, :realm],
@@ -33,7 +35,8 @@ class Authenticator
         opaque: '',
         passwords_hashed: true
       ) do |username|
-        htdigest = WEBrick::HTTPAuth::Htdigest.new(@conf[:master, :authn, :htdigest])
+        htdigest_path = @conf[:master, :authn, :htdigest]
+        htdigest = WEBrick::HTTPAuth::Htdigest.new(htdigest_path)
         htdigest.get_passwd(@conf[:master, :authn, :realm], username, true)
       end
       return md5.call(env)
