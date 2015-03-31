@@ -212,7 +212,8 @@ var FileView = (function() {
                 var args = _.toArray(arguments);
                 var newState = {
                     path: path,
-                    rawContent: args[1]
+                    rawContent: args[1],
+                    mode: 'show'
                 }
                 switch (args[4].getResponseHeader('content-type')) {
                     case 'application/json':
@@ -237,24 +238,28 @@ var FileView = (function() {
                         break;
                     default:
                         _.assign(newState, {
-                            error: true
+                            mode: 'error'
                         });
                         break;
                 }
                 this.setState(newState);
             }.bind(this)).fail(function() {
                 this.setState({
-                    path:  path,
-                    error: true
+                    mode: 'error'
                 });
             }.bind(this));
+
+            this.setState({
+                mode: 'loading'
+            })
         },
 
         getInitialState: function() {
             return {
                 path: '.',
                 type: 'dir',
-                entries: []
+                entries: [],
+                mode: 'loading'
             };
         },
 
@@ -279,18 +284,34 @@ var FileView = (function() {
                                   rawContent={s.rawContent}/>;
             }.bind(this);
 
-            var render = s.error ?
-                'なし' :
-                s.type === 'dir' ?
-                [ <a className="download"
-                     href={api.root+'/download/'+p.token+'/'+p.report+'.zip'}>
-                      ☟ダウンロード
-                  </a>,
-                  <FileBrowser token={p.token}
-                               report={p.report}
-                               path={s.path}
-                               entries={s.entries}/> ] :
-                <FileViewer  content={s.content} />;
+            var render;
+            switch (s.mode) {
+                case 'loading':
+                    render = <i className="fa fa-spinner fa-pulse"/>;
+                    break;
+                case 'show':
+                    if (s.type === 'dir') {
+                        render = [
+                            (
+                                <a className="download"
+                                   href={api.root+'/download/'+p.token+'/'+p.report+'.zip'}>
+                                    ☟ダウンロード
+                                </a>
+                            ),
+                            (
+                                <FileBrowser token={p.token}
+                                             report={p.report}
+                                             path={s.path}
+                                             entries={s.entries}/>
+                            )
+                        ];
+                    } else {
+                        render = <FileViewer  content={s.content}/>;
+                    }
+                    break;
+                default:
+                    render = 'なし';
+            }
 
             return (<div id={"summary-" + p.report + "_status_window"}
                          style={ {display: "block"} }>
