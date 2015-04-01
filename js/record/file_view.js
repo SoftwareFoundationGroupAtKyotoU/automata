@@ -225,7 +225,7 @@ var FileView = (function() {
                             entries: result.body
                         });
                         break;
-                    case 'highlight':
+                    case 'txt':
                         var div = $('<div />')[0];
                         var content = result.body.replace('<pre>\n', '<pre>');
                         div.innerHTML = content;
@@ -235,11 +235,11 @@ var FileView = (function() {
                         }
                         applyStyleFromSource(result.body);
                         _.assign(newState, {
-                            type: 'highlight',
+                            type: 'txt',
                             content: pre.innerHTML+''
                         });
                         break;
-                    case 'binary':
+                    case 'bin':
                         location.href = FileView.rawPath(this.props.token, this.props.report, path);
                     default:
                         _.assign(newState, {

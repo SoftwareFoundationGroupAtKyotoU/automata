@@ -30,9 +30,9 @@ module API
   #   - type=rawまたは指定がないとき: ファイルそのもの
   #   - type=highlightのとき: JSON
   #     - pathがテキストファイルを指すとき:
-  #       { type: 'highlight', body: テキストをハイライトしたHTML }
+  #       { type: 'txt', body: テキストをハイライトしたHTML }
   #     - pathがバイナリファイルを指すとき:
-  #       { type: 'binary' }
+  #       { type: 'bin' }
   class Browse
     def call(env)
       helper = Helper.new(env)
@@ -117,7 +117,7 @@ module API
           i.close
           o.read
         end
-        return helper.json_response({'type' => 'highlight', 'body' => result})
+        return helper.json_response({'type' => 'txt', 'body' => result})
       elsif '.class' == path.extname && 'highlight' == helper.params['type']
         # return html including applet tag when .class file is selected
 
@@ -140,9 +140,9 @@ module API
       </html>
 APPLET
 
-        helper.json_response({'type' => 'highlight', 'body' => applet_html})
+        helper.json_response({'type' => 'txt', 'body' => applet_html})
       elsif  helper.params['type'] == 'highlight'
-        helper.json_response({'type' => 'binary'})
+        helper.json_response({'type' => 'bin'})
       else
         header = {
           'Content-Type' => MIME.check(path.to_s).to_s,
