@@ -11,12 +11,12 @@ authn:
   admin: "automata@example.com"
 
 mail:
-  :address: "smtp.example.com"
-  :port: 587
-  :domain: "example.com"
-  :authentication: "plain"
-  :user_name: "username"
-  :password: "password"
+  address: "smtp.example.com"
+  port: 587
+  domain: "example.com"
+  authentication: "plain"
+  user_name: "username"
+  password: "password"
 
 
 record:
