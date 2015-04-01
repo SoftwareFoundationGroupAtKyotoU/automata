@@ -20,30 +20,73 @@
 }
 
 td.status {
-   position: relative;
+    position: relative;
+    padding-left: 15px;
+    padding-right: 15px;
 }
 
 td.status .notify {
-   display: inline-block;
-   position: absolute;
-   top: 0;
-   left: 0;
-   vertical-align: middle;
+    position: relative;
+    display: block;
+    float: left;
+    width: 0;
+    height: 16px;
 }
 
 .unread {
-   border-radius: 7px 7px 7px 7px;
-   background-color: #dd0011;
-   color: white;
-   font-weight: bold;
-   font-size: 10px;
-   width: 14px;
-   height: 14px;
-   text-align: center;
-   vertical-align: middle;
-   display: inline-block;
+    position: absolute;
+    top: 8px;
+    left: -15px;
+    display: inline-block;;
+    vertical-align: middle;
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+    line-height: 16px;
+}
+
+.unread .base,
+.unread .text {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    text-align: center;
+}
+
+.unread .base {
+    color: #d01;
+}
+
+.unread .text {
+    color: white;
+    font-weight: bold;
+    font-size: 10px;
 }
 
 .star {
-   color: gold;
+    position: absolute;
+    top: -7px;
+    left: -15px;
+    display: inline-block;
+    vertical-align: middle;
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+    line-height: 16px;
+}
+
+.star .base,
+.star .colored {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    text-align: center;
+}
+
+.star .base {
+    color: gold;
+}
+
+.star .colored {
+    color: gray;
 }

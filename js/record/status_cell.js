@@ -152,13 +152,18 @@ module.exports = React.createClass({
             }
         }
         var unreads = this.props.comment.unreads;
-        unreads = (unreads > 0) ? <div className="unread">{unreads}</div> : null;
+        unreads = (unreads > 0) ? (
+            <div className="unread">
+                <span className="base"><i className="fa fa-circle"/></span>
+                <span className="text">{unreads}</span>
+            </div>
+        ) : null;
         var stars = this.props.comment.stars;
         stars = (stars > 0) ? (
-                <span className="fa-stack">
-                <i className="fa fa-star fa-stack-1x"></i>
-                <span className="star"><i className="fa fa-star fa-stack-1x"></i></span>
-                </span>
+                <div className="star">
+                <span className="base"><i className="fa fa-star"/></span>
+                <span className="colored"><i className="fa fa-star-o"/></span>
+                </div>
         ) : null;
         return (
                 <td {...props}>
