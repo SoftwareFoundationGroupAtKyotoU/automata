@@ -210,9 +210,7 @@ var Comment = React.createClass({
                 } else {
                     style.color = '#9a9';
                     return (
-                        <a key={i} style={style} title={p.title}>
-                            <i className={icon}/>
-                        </a>
+                        <i className={icon} style={style}/>
                     );
                 }
             }.bind(this));

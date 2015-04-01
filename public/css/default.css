@@ -393,6 +393,9 @@ ul.comments > li.private {
    margin-left: 0.5em;
    text-decoration: none;
 }
+.comments div.meta .edit > i {
+   margin-left: 0.5em;
+}
 .comments div.meta .date,
 .comments div.meta .acl {
    font-size: 60%;
