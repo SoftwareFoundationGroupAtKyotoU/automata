@@ -65,11 +65,7 @@ var User = React.createClass({
 });
 
 var routes = StatusHeader.tabs.map(function(tab) {
-    if (tab.pathParam) {
-        return <Route name={tab.path} path={tab.path + '/*'} handler={tab.handler} key={tab.path}/>;
-    } else {
-        return <Route name={tab.path} path={tab.path + '/'} handler={tab.handler} key={tab.path}/>;
-    }
+    return <Route name={tab.name} path={tab.path} handler={tab.handler} key={tab.name}/>;
 });
 
 var UserRoute = (

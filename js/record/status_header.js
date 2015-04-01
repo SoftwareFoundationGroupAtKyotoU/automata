@@ -10,12 +10,12 @@ var CommentView = require('./comment_view.js');
 var InteractView = require('./interact_view.js');
 
 var tabs = [
-    { path: 'log',      name: 'ログ',         handler: LogView },
-    { path: 'answer',   name: '解答状況',     handler: AnswerView },
-    { path: 'result',   name: 'テスト結果',   handler: ResultView },
-    { path: 'file',     name: 'ファイル一覧', handler: FileView,    pathParam: true },
-    { path: 'comment',  name: 'コメント',     handler: CommentView },
-    { path: 'interact', name: '対話',         handler: InteractView }
+    { name: 'log',      path: 'log/',      label: 'ログ',         handler: LogView },
+    { name: 'answer',   path: 'answer/',   label: '解答状況',     handler: AnswerView },
+    { name: 'result',   path: 'result/',   label: 'テスト結果',   handler: ResultView },
+    { name: 'file',     path: 'file/*',    label: 'ファイル一覧', handler: FileView },
+    { name: 'comment',  path: 'comment/',  label: 'コメント',     handler: CommentView },
+    { name: 'interact', path: 'interact/', label: '対話',         handler: InteractView }
 ];
 
 module.exports = React.createClass({
@@ -30,26 +30,24 @@ module.exports = React.createClass({
             if (!tabName) tabName = 'log';
             var params = {
                 token: this.getParams().token,
-                report: this.getParams().report
+                report: this.getParams().report,
+                splat: ''
             };
-            if (tab.pathParam) {
-                params.splat = '';
-            }
-            var name = tab.name;
-            if (tab.path === 'comment' && this.props.comments > 0) {
+            var name = tab.label;
+            if (tab.name === 'comment' && this.props.comments > 0) {
                 name += '(' + this.props.comments + ')';
             }
-            if (tab.path === tabName) {
+            if (tab.name === tabName) {
                 return (
-                        <li className={className + ' selected'} key={tab.path}>
-                        <Link to={tab.path} params={params}
+                        <li className={className + ' selected'} key={tab.name}>
+                        <Link to={tab.name} params={params}
                               onClick={this.props.reload}>{name}</Link>
                         </li>
                 );
             } else {
                 return (
-                        <li className={className} key={tab.path}>
-                        <Link to={tab.path} params={params}>{name}</Link>
+                        <li className={className} key={tab.name}>
+                        <Link to={tab.name} params={params}>{name}</Link>
                         </li>
                 );
             }
