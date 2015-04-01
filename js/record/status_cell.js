@@ -133,7 +133,9 @@ module.exports = React.createClass({
         if (this.props.admin) {
             if (this.state.editing === 'edit') {
                 edit = (
-                        <a className="edit" href="javascript:void(0)" title="キャンセル" onClick={this.onCancel}>✖</a>
+                    <a className="edit" href="javascript:void(0)" title="キャンセル" onClick={this.onCancel}>
+                        <i className="fa fa-times edit"/>
+                    </a>
                 );
             } else if (this.state.editing === 'exec') {
                 edit = (
@@ -143,7 +145,9 @@ module.exports = React.createClass({
                 );
             } else {
                 edit = (
-                        <a className="edit" href="javascript:void(0)" title="変更する" onClick={this.onEdit}>✏</a>
+                    <a className="edit" href="javascript:void(0)" title="変更する" onClick={this.onEdit}>
+                        <i className="fa fa-pencil-square-o edit"/>
+                    </a>
                 );
             }
         }

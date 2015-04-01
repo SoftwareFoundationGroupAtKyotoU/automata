@@ -88,7 +88,7 @@ var Breadcrum = (function() {
 
             var toolButton = type === 'dir' ? null :
                 <li className="toolbutton">
-                    <a href={this.rawPath(p.path)}>⏎ 直接開く</a>
+                    <a href={this.rawPath(p.path)}><i className="fa fa-floppy-o"/> 直接開く</a>
                 </li>;
 
             var copyButton = type === 'dir' ? null : (
@@ -300,7 +300,7 @@ var FileView = (function() {
                         if (s.path === '') render.unshift(
                             <a className="download"
                                href={api.root+'/download/'+p.token+'/'+p.report+'.zip'}>
-                                ☟ダウンロード
+                                <i className="fa fa-download"/>ダウンロード
                             </a>
                         );
                     } else {

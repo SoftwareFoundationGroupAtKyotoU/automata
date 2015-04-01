@@ -224,7 +224,7 @@ var LogView = React.createClass({
         } else {
             return (
                     <ul className='status_toolbar'>
-                    <li className='toolbutton'><a href="javascript:void(0)" onClick={this.onEdit}>✏ 編集</a></li>
+                    <li className='toolbutton'><a href="javascript:void(0)" onClick={this.onEdit}><i className="fa fa-pencil-square-o"/> 編集</a></li>
                     </ul>
             );
         }

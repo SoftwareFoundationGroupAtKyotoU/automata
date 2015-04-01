@@ -57,7 +57,7 @@ module.exports = React.createClass({
         return (
                 <ul className="status_toolbar">
                 <li className="toolbutton">
-                <a href="javascript:void(0)" onClick={this.runTest}>⚡ テストを再実行</a>
+                <a href="javascript:void(0)" onClick={this.runTest}><i className="fa fa-bolt"/> テストを再実行</a>
                 </li>
                 </ul>
         );
