@@ -22,17 +22,16 @@ module.exports = React.createClass({
         if (this.props.users.length > 0) {
             users = this.props.users.map(function(user) {
                 var kadais = scheme.map(function(s) {
-                    var unreads = ['report', s.id, 'comment', 'unreads'].reduce(function(r, k) {
-                        if (!_.has(r, k)) r[k] = {};
-                        return r[k];
-                    }, user);
+                    var comment = _.chain(user)
+                        .result('report').result(s.id).result('comment', {})
+                        .value();
                     return (
                             <StatusCell user={user}
                                         report={s.id}
                                         isButton={true}
                                         admin={this.props.admin}
                                         updateStatus={this.props.updateStatus}
-                                        unRead={unreads}
+                                        comment={comment}
                                         isSelected={this.props.report === s.id}/>
                     );
                 }.bind(this));

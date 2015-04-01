@@ -147,15 +147,19 @@ module.exports = React.createClass({
                 );
             }
         }
-        var unread;
-        if (this.props.unRead > 0) {
-            unread = (
-                    <div className="unread">{this.props.unRead}</div>
-            );
-        }
+        var unreads = this.props.comment.unreads;
+        unreads = (unreads > 0) ? <div className="unread">{unreads}</div> : null;
+        var stars = this.props.comment.stars;
+        stars = (stars > 0) ? (
+                <span className="fa-stack">
+                <i className="fa fa-star fa-stack-1x"></i>
+                <span className="star"><i className="fa fa-star fa-stack-1x"></i></span>
+                </span>
+        ) : null;
         return (
                 <td {...props}>
-                {unread}{content}{edit}
+                <div className="notify">{unreads}{stars}</div>
+                {content}{edit}
                 </td>
         );
     }

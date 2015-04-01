@@ -19,8 +19,19 @@
    color: inherit ! important;
 }
 
-.unread {
+td.status {
+   position: relative;
+}
+
+td.status .notify {
+   display: inline-block;
    position: absolute;
+   top: 0;
+   left: 0;
+   vertical-align: middle;
+}
+
+.unread {
    border-radius: 7px 7px 7px 7px;
    background-color: #dd0011;
    color: white;
@@ -31,6 +42,8 @@
    text-align: center;
    vertical-align: middle;
    display: inline-block;
-   margin-top: -4px;
-   margin-left: -14px;
+}
+
+.star {
+   color: gold;
 }
