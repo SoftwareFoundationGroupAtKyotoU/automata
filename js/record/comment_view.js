@@ -120,8 +120,6 @@ var Comment = React.createClass({
 
     onStar: function() {
         var actionName = this.state.starFlag ? 'unstar' : 'star';
-        this.toggleStar();
-
         api.post({
             api: 'comment',
             data: {
@@ -130,7 +128,9 @@ var Comment = React.createClass({
                 action: actionName,
                 id: this.props.comment.id
             }
-        }).always(function() {
+        }).done(function() {
+            this.toggleStar();
+
             //TODO: rerender star marks
         }.bind(this));
     },
@@ -284,11 +284,12 @@ var Comment = React.createClass({
 
         var editButtons;
         if (this.props.admin || this.props.comment.user === this.props.loginUser) {
+            var starCaption = this.state.starFlag ? "印を外す" : "印を付ける";
             var starChar = this.state.starFlag ? "fa fa-star" : "fa fa-star-o";
             editButtons = (
                 <p className="edit">
                     <a title="未読にする" onClick={this.onUnread}>🙈</a>
-                    <a title="印を付ける" onClick={this.onStar}><i className={starChar}></i></a>
+                    <a title={starCaption} onClick={this.onStar}><i className={starChar}></i></a>
                     <a title="編集する" onClick={this.onEdit}>✏</a>
                     <a title="削除する" onClick={this.onDelete}>✖</a>
                 </p>
