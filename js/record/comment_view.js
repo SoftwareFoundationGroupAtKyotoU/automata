@@ -154,7 +154,7 @@ var Comment = React.createClass({
                 break;
             case 'reloading':
                 comment_box = (
-                    <div className="form"><img src="../image/loading.gif"/></div>
+                    <div className="form"><i className="fa fa-spinner fa-pulse"/></div>
                 );
                 break;
             default:

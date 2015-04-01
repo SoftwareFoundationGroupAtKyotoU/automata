@@ -118,7 +118,7 @@ var AnswerView = React.createClass({
             return (
                     <div>
                     <div className="status_view">
-                    <img src="./loading.gif" />
+                    <i className="fa fa-spinner fa-pulse"/>
                     </div>
                     </div>
             );

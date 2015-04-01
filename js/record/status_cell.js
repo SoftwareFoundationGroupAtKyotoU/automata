@@ -140,7 +140,7 @@ module.exports = React.createClass({
             } else if (this.state.editing === 'exec') {
                 edit = (
                         <a className="edit" title="変更中">
-                        <img src="../image/loading.gif"/>
+                        <i className="fa fa-spinner fa-pulse"/>
                         </a>
                 );
             } else {

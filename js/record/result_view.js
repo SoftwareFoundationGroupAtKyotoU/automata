@@ -90,7 +90,7 @@ module.exports = React.createClass({
         if (!this.state.init) {
             return (
                     <div className="status_view">
-                    <img src="../image/loading.gif"/>
+                    <i className="fa fa-spinner fa-pulse"/>
                     </div>
             );
         }
