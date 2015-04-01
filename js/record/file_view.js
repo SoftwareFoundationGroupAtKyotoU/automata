@@ -52,7 +52,7 @@ var Breadcrum = (function() {
     var descend = function(path) {
         return path.split('/').reduce(function(r, p) {
             r[1].push(p);
-            r[0].push({ name: p, path: r[1].join('/') });
+            r[0].push({ name: p, path: r[1].join('/') + '/' });
             return r;
         }, [ [], [] ])[0];
     };
