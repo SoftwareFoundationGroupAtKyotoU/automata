@@ -35,6 +35,8 @@ class App
     end
 
     mail.charset = 'utf-8'
+    mail_options = Conf.new[:master, :mail]
+    mail.delivery_method(:smtp, mail_options)
     mail.deliver
   end
 end
