@@ -12,7 +12,7 @@ class Router
   end
 
   def call(env)
-    request_path = Rack::Request.new(env).path
+    request_path = Rack::Request.new(env).path_info
     @routes.each do |route|
       match = request_path.match(route[:pattern])
       return route[:controller].call(env) if match
