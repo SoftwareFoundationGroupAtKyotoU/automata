@@ -34,7 +34,6 @@ module.exports = React.createClass({
             }.bind(this));
         }.bind(this));
         this.client.on('error', function(e) {
-            console.log(e);
             this.client.destroy();
             if (this.isMounted()) this.setState({ fallback: true });
         }.bind(this));
