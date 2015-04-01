@@ -387,8 +387,7 @@ ul.comments > li.private {
    display: inline-block;
 }
 .comments div.meta .edit {
-   display: inline;
-   float: right;
+   margin: 0.5em 0;
 }
 .comments div.meta .edit a {
    margin-left: 0.5em;
