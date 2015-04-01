@@ -10,6 +10,15 @@ authn:
   realm: "realm"
   admin: "automata@example.com"
 
+mail:
+  :address: "smtp.example.com"
+  :port: 587
+  :domain: "example.com"
+  :authentication: "plain"
+  :user_name: "username"
+  :password: "password"
+
+
 record:
   show_login: false
   open: false
