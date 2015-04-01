@@ -26,6 +26,10 @@ module API
   #           コメントを既読にする
   #   unread  id=<comment-id>
   #           コメントを未読にする
+  #   star    id=<comment-id>
+  #           コメントに星印を付ける
+  #   unstar  id=<comment-id>
+  #           コメントの星印を外す
   #   news
   #           未読コメント情報を取得
   #   list_news
@@ -129,8 +133,10 @@ module API
           content = comments[report_id][0][:comment].retrieve(args)
           # Get user names
           user_names = app.user_names_from_tokens(content.map { |entry| entry['user'] })
+          starList = comments[report_id][0][:comment].stars()
           content = content.map do |entry|
-            entry.merge(user_name: user_names[entry['user']])
+            entry.merge(user_name: user_names[entry['user']],
+                        starFlag: starList[entry['id']])
           end
 
           return helper.json_response(content)
@@ -171,6 +177,20 @@ module API
           return helper.bad_request unless id
 
           comments[report_id][0][:comment].unread(id)
+
+          return helper.ok('done')
+        when 'star'
+          id = convert(helper.params['id'], &:to_i)
+          return helper.bad_request unless id
+
+          comments[report_id][0][:comment].star(id)
+
+          return helper.ok('done')
+        when 'unstar'
+          id = convert(helper.params['id'], &:to_i)
+          return helper.bad_request unless id
+
+          comments[report_id][0][:comment].unstar(id)
 
           return helper.ok('done')
         when 'news'

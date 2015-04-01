@@ -158,8 +158,9 @@ class CommentTest < Test::Unit::TestCase
 
     @comments[@user].read(1)
     @comments[@user2].read(4)
+    @comments[@user2].star(4)
 
-    assert_equal({ 'unreads' => 2, 'comments' => 3 }, @comments[@user].news())
-    assert_equal({ 'unreads' => 1, 'comments' => 3 }, @comments[@user2].news())
+    assert_equal({ 'unreads' => 2, 'stars' => 0, 'comments' => 3 }, @comments[@user].news())
+    assert_equal({ 'unreads' => 1, 'stars' => 1, 'comments' => 3 }, @comments[@user2].news())
   end
 end

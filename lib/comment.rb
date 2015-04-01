@@ -12,7 +12,8 @@ class Comment
 
   FILE = {
     index: 'index.db',
-    read:  'read.db'
+    read:  'read.db',
+    star: 'star.db'
   }
 
   def initialize(user, group, path, config)
@@ -29,6 +30,10 @@ class Comment
 
   def db_read()
     return Store.new(@path + FILE[:read])
+  end
+
+  def db_star()
+    return Store.new(@path + FILE[:star])
   end
 
   def retrieve(args)
@@ -132,16 +137,51 @@ class Comment
     end
   end
 
+  def star(id)
+    raise PermissionDenied unless @group == :super || @group == :user
+
+    db_star.transaction do |s|
+      s[@user] = {} if s[@user].nil?
+      is_star = true
+      s[@user][id] = is_star
+    end
+  end
+
+  def unstar(id)
+    raise PermissionDenied unless @group == :super || @group == :user
+
+    db_star.transaction do |s|
+      is_star = false
+      s[@user][id] = is_star
+    end
+  end
+
+  def stars
+    raise PermissionDenied unless @group == :super || @group == :user
+
+    db_star.ro.transaction do |s|
+      db_index.ro.transaction do |db|
+        entries = filter_forbidden(db[:entries] || [])
+        return Hash[*entries.map do |e|
+                      [ e['id'], s[@user] && s[@user][e['id']] == true ]
+                    end.flatten]
+      end
+    end
+  end
+
   def news
     raise PermissionDenied unless @group == :super || @group == :user
 
     db_read.ro.transaction do |r|
-      db_index.ro.transaction do |db|
-        entries = filter_forbidden(db[:entries] || [])
-        return {
-          'unreads'  => entries.count {|e| r[@user] && r[@user][e['id']] == false },
-          'comments' => entries.size
-        }
+      db_star.ro.transaction do |s|
+        db_index.ro.transaction do |db|
+          entries = filter_forbidden(db[:entries] || [])
+          return {
+            'unreads'  => entries.count {|e| r[@user] && r[@user][e['id']] == false },
+            'stars'    => entries.count {|e| s[@user] && s[@user][e['id']] == true },
+            'comments' => entries.size
+          }
+        end
       end
     end
   end
