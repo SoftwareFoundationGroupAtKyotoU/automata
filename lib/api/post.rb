@@ -67,6 +67,7 @@ module API
       begin
         Zip::File.open(path) do |zip_file|
           zip_file.each do |entry|
+            FileUtils.mkdir_p(File.dirname("#{src_dir}/#{entry.name}"))
             entry.extract("#{src_dir}/#{entry.name}")
           end
         end
