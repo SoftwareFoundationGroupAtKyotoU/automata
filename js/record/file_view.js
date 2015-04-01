@@ -212,34 +212,35 @@ var FileView = (function() {
             api.get(
                 { api: 'browse', data: data.clone().assign({ type: 'highlight' }).value() },
                 { api: 'browse', data: data.clone().assign({ type: 'raw' }).value() }
-            ).done(function() {
-                var args = _.toArray(arguments);
+            ).done(function(result, rawContent) {
                 var newState = {
                     path: path,
-                    rawContent: args[1],
+                    rawContent: rawContent,
                     mode: 'show'
                 }
-                switch (args[4].getResponseHeader('content-type')) {
-                    case 'application/json':
+                switch (result.type) {
+                    case 'dir':
                         _.assign(newState, {
                             type: 'dir',
-                            entries: args[0]
+                            entries: result.body
                         });
                         break;
-                    case 'text/html':
+                    case 'highlight':
                         var div = $('<div />')[0];
-                        var content = args[0].replace('<pre>\n', '<pre>');
+                        var content = result.body.replace('<pre>\n', '<pre>');
                         div.innerHTML = content;
                         var pre = div.getElementsByTagName('pre')[0];
                         if (content.charAt(content.length-1) != "\n") {
                             content += "\n";
                         }
-                        applyStyleFromSource(args[0]);
+                        applyStyleFromSource(result.body);
                         _.assign(newState, {
                             type: 'highlight',
                             content: pre.innerHTML+''
                         });
                         break;
+                    case 'binary':
+                        location.href = FileView.rawPath(this.props.token, this.props.report, path);
                     default:
                         _.assign(newState, {
                             mode: 'error'
@@ -290,20 +291,18 @@ var FileView = (function() {
                                          rawContent={s.rawContent}/>;
 
                     if (s.type === 'dir') {
-                        render = [
-                            (
-                                <a className="download"
-                                   href={api.root+'/download/'+p.token+'/'+p.report+'.zip'}>
-                                    ☟ダウンロード
-                                </a>
-                            ),
-                            (
-                                <FileBrowser token={p.token}
-                                             report={p.report}
-                                             path={s.path}
-                                             entries={s.entries}/>
-                            )
-                        ];
+                        render = [(
+                            <FileBrowser token={p.token}
+                                         report={p.report}
+                                         path={s.path}
+                                         entries={s.entries}/>
+                        )];
+                        if (s.path === '') render.unshift(
+                            <a className="download"
+                               href={api.root+'/download/'+p.token+'/'+p.report+'.zip'}>
+                                ☟ダウンロード
+                            </a>
+                        );
                     } else {
                         render = <FileViewer  content={s.content}/>;
                     }

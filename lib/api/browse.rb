@@ -24,12 +24,15 @@ module API
   #   ログイン名が remote_user の情報のみ取得可能
   # Return value:
   #   - pathがディレクトリのとき: JSON
-  #     [ { name: ファイル名, type: dir|txt|bin,
-  #         size: byte, time: yyyy-dd-mmThh:MM:ss+ZONE } ]
-  #   - pathがテキストファイルを指すとき:
-  #     - type=rawならそのファイルそのもの(text/**)
-  #     - type=highlightならハイライトしたHTML(text/html)
-  #   - pathがバイナリファイルを指すとき: 生ファイル(適切なMIMEタイプ)
+  #     { type: 'dir',
+  #       body: [ { name: ファイル名, type: dir|txt|bin,
+  #                 size: byte, time: yyyy-dd-mmThh:MM:ss+ZONE } ] }
+  #   - type=rawまたは指定がないとき: ファイルそのもの
+  #   - type=highlightのとき: JSON
+  #     - pathがテキストファイルを指すとき:
+  #       { type: 'highlight', body: テキストをハイライトしたHTML }
+  #     - pathがバイナリファイルを指すとき:
+  #       { type: 'binary' }
   class Browse
     def call(env)
       helper = Helper.new(env)
@@ -98,7 +101,7 @@ module API
             'time' => f.mtime.iso8601
           }
         end
-        return helper.json_response(files)
+        return helper.json_response({'type' => 'dir', 'body' => files})
       elsif MIME.check(path.to_s).media_type == 'text' &&
             helper.params['type'] == 'highlight'
         dir = File.join(File.dirname(File.expand_path(__FILE__)),
@@ -114,7 +117,7 @@ module API
           i.close
           o.read
         end
-        return helper.ok(result, { 'Content-Type' => 'text/html' })
+        return helper.json_response({'type' => 'highlight', 'body' => result})
       elsif '.class' == path.extname && 'highlight' == helper.params['type']
         # return html including applet tag when .class file is selected
 
@@ -137,7 +140,9 @@ module API
       </html>
 APPLET
 
-        helper.ok(applet_html)
+        helper.json_response({'type' => 'highlight', 'body' => applet_html})
+      elsif  helper.params['type'] == 'highlight'
+        helper.json_response({'type' => 'binary'})
       else
         header = {
           'Content-Type' => MIME.check(path.to_s).to_s,

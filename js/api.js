@@ -68,7 +68,7 @@ var call = function() {
     }); })).done(function() {
         var responses = _.toArray(arguments);
         responses = params.length === 1 ? [responses] : responses;
-        d.resolve.apply(d, _.chain(responses).unzip().flatten().value());
+        d.resolve.apply(d, responses.map(function (r) { return r[0]; }));
     }).fail(function() {
         d.reject.apply(d, arguments);
     });
