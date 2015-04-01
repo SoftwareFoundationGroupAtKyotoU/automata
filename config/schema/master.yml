@@ -50,6 +50,29 @@ mapping:
         type: str
         required: yes
 
+  "mail":
+    type: map
+    required: no
+    mapping:
+     "addres":
+       type: str
+       required: no
+     "port":
+       type: int
+       required: no
+     "domain":
+       type: str
+       required: no
+     "authentication":
+       type: str
+       required: no
+     "user_name":
+       type: str
+       required: no
+     "password":
+       type: str
+       reqruied: no
+
   "record":
     type: map
     required: yes
