@@ -1,5 +1,5 @@
+var _ = require('lodash');
 var React = require('react');
-var $ = require('jquery');
 var api = require('../api');
 
 function isPassed(t) {
@@ -95,7 +95,9 @@ module.exports = React.createClass({
             );
         }
 
-        if ($.isEmptyObject(this.state.test_result)) {
+        var passed = this.state.test_result.passed;
+        var number = this.state.test_result.number;
+        if (_.isUndefined(passed) || _.isUndefined(number)) {
             return (
                     <div>
                     <div className="status_header">{this.toolBar()}</div>
@@ -131,8 +133,6 @@ module.exports = React.createClass({
                         </dl>
                 )
             }
-            var passed = this.state.test_result.passed;
-            var number = this.state.test_result.number;
             var rate = passed === number
                 ? (<p>{passed}/{number}</p>)
                 : (<p><em>{passed}</em>/{number}</p>);
