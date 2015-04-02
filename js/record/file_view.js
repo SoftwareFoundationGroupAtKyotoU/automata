@@ -309,13 +309,10 @@ FileView.encodePath = function(path) {
 };
 
 FileView.rawPath = function(user, report, path) {
-    var uri = $(location);
-    var pathname = uri.attr('pathname').split('/');
-    pathname.pop(); pathname.pop();
     var epath = FileView.encodePath(path);
-    pathname.push('browse', user, report, epath);
+    pathname = '/browse/'+user+'/'+report+'/'+epath;
     var param = path != epath ? ('?path=' + epath) : '';
-    return uri.attr('protocol') + '//' + uri.attr('host') + pathname.join('/') + param;
+    return api.root + pathname + param;
 };
 
 module.exports = FileView;
