@@ -351,6 +351,9 @@ ul.status_toolbar ul.breadcrums li:last-child:after {
    margin: 0;
    padding: 0;
 }
+.status_view .download {
+   float: right;
+}
 
 ul.comments {
    list-style-type: none;

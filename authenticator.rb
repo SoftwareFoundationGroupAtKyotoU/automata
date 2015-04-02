@@ -28,7 +28,7 @@ class Authenticator
         ].join(':'))
       end
       return md5.call(env)
-    elsif env['PATH_INFO'] =~ /^\/(admin|api|browse|post|record)/
+    elsif env['PATH_INFO'] =~ /^\/(admin|api|browse|post|record|download)/
       md5 = Rack::Auth::Digest::MD5.new(
         @app,
         realm: @conf[:master, :authn, :realm],

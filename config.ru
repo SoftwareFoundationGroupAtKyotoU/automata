@@ -15,6 +15,7 @@ require 'lib/api/scheme'
 require 'lib/api/template'
 require 'lib/api/test_result'
 require 'lib/api/user'
+require 'lib/api/download'
 require 'lib/account/reset'
 require 'lib/account/register'
 require 'lib/sandbox/tester'
@@ -62,6 +63,11 @@ map relative_uri do
             if: proc { |env| env['QUERY_STRING'] !~ /(?:^|&)path=/ }
   end
 
+  use Rack::Rewrite do
+    rewrite %r{/download/([^/]+)/([^/.]+)\.zip$},
+            '/api/download.cgi?user=$1&report=$2'
+  end
+
   use Rack::Session::Pool, key: 'rack.session', secret: 'account-secret-key'
 
   routes = [
@@ -79,6 +85,7 @@ map relative_uri do
     { pattern: '/api/template.cgi', controller: API::Template.new },
     { pattern: '/api/test_result.cgi', controller: API::TestResult.new },
     { pattern: '/api/user.cgi', controller: API::User.new },
+    { pattern: '/api/download.cgi', controller: API::Download.new },
   ]
 
   if ENV['WITH_SANDBOX']
