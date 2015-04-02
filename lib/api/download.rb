@@ -11,11 +11,10 @@ module API
       helper = Helper.new(env)
       app = App.new(env['REMOTE_USER'])
 
-      user = helper.params['user']
-      return helper.bad_request unless user
-
-      user = app.user_from_token(user)
-      return helper.bad_request unless user
+      token = helper.params['user'] || ''
+      user = app.user_from_token(token)
+      return helper.bad_request("Unknown user: #{token}") if user.nil? && app.su?
+      return helper.forbidden if user.nil?
 
       report_id = helper.params['report']
       return helper.bad_request unless report_id
