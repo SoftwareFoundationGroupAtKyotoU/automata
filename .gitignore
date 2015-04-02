@@ -7,6 +7,9 @@ script/setup/passwd
 db
 !db/.gitkeep
 
+public/jar
+!public/jar/.gitkeep
+
 node_modules
 bower_components
 
