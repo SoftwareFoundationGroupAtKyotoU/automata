@@ -68,9 +68,11 @@ var call = function() {
         var responses = _.toArray(arguments);
         responses = params.length === 1 ? [responses] : responses;
         d.resolve.apply(d, responses.map(function (r) { return r[0]; }));
+    }).fail(function() {
+        d.reject.apply(d, arguments);
     });
 
-    return d;
+    return d.promise();
 };
 
 var get = function() {

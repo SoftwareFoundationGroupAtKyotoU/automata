@@ -6,50 +6,33 @@ Dir.chdir(File.dirname(File.expand_path($0)))
 
 require 'time'
 
-require_relative '../lib/app'
+require_relative 'helper'
 require_relative '../lib/permission'
-require_relative '../lib/log'
 
 err = {
   build: '自動コンパイルチェックに失敗しました; 提出要件を満たしているか確認して下さい',
   build_fatal: '自動コンパイルチェックに失敗しました; TAに問い合わせて下さい',
 }
 
-args = $*.dup
-$argv = {}; arg=nil
-$argv[:help] = %w'-h --help'.any?{|x| args.delete(x)}
-$argv[:id] = args.reject!{|x|x=~/^--id=(.*)$/&&arg=$1} && arg || $argv[:id]
-
-report_id = args.shift
-user = args.shift
-
-if $argv[:help] || !report_id || !user
-  print <<"EOM"
-Usage: #{$0} [-h] [--id=YYYY-MM-DDThh:mm:ss+zzzz] report-id user
-EOM
+helper = Helper.parse_args($*)
+if helper.nil?
+  print Helper.help_message
   exit
 end
 
-dir = {}
-dir[:user]   = App::KADAI + report_id + user
-dir[:test]   = dir[:user] + 'test'
-
 # sudo su www-data -c "command args..."
-Dir.chdir(oldwd){ Permission.ensure_writable(dir[:user].to_s) }
+Dir.chdir(oldwd){ Permission.ensure_writable(helper.dir[:user].to_s) }
 
-log_file = dir[:user] + App::FILES[:log]
-log = if $argv[:id]
-        Log.new(log_file, true).retrieve(:data, $argv[:id])
-      else
-        Log.new(log_file, true).latest(:data)
-      end
+report_id = helper.report_id
+user = helper.user
+log = helper.log
 time = log['id']
 
 cmd = {}
 
 # ../test/build.rb report_id user post
 cmd[:build] = "#{App::FILES[:build]} '#{report_id}' '#{user}' '#{time}'"
-cmd[:build] = "#{cmd[:build]} > /dev/null 2>#{dir[:user] + 'build_fatal.log'}"
+cmd[:build] = "#{cmd[:build]} > /dev/null 2>#{helper.dir[:user] + 'build_fatal.log'}"
 
 # ../test/test.rb report_id user post
 cmd[:test] = "#{App::FILES[:sandbox]} '#{report_id}' '#{user}' '#{time}'"
@@ -59,7 +42,7 @@ begin
   build = nil
   IO.popen(cmd[:build], 'w'){|io| log['report'].each{|l| io.puts(l)}}
   if $?.to_i == 0
-    Log.new(log_file).transaction do |log|
+    Log.new(helper.log_file).transaction do |log|
       build_log = log.retrieve(:build, time)
 
       hash = {
@@ -95,5 +78,5 @@ rescue => e
   entry = {
     'status' => 'NG',
     'log' => { 'error' => [ e.to_s, e.backtrace ].join("\n") } }
-  Log.new(log_file).write(:data, time, entry)
+  Log.new(helper.log_file).write(:data, time, entry)
 end

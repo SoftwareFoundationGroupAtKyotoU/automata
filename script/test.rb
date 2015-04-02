@@ -7,7 +7,7 @@ require 'fileutils'
 require 'yaml'
 require 'time'
 
-require_relative '../lib/app'
+require_relative 'helper'
 require_relative '../lib/conf'
 require_relative '../lib/log'
 require_relative '../lib/report/counter'
@@ -17,6 +17,8 @@ report_id = $*.shift
 user      = $*.shift
 post_tz   = $*.shift
 
+helper = Helper.new(report_id, user, post_tz)
+
 err = {
   fatal: '自動テストを実行できませんでした; TAに問い合わせて下さい',
   fail:  '自動テストがうまく実行されませんでした; 実装を確認して下さい'
@@ -24,22 +26,9 @@ err = {
 ZIP = 'test.zip'
 
 dir = {}
-dir[:user]   = App::KADAI + report_id + user
-dir[:test]   = dir[:user] + 'test'
+dir[:test] = helper.dir[:user] + 'test'
 
-files = {
-  log:    dir[:user] + App::FILES[:log],
-}
-
-app = App.new
-
-conf = {}
-[:test].each do |k|
-  conf[k] = {}
-  [:default, report_id].each do |l|
-    conf[k].merge!((app.conf[:master, :check, l, :test] || {}).to_hash)
-  end
-end
+conf = helper.merged_conf(:master, :check, :default, :test)
 
 info = nil
 
@@ -48,11 +37,11 @@ begin
     raise RuntimeError, "'#{dir[:test]}' not found"
   end
 
-  exit if conf[:test].empty?
+  exit if conf.empty?
 
-  run = conf[:test]['run']
-  fs = conf[:test]['files']
-  output = conf[:test]['output']
+  run = conf['run']
+  fs = conf['files']
+  output = conf['output']
   output = output.is_a?(Symbol) ? ':'+output.to_s : output
 
   cmd =
@@ -60,7 +49,7 @@ begin
       "-F 'file=@#{ZIP}'",
       "-F 'cmd=#{run}'",
       output && "-F 'output=#{output}'",
-      conf[:test]['sandbox'],
+      conf['sandbox'],
     ].compact.join(' ')
 
   result = Dir.chdir(dir[:test].to_s) do
@@ -99,7 +88,7 @@ begin
       ng_exs[r['ex']] = true unless result_ok?(r)
     end
 
-    counter = Report::Counter.new(app.conf[:scheme, :report, report_id] || {})
+    counter = Report::Counter.new((Conf.new)[:scheme, :report, report_id] || {})
     result.map {|r| r['ex']}.uniq.each do |ex|
       counter.vote(ex.to_ex) unless ng_exs.has_key?(ex)
     end
@@ -128,4 +117,4 @@ rescue => e
   }
 end
 
-Log.new(files[:log]).write(:data, post_tz, info)
+Log.new(helper.file[:log]).write(:data, post_tz, info)

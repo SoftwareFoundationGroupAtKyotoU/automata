@@ -81,7 +81,8 @@ var Record = React.createClass({
                     user: true,
                     admin: true,
                     token: true,
-                    reload: true
+                    reload: true,
+                    interact: true
                 }
             },
             {
@@ -111,6 +112,7 @@ var Record = React.createClass({
                     token: master.token,
                     admin: master.admin,
                     reload: master.reload,
+                    interact: master.interact,
                     scheme: scheme,
                     users: users,
                     comments: {},
@@ -194,6 +196,7 @@ var Record = React.createClass({
                     </ul>
                 </div>
                 <RouteHandler admin={this.state.admin}
+                              interact={this.state.interact}
                               scheme={this.state.scheme}
                               users={users}
                               updateStatus={this.updateStatus}
