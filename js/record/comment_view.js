@@ -202,11 +202,26 @@ var Comment = React.createClass({
 });
 
 var CommentView = React.createClass({
+    updateNews: function() {
+        var unreads = 0;
+        var comments = 0;
+        var stars = 0;
+        this.state.comments.forEach(function(comment) {
+            comments++;
+            if (!comment.readFlag) unreads++;
+            if (comment.starFlag) stars++;
+        });
+        this.props.updateNews({
+            unreads: unreads, comments: comments, stars: stars
+        });
+    },
+
     setStar: function(id, flag) {
         this.state.comments.forEach(function(comment) {
             if (comment.id === id) comment.starFlag = flag;
         });
         this.setState({ comments: this.state.comments });
+        this.updateNews();
     },
 
     setRead: function(id, flag) {
@@ -214,24 +229,30 @@ var CommentView = React.createClass({
             if (comment.id === id) comment.readFlag = flag;
         });
         this.setState({ comments: this.state.comments });
+        this.updateNews();
     },
 
     deleteComment: function(id) {
         this.setState({
             comments: _.reject(this.state.comments, 'id', id)
         });
+        this.updateNews();
     },
 
     replaceComment: function(comment) {
         this.setState({
             comments: this.state.comments.map(function(prev_comment) {
                 if (comment.id === prev_comment.id) {
+                    if (_.isUndefined(comment.readFlag)) {
+                        comment.readFlag = prev_comment.readFlag;
+                    }
                     return comment;
                 } else {
                     return prev_comment;
                 }
             })
-        })
+        });
+        this.updateNews();
     },
 
     refleshComments: function() {
@@ -261,6 +282,7 @@ var CommentView = React.createClass({
                     if (this.isMounted()) {
                         this.setState({ comments: this.state.comments });
                     }
+                    this.updateNews();
                 }.bind(this));
             }
 

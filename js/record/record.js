@@ -39,6 +39,17 @@ var Record = React.createClass({
         });
     },
 
+    updateNews: function(token, report, news) {
+        ['comments', report, token].reduce(function(r, k) {
+            if (!_.has(r, k)) r[k] = {};
+            return r[k];
+        }, this.state);
+        this.state.comments[report][token] = news;
+        this.setState({
+            comments: this.state.comments
+        });
+    },
+
     queryComments: function(tokens) {
         api.get({ api: 'comment', data: { action: 'list_news', user: tokens } })
            .done(function(comments) {
@@ -186,7 +197,9 @@ var Record = React.createClass({
                               scheme={this.state.scheme}
                               users={users}
                               updateStatus={this.updateStatus}
-                              loginUser={this.state.user}/>
+                              loginUser={this.state.user}
+                              updateNews={this.updateNews}
+                              comments={this.state.comments}/>
             </div>
         );
     }

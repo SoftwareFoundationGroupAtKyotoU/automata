@@ -36,6 +36,8 @@ var User = React.createClass({
         var user = _.find(this.props.users, function(user) {
             return user.token === token
         });
+        var comments = _.chain(this.props.comments)
+                        .result(report).result(token).result('comments').value();
         return (
                 <div>
                 <SummaryList report={report}
@@ -44,12 +46,13 @@ var User = React.createClass({
                              users={[user]}
                              updateStatus={this.props.updateStatus}/>
                 <div className="status_window">
-                <StatusHeader reload={this.reloadView}/>
+                <StatusHeader comments={comments} reload={this.reloadView}/>
                 <RouteHandler key={token + report + this.state.counter}
                               token={token}
                               report={report}
                               admin={this.props.admin}
-                              loginUser={this.props.loginUser}/>
+                              loginUser={this.props.loginUser}
+                              updateNews={_.partial(this.props.updateNews, token, report)}/>
                 </div>
                 <NavButton name={user.name}/>
                 </div>
