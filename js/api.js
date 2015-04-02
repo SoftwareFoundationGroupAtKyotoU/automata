@@ -42,11 +42,14 @@ var jsonpFailure = function(reason, uri) {
     ]);
 };
 
-var api = function(name, params) {
+var root = (function() {
     var pathname = location.pathname.split('/');
     pathname.pop(); pathname.pop();
-    return location.protocol + '//' + location.host +
-        pathname.join('/')+'/api/'+name+'.cgi';
+    return location.protocol + '//' + location.host + pathname.join('/');
+})();
+
+var api = function(name) {
+    return root + '/api/' + name + '.cgi';
 };
 
 var call = function() {
@@ -83,6 +86,7 @@ var post = function() {
 };
 
 module.exports = {
+    root: root,
     get: get,
     post: post
 };

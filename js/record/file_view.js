@@ -276,11 +276,15 @@ var FileView = (function() {
             var render = s.error ?
                 'なし' :
                 s.type === 'dir' ?
-                <FileBrowser token={p.token}
-                             report={p.report}
-                             path={s.path}
-                             entries={s.entries}
-                             open={open} /> :
+                [ <a className="download"
+                     href={api.root+'/download/'+p.token+'/'+p.report+'.zip'}>
+                      ☟ダウンロード
+                  </a>,
+                  <FileBrowser token={p.token}
+                               report={p.report}
+                               path={s.path}
+                               entries={s.entries}
+                               open={open} /> ] :
                 <FileViewer  content={s.content} />;
 
             return (<div id={"summary-" + p.report + "_status_window"}
