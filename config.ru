@@ -22,15 +22,13 @@ require 'lib/sandbox/tester'
 require 'authenticator'
 require 'router'
 
-relative_uri = Conf.new[:master, :relative_uri] || '/'
+use Rack::CommonLogger
 
 use Rack::Rewrite do
   r301 %r{/(\w+)$}, './$1/'
 end
 
-map relative_uri do
-  use Rack::CommonLogger
-
+map Conf.new[:master, :base_path] || '/' do
   if ENV['RACK_ENV'] == 'development'
     use Rack::Lint
     use Rack::ShowExceptions
