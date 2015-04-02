@@ -1,6 +1,9 @@
 # The schema of a master config file.
 type: map
 mapping:
+  "base_path":
+    type: str
+    required: no
   "logger":
     type: map
     required: yes
