@@ -74,7 +74,7 @@ mapping:
        required: no
      "password":
        type: str
-       reqruied: no
+       required: no
 
   "record":
     type: map
