@@ -3,6 +3,7 @@
 require 'shellwords'
 require 'time'
 require 'shared-mime-info'
+require 'open3'
 
 require_relative '../app'
 require_relative '../log'
@@ -81,24 +82,23 @@ module API
       applet_height = "height=\"#{h}\""
 
       if path.directory?
-        Dir.chdir(path.to_s) do
-          files = path.entries.reject { |f| f.to_s =~ /^\.+$/ }.sort do |a, b|
-            "#{a.directory? ? 0 : 1}#{a}" <=> "#{b.directory? ? 0 : 1}#{b}"
-          end
-          files.map! do |f|
-            if f.directory?
-              type = 'dir'
-            else
-              type = MIME.check(f.to_s).media_type == 'text' ? 'txt' : 'bin'
-            end
-            { 'name' => f.to_s,
-              'type' => type,
-              'size' => f.size,
-              'time' => f.mtime.iso8601
-            }
-          end
-          return helper.json_response(files)
+        files = path.children.sort do |a, b|
+          "#{a.directory? ? 0 : 1}#{a}" <=> "#{b.directory? ? 0 : 1}#{b}"
         end
+        files.map! do |f|
+          if f.directory?
+            type = 'dir'
+          else
+            type = MIME.check(f.to_s).media_type == 'text' ? 'txt' : 'bin'
+          end
+          {
+            'name' => f.basename.to_s,
+            'type' => type,
+            'size' => f.size,
+            'time' => f.mtime.iso8601
+          }
+        end
+        return helper.json_response(files)
       elsif MIME.check(path.to_s).media_type == 'text' &&
             helper.params['type'] == 'highlight'
         dir = File.join(File.dirname(File.expand_path(__FILE__)),
@@ -109,9 +109,12 @@ module API
             "--cmd 'source vimrc'",
             '-S src2html.vim'
           ].join(' ');
-        Dir.chdir(dir) do
-          return helper.ok(`#{vimcmd} #{Shellwords.escape(path.to_s)}`)
+        result = Open3.popen3("#{vimcmd} #{Shellwords.escape(path.realpath.to_s)}",
+                              { chdir: dir.to_s }) do |i, o, e, t|
+          i.close
+          o.read
         end
+        return helper.ok(result)
       elsif '.class' == path.extname && 'highlight' == helper.params['type']
         # return html including applet tag when .class file is selected
 

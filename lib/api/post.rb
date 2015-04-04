@@ -80,11 +80,9 @@ module API
 
       # extract tar file
       if entries.length == 1 && entries[0] == /\.tar$/
-        Dir.chdir(src_dir) do
-          file = File.basename(entries[0])
-          system("tar xf '#{file}' > /dev/null 2>&1")
-          FileUtils.rm(file) rescue nil
-        end
+        file = File.basename(entries[0])
+        system("tar xf '#{file}' > /dev/null 2>&1", { chdir: src_dir })
+        FileUtils.rm(entries[0]) rescue nil
         entries = Dir.glob("#{src_dir}/*")
       end
 
@@ -149,13 +147,10 @@ module API
     private
 
     def entries2utf8(path)
-      path.each_entry do |e|
-        next if e.to_s =~ /^\.+$/
-        Dir.chdir(path) do
-          entries2utf8(e) if e.directory?
-          utf8 = e.to_s.toutf8
-          e.rename(utf8) if utf8 != e.to_s
-        end
+      path.children do |e|
+        entries2utf8(e) if e.directory?
+        utf8 = e.to_s.toutf8
+        e.rename(utf8) if utf8 != e.to_s
       end
     end
 
@@ -170,9 +165,8 @@ module API
       if entries.length == 1 && File.directory?(entries[0]) then
         entries_dir = entries[0]
         Dir.mktmpdir do |tmpdir|
-          src_files = Pathname.new(entries_dir).entries
-          src_files.reject!{|f| f.to_s=~/^\.+$/}
-          Dir.chdir(entries_dir){ FileUtils.mv(src_files, tmpdir) }
+          src_files = Pathname.new(entries_dir).children
+          FileUtils.mv(src_files, tmpdir)
           FileUtils.rmdir(entries_dir)
           FileUtils.mv(Dir.glob("#{tmpdir}/*"), src_dir.to_s)
         end
