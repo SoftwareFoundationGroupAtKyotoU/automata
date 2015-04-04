@@ -164,7 +164,7 @@ module API
       if entries.length == 1 && File.directory?(entries[0]) then
         entries_dir = entries[0]
         Dir.mktmpdir do |tmpdir|
-          src_files = Pathname.new(entries_dir).children.map {|f| f.realpath }
+          src_files = Pathname.new(entries_dir).children
           FileUtils.mv(src_files, tmpdir)
           FileUtils.rmdir(entries_dir)
           FileUtils.mv(Dir.glob("#{tmpdir}/*"), src_dir.to_s)
