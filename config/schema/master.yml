@@ -2,8 +2,15 @@
 type: map
 mapping:
   "base_path":
-    type: str
+    type: map
     required: no
+    mapping:
+      "host":
+        type: str
+        required: no
+      "uri":
+        type: str
+        required: no
   "logger":
     type: map
     required: yes
