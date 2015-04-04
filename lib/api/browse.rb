@@ -3,6 +3,7 @@
 require 'shellwords'
 require 'time'
 require 'shared-mime-info'
+require 'open3'
 
 require_relative '../app'
 require_relative '../log'
@@ -109,9 +110,12 @@ module API
             "--cmd 'source vimrc'",
             '-S src2html.vim'
           ].join(' ');
-        Dir.chdir(dir) do
-          return helper.ok(`#{vimcmd} #{Shellwords.escape(path.to_s)}`)
+        result = Open3.popen3("#{vimcmd} #{Shellwords.escape(path.realpath.to_s)}",
+                              { chdir: dir.to_s }) do |i, o, e, t|
+          i.close
+          o.read
         end
+        return helper.ok(result)
       elsif '.class' == path.extname && 'highlight' == helper.params['type']
         # return html including applet tag when .class file is selected
 
