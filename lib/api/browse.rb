@@ -82,24 +82,23 @@ module API
       applet_height = "height=\"#{h}\""
 
       if path.directory?
-        Dir.chdir(path.to_s) do
-          files = path.entries.reject { |f| f.to_s =~ /^\.+$/ }.sort do |a, b|
-            "#{a.directory? ? 0 : 1}#{a}" <=> "#{b.directory? ? 0 : 1}#{b}"
-          end
-          files.map! do |f|
-            if f.directory?
-              type = 'dir'
-            else
-              type = MIME.check(f.to_s).media_type == 'text' ? 'txt' : 'bin'
-            end
-            { 'name' => f.to_s,
-              'type' => type,
-              'size' => f.size,
-              'time' => f.mtime.iso8601
-            }
-          end
-          return helper.json_response(files)
+        files = path.children.sort do |a, b|
+          "#{a.directory? ? 0 : 1}#{a}" <=> "#{b.directory? ? 0 : 1}#{b}"
         end
+        files.map! do |f|
+          if f.directory?
+            type = 'dir'
+          else
+            type = MIME.check(f.to_s).media_type == 'text' ? 'txt' : 'bin'
+          end
+          {
+            'name' => f.basename.to_s,
+            'type' => type,
+            'size' => f.size,
+            'time' => f.mtime.iso8601
+          }
+        end
+        return helper.json_response(files)
       elsif MIME.check(path.to_s).media_type == 'text' &&
             helper.params['type'] == 'highlight'
         dir = File.join(File.dirname(File.expand_path(__FILE__)),
