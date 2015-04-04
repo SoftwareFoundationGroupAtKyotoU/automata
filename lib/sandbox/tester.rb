@@ -7,6 +7,20 @@ require_relative '../file/random_basename'
 
 module Sandbox
   class Tester
+    def run_cmd(cmd, args, dir, output = nil)
+      cmd = ([Pathname.new(dir) + cmd] + args).join(' ')
+      if output
+        output = Pathname.new(dir) + output
+        system("#{run} > /dev/null 2>&1", { chdir: dir.to_s })
+        File.exist?(output) ? IO.read(output) : ''
+      else
+        Open3.popen3("#{run}", { chdir: dir.to_s }) do |i, o, e, t|
+          i.close
+          o.read
+        end
+      end
+    end
+
     def call(env)
       Dir.mktmpdir do |dir|
         helper = Helper.new(env);
@@ -31,16 +45,7 @@ module Sandbox
 
         # run
         cmd = helper.params['cmd']
-        result = Dir.chdir(dir) do
-          FileUtils.chmod(0755, cmd)
-          run = ([ File.join(dir, cmd) ] + args).join(' ')
-          if output
-            system("#{run} > /dev/null 2>&1")
-            File.exist?(output) ? IO.read(output) : ''
-          else
-            `#{run}`
-          end
-        end
+        result = run_cmd(cmd, args, dir, output)
 
         # result
         header = {
