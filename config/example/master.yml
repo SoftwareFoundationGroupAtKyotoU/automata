@@ -1,4 +1,6 @@
-base_path: "http://server_name/app_name"
+base_path:
+  host: "http://server_name"
+  uri: "/app_name"
 
 logger:
   path: "path to log file"

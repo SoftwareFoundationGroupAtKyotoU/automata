@@ -26,16 +26,23 @@ require 'router'
 
 use Rack::CommonLogger
 
+base_uri = Conf.new[:master, :base_path, :uri] || '/'
+base_path = File.join(Conf.new[:master, :base_path, :host] || '', base_uri)
+
 use Rack::Rewrite do
-  r301 %r{/(\w+)$}, './$1/'
+  r301 %r{^#{base_uri}$}, base_uri + '/'
 end
 
-map Conf.new[:master, :base_path] || '/' do
+map base_path do
   if ENV['RACK_ENV'] == 'development'
     use Rack::Lint
     use Rack::ShowExceptions
     # reload changed files per request, EXCEPT this config.ru
     use Rack::Reloader, 0
+  end
+
+  use Rack::Rewrite do
+    r301 %r{^/(account|admin|post|record)$}, './$1/'
   end
 
   use Authenticator
