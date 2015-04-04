@@ -35,7 +35,8 @@ class App
     end
 
     mail.charset = 'utf-8'
-    mail_options = Hash[ Conf.new[:master, :mail].map{|k,v| [k.to_sym, v] } ]
+    mail_config = Conf.new[:master, :mail] || {}
+    mail_options = Hash[mail_config.map{|k, v| [k.to_sym, v] } ]
     mail.delivery_method(:smtp, mail_options)
     mail.deliver
   end
