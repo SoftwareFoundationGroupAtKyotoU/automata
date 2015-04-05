@@ -60,6 +60,7 @@ var call = function() {
         method: p.method,
         url:    api(p.api),
         data:   p.data,
+        cache:  false,
         error:  function(jqXHR, status) {
             jsonpFailure(status || 'request',
                          api(p.api)+(p.data ? '?'+$.param(p.data) : ''));
