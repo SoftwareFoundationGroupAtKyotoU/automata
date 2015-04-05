@@ -61,10 +61,11 @@ var call = function() {
         url:    api(p.api),
         data:   p.data,
         cache:  false,
-        error:  function(jqXHR, status) {
-            jsonpFailure(status || 'request',
-                         api(p.api)+(p.data ? '?'+$.param(p.data) : ''));
-        }
+        error:  p.ownError ? undefined :
+            function(jqXHR, status) {
+                jsonpFailure(status || 'request',
+                             api(p.api)+(p.data ? '?'+$.param(p.data) : ''));
+            }
     }); })).done(function() {
         var responses = _.toArray(arguments);
         responses = params.length === 1 ? [responses] : responses;
