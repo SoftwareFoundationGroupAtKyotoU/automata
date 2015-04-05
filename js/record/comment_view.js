@@ -8,6 +8,7 @@ var RouteHandler = Router.RouteHandler;
 var api = require('../api');
 
 var CommentForm = require('./comment_form.js');
+var Highlight = require('./highlight.js');
 
 var ACL_MESSAGE_FOR_ALL      = "全員に公開";
 var ACL_MESSAGE_FOR_USER     = "提出者に公開";
@@ -159,8 +160,9 @@ var Comment = React.createClass({
             default:
                 comment_box = (
                     <div className="form">
-                        <div className="message"
-                             dangerouslySetInnerHTML={{ __html: this.props.comment.content }}/>
+                        <Highlight className="message">
+                            {this.props.comment.content}
+                        </Highlight>
                     </div>
                 );
                 break;
