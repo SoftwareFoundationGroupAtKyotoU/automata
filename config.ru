@@ -30,7 +30,7 @@ base_uri = Conf.new[:master, :base_path, :uri] || '/'
 base_path = File.join(Conf.new[:master, :base_path, :host] || '', base_uri)
 
 use Rack::Rewrite do
-  r301 %r{^#{base_uri}$}, base_uri + '/'
+  r301 %r{^#{base_uri}$}, base_uri + '/', if: (proc { |_| base_uri != '/' })
 end
 
 map base_path do
