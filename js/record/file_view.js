@@ -1,4 +1,7 @@
+var _ = require('lodash');
 var React = require('react');
+var Router = require('react-router');
+var Link = Router.Link;
 var $ = require('jquery');
 var api = require('../api');
 var CopyToClipboard = require('./copy_to_clipboard.js');
@@ -15,29 +18,27 @@ var FileEntry = (function() {
     };
 
     return React.createClass({
-        onclick: function (e) {
-
-            var p = this.props;
-            if (p.entry.type === 'bin' && p.entry.name.indexOf('.class') < 0) return;
-
-            e.preventDefault();
-
-            p.open(p.path+'/'+p.entry.name, p.entry.type);
-        },
-
         render: function() {
             var p = this.props;
             var entry = p.entry;
-            var uri = FileView.rawPath(p.token, p.report, p.path+'/'+p.entry.name);
-            var onclick = this.onclick;
+            var uri = FileView.rawPath(p.token, p.report, p.path+p.entry.name);
             var suffix = entry.type === 'dir' ? '/' : '';
+            var name = entry.name + suffix;
 
+            var params = {
+                token: p.token,
+                report: p.report,
+                splat: p.path + name
+            };
+            var link = (entry.type === 'bin')
+                ? (<a href={uri}>{name}</a>)
+                : (<Link to="file" params={params}>{name}</Link>);
             return (
                 <tr>
                     <td className="file">
                         <img className="icon"
                              src={"./" + entry.type + ".png"} />
-                        <a href={uri} onClick={onclick}>{entry.name + suffix}</a>
+                        {link}
                     </td>
                     <td className="size">{humanReadableSize(entry.size)}</td>
                     <td className="time">{entry.time}</td>
@@ -51,7 +52,7 @@ var Breadcrum = (function() {
     var descend = function(path) {
         return path.split('/').reduce(function(r, p) {
             r[1].push(p);
-            r[0].push({ name: p, path: r[1].join('/') });
+            r[0].push({ name: p, path: r[1].join('/') + '/' });
             return r;
         }, [ [], [] ])[0];
     };
@@ -63,36 +64,39 @@ var Breadcrum = (function() {
 
         render: function() {
             var p = this.props;
-            var list = descend(p.path).map(function(p) {
-                p.type = 'dir';
-                return p;
-            });
-            last = list[list.length-1];
-            last.type = p.type;
 
-            var toolButton = last.type === 'dir' ? null :
+            var list = descend(p.path);
+            list.unshift({ name: p.report, path: '' });
+
+            var self = this;
+            var last = list.pop();
+            var type;
+            if (last.name === '') {
+                type = 'dir';
+                last = list.pop();
+            }
+            var items = list.map(function(loc) {
+                var params = {
+                    token: p.token,
+                    report: p.report,
+                    splat: loc.path
+                };
+                return <li><Link to={'file'} params={params}>{loc.name}</Link></li>;
+            });
+            items.push(<li>{last.name}</li>);
+            if (type === 'dir') items.push(<li/>);
+
+            var toolButton = type === 'dir' ? null :
                 <li className="toolbutton">
-                    <a href={this.rawPath(last.path)}>⏎ 直接開く</a>
+                    <a href={this.rawPath(p.path)}>⏎ 直接開く</a>
                 </li>;
 
-            var copyButton = last.type === 'dir' ? null : (
+            var copyButton = type === 'dir' ? null : (
                 <li className="toolbutton">
                     <CopyToClipboard text={this.props.rawContent}
                                      selector={'.file .content'}/>
                 </li>
             );
-
-            var self = this;
-            var items = list.map(function(loc) {
-                if (loc.name == '.') loc.name = p.report;
-
-                var onclick = function(e) {
-                    e.preventDefault();
-                    p.open(loc.path, loc.type);
-                };
-                var uri = self.rawPath(loc.path);
-                return <li><a href={uri} onClick={onclick}>{loc.name}</a></li>;
-            });
 
             return (<ul id={"summary-" + p.report + "_status_toolbar"}
                          className="status_toolbar">
@@ -116,7 +120,6 @@ var FileBrowser = React.createClass({
                                token={p.token}
                                report={p.report}
                                parent={self}
-                               open={p.open}
                     />);
         });
 
@@ -198,103 +201,124 @@ var FileView = (function() {
     };
 
     return React.createClass({
-        browseAPI: function(path, type, success, error) {
-            api.get({
-                api: 'browse',
-                data: {
-                    user:   this.props.token,
-                    report: this.props.report,
-                    path:   path,
-                    type:   type,
+        mixins: [Router.State],
+
+        open: function(path) {
+            var data = _.chain({
+                user: this.props.token,
+                report: this.props.report,
+                path: path
+            });
+            api.get(
+                { api: 'browse', data: data.clone().assign({ type: 'highlight' }).value() },
+                { api: 'browse', data: data.clone().assign({ type: 'raw' }).value() }
+            ).done(function(result, rawContent) {
+                var newState = {
+                    path: path,
+                    rawContent: rawContent,
+                    mode: 'show'
                 }
-            }).done(function(res) { success(res); }).
-               fail(error);
-        },
-
-        open: function(path, type) {
-            if (type === 'bin' && path.indexOf('.class') < 0) return;
-
-            if (type !== 'dir') {
-                this.browseAPI(path, 'raw', function(res) {
-                    var rawContent = res;
-                    this.setState({
-                        rawContent: rawContent
-                    });
-                }.bind(this));
-            }
-
-            this.browseAPI(path, 'highlight', function(res) {
-                if (type === 'dir') {
-                    this.setState({
-                        path: path,
-                        type: 'dir',
-                        entries: res
-                    });
-                } else {
-                    var div = $('<div />')[0];
-                    var content = res.replace(/<pre>\n/, '<pre>');
-                    div.innerHTML = content;
-                    var pre = div.getElementsByTagName('pre')[0];
-                    if (content.charAt(content.length-1) != "\n") {
-                        content += "\n";
-                    }
-                    applyStyleFromSource(res);
-
-                    this.setState({
-                        path: path,
-                        type: type,
-                        content: pre.innerHTML+''
-                    });
+                switch (result.type) {
+                    case 'dir':
+                        _.assign(newState, {
+                            type: 'dir',
+                            entries: result.body
+                        });
+                        break;
+                    case 'txt':
+                        var div = $('<div />')[0];
+                        var content = result.body.replace('<pre>\n', '<pre>');
+                        div.innerHTML = content;
+                        var pre = div.getElementsByTagName('pre')[0];
+                        if (content.charAt(content.length-1) != "\n") {
+                            content += "\n";
+                        }
+                        applyStyleFromSource(result.body);
+                        _.assign(newState, {
+                            type: 'txt',
+                            content: pre.innerHTML+''
+                        });
+                        break;
+                    case 'bin':
+                        location.href = FileView.rawPath(this.props.token, this.props.report, path);
+                    default:
+                        _.assign(newState, {
+                            mode: 'error'
+                        });
+                        break;
                 }
-            }.bind(this), function() {
+                this.setState(newState);
+            }.bind(this)).fail(function() {
                 this.setState({
-                    path:  path,
-                    type:  type,
-                    error: true
+                    path: path,
+                    mode: 'error'
                 });
             }.bind(this));
+
+            this.setState({
+                mode: 'loading'
+            })
         },
 
         getInitialState: function() {
-            this.open('.', 'dir');
             return {
-                path: '.',
-                type: 'dir',
-                entries: []
+                mode: 'loading'
             };
+        },
+
+        componentDidMount: function() {
+            this.open(_.result(this.getParams(), 'splat', ''));
+        },
+
+        componentWillReceiveProps: function() {
+            this.open(_.result(this.getParams(), 'splat', ''));
         },
 
         render: function() {
             var s = this.state;
             var p = this.props;
-            var open = this.open;
 
-            var toolBar = function() {
-                return <Breadcrum token={p.token}
-                                  report={p.report}
-                                  path={s.path}
-                                  type={s.type}
-                                  open={open}
-                                  rawContent={s.rawContent}/>;
-            }.bind(this);
+            var toolBar;
+            var render;
+            switch (s.mode) {
+                case 'loading':
+                    render = <i className="fa fa-spinner fa-pulse"/>;
+                    break;
+                case 'show':
+                    toolBar = <Breadcrum token={p.token}
+                                         report={p.report}
+                                         path={s.path}
+                                         rawContent={s.rawContent}/>;
 
-            var render = s.error ?
-                'なし' :
-                s.type === 'dir' ?
-                [ <a className="download"
-                     href={api.root+'/download/'+p.token+'/'+p.report+'.zip'}>
-                      ☟ダウンロード
-                  </a>,
-                  <FileBrowser token={p.token}
-                               report={p.report}
-                               path={s.path}
-                               entries={s.entries}
-                               open={open} /> ] :
-                <FileViewer  content={s.content} />;
+                    if (s.type === 'dir') {
+                        render = [(
+                            <FileBrowser token={p.token}
+                                         report={p.report}
+                                         path={s.path}
+                                         entries={s.entries}/>
+                        )];
+                        if (s.path === '') render.unshift(
+                            <a className="download"
+                               href={api.root+'/download/'+p.token+'/'+p.report+'.zip'}>
+                                ☟ダウンロード
+                            </a>
+                        );
+                    } else {
+                        render = <FileViewer  content={s.content}/>;
+                    }
+                    break;
+                default:
+                    toolBar = <Breadcrum token={p.token}
+                                         report={p.report}
+                                         path={s.path}
+                                         rawContent={s.rawContent}/>;
+
+                    render = 'なし';
+            }
 
             return (<div id={"summary-" + p.report + "_status_window"}
                          style={ {display: "block"} }>
-                          <div className="status_header">{toolBar()}</div>
+                          <div className="status_header">{toolBar}</div>
                           <div id={"summary-" + p.report + "_status_view"}
                                className="status_view">
                               {render}

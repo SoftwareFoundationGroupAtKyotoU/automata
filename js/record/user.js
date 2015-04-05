@@ -65,13 +65,11 @@ var User = React.createClass({
 });
 
 var routes = StatusHeader.tabs.map(function(tab) {
-    return (
-            <Route name={tab.path} path={tab.path} handler={tab.handler} key={tab.path}/>
-    );
+    return <Route name={tab.name} path={tab.path} handler={tab.handler} key={tab.name}/>;
 });
 
 var UserRoute = (
-        <Route name="user" path=":token/:report" handler={User}>
+        <Route name="user" path=":token/:report/" handler={User}>
         {routes}
         <DefaultRoute handler={LogView}/>
         </Route>
