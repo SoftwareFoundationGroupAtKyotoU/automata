@@ -24,14 +24,10 @@ class TestConfigRu < Test::Unit::TestCase
     Rack::Builder.parse_file('config.ru').first
   end
 
-  def test_root
+  def test_redirect
     get '/path'
     assert last_response.redirect?
     assert_equal '/path/', last_response.header['Location']
-
-    get '/path/'
-    assert last_response.ok?
-    assert_equal File.read('public/index.html'), last_response.body
 
     get '/path/account'
     assert last_response.redirect?
@@ -48,6 +44,12 @@ class TestConfigRu < Test::Unit::TestCase
     get '/path/record'
     assert last_response.redirect?
     assert_equal './record/', last_response.header['Location']
+  end
+
+  def test_static
+    get '/path/'
+    assert last_response.ok?
+    assert_equal File.read('public/index.html'), last_response.body
 
     get '/path/account/'
     assert last_response.ok?
@@ -61,5 +63,40 @@ class TestConfigRu < Test::Unit::TestCase
 
     get '/path/record/'
     assert last_response.unauthorized?
+
+    get '/path/image/ZeroClipboard.swf'
+    assert last_response.ok?
+    assert_equal File.read('public/image/ZeroClipboard.swf'), last_response.body
+
+    get '/path/image/ZeroClipboard.swf?noCache=123'
+    assert last_response.ok?
+    assert_equal File.read('public/image/ZeroClipboard.swf'), last_response.body
+
+    get '/path/image/loading.gif'
+    assert last_response.ok?
+    assert_equal File.read('public/image/loading.gif'), last_response.body
+
+    get '/path/css/comment.css'
+    assert last_response.ok?
+    assert_equal File.read('public/css/comment.css'), last_response.body
+
+    get '/path/css/default.css'
+    assert last_response.ok?
+    assert_equal File.read('public/css/default.css'), last_response.body
+
+    get '/path/css/navigator.css'
+    assert last_response.ok?
+    assert_equal File.read('public/css/navigator.css'), last_response.body
+  end
+
+  def test_account
+    get '/path/account/register.cgi'
+    assert last_response.ok?
+    rack_env = { 'rack.session' => {}, 'rack.input' => {} }
+    assert_equal Account::Register.new.call(rack_env).body[0], last_response.body
+
+    get '/path/account/reset.html'
+    assert last_response.ok?
+    assert_equal File.read('public/account/reset.html'), last_response.body
   end
 end
