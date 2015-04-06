@@ -17,11 +17,10 @@ class Conf
 
   # Reload config files and validate configs.
   def reload
-    local = begin load_yaml(FILES[:local]) rescue {} end
     @conf = {
-      'master' => load_yaml(FILES[:master]).merge(local),
+      'master' => load_yaml(FILES[:master]),
       'scheme' => load_yaml(FILES[:scheme]),
-      'template' => load_yaml(FILES[:template]).merge(local)
+      'template' => load_yaml(FILES[:template])
     }
   end
 
@@ -50,7 +49,6 @@ class Conf
   SCHEMA = CONFIG + 'schema'
   FILES = {
     master:        CONFIG + 'master.yml',
-    local:         CONFIG + 'local.yml',
     template:      CONFIG + 'template.yml',
     scheme:        CONFIG + 'scheme.yml',
     master_schema: SCHEMA + 'master.yml'

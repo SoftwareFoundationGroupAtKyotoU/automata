@@ -52,7 +52,6 @@
   - 664 user:www-data
     - ./db/data.yml
     - ./db/passwd
-    - ./config/local.yml
     - ./.htaccess
   - 660 user:www-data
     - ./.htdigest
@@ -72,7 +71,6 @@
     - パスワードを生成
       - ./db/passwdにパスワードを保存
       - ./.htdigestを更新
-  - ./config/local.ymlの設定項目変更機能
   - セットアップが成功しているかどうかのステータスページ
   - ドキュメント
     - 初期化前は誰でも見える
