@@ -64,9 +64,7 @@ module API
       elsif action == 'preview'
         content = helper.params['message']
         renderer = ::Comment::Renderer.create
-
-        # FIXME: enable helper to deal with this response
-        return Rack::Response.new([content], 200, 'Content-Type' => renderer.type)
+        return helper.ok(renderer.render(content), {'Content-Type' => renderer.type})
       end
 
       # check if comment feature is enabled
