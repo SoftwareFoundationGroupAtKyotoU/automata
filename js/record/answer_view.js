@@ -99,7 +99,7 @@ var AnswerView = React.createClass({
         return (
                 <ul className="status_toolbar">
                 <li className="toolbutton">
-                <a href="javascript:void(0)" onClick={this.editModeOn}>✏ 編集</a>
+                <a href="javascript:void(0)" onClick={this.editModeOn}><i className="fa fa-pencil-square-o"/> 編集</a>
                 </li>
                 </ul>
         );
@@ -118,7 +118,7 @@ var AnswerView = React.createClass({
             return (
                     <div>
                     <div className="status_view">
-                    <img src="./loading.gif" />
+                    <i className="fa fa-spinner fa-pulse"/>
                     </div>
                     </div>
             );

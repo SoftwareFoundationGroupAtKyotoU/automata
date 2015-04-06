@@ -154,7 +154,7 @@ var Comment = React.createClass({
                 break;
             case 'reloading':
                 comment_box = (
-                    <div className="form"><img src="../image/loading.gif"/></div>
+                    <div className="form"><i className="fa fa-spinner fa-pulse"/></div>
                 );
                 break;
             default:
@@ -170,25 +170,63 @@ var Comment = React.createClass({
 
         var editButtons;
         if (this.props.admin || this.props.comment.user === this.props.loginUser) {
-            var starCaption = this.props.comment.starFlag ? "印を外す" : "印を付ける";
-            var starChar = this.props.comment.starFlag ? "fa fa-star" : "fa fa-star-o";
-            var style = this.isNormalMode() ? {} : { visibility: 'hidden' };
+            var buttons = [
+                {
+                    title: '未読にする',
+                    handler: this.onUnread,
+                    icon: 'fa-eye-slash',
+                    hidden: !_.result(this.props.comment, 'readFlag', true)
+                },
+                {
+                    title: this.props.comment.starFlag ? "印を外す" : "印を付ける",
+                    handler: this.onStar,
+                    icon: this.props.comment.starFlag ? "fa-star" : "fa-star-o",
+                },
+                {
+                    title: '編集する',
+                    handler: this.onEdit,
+                    icon: 'fa-pencil-square-o'
+                },
+                {
+                    title: '削除する',
+                    handler: this.onDelete,
+                    icon: 'fa-times'
+                }
+            ].map(function(p, i) {
+                var handler = function(e) {
+                    e.preventDefault();
+                    p.handler(e);
+                }
+                var icon = 'fa ' + p.icon;
+                var style = {
+                    visibility: p.hidden ? 'hidden' : 'visible'
+                }
+                if (this.isNormalMode()) {
+                    return (
+                        <a key={i} style={style} href="javascript:void(0)" title={p.title} onClick={handler}>
+                            <i className={icon}/>
+                        </a>
+                    );
+                } else {
+                    style.color = '#9a9';
+                    return (
+                        <a key={i} style={style} title={p.title}>
+                            <i className={icon}/>
+                        </a>
+                    );
+                }
+            }.bind(this));
             editButtons = (
-                <p className="edit" style={style}>
-                    <a title="未読にする" onClick={this.onUnread}>🙈</a>
-                    <a title={starCaption} onClick={this.onStar}><i className={starChar}></i></a>
-                    <a title="編集する" onClick={this.onEdit}>✏</a>
-                    <a title="削除する" onClick={this.onDelete}>✖</a>
-                </p>
+                <p className="edit">{buttons}</p>
             );
         }
 
         var div_meta = (
             <div className="meta">
                 <p className="author">{this.props.comment.user_name}</p>
-                {editButtons}
                 <p className="acl">{this.getAclMessage()}</p>
                 <p className="date">{this.props.comment.timestamp}</p>
+                {editButtons}
             </div>
         );
         if (this.acl('user') || this.acl('other')) {

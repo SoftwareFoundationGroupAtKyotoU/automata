@@ -149,7 +149,6 @@ td.status .loading {
 
 td.status a.edit {
    color: darkblue;
-   font-size: 1.2em;
    margin-left: 0.2em;
    text-decoration: none;
 }
@@ -388,8 +387,7 @@ ul.comments > li.private {
    display: inline-block;
 }
 .comments div.meta .edit {
-   display: inline;
-   float: right;
+   margin: 0.5em 0;
 }
 .comments div.meta .edit a {
    margin-left: 0.5em;

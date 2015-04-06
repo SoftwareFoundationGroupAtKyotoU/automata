@@ -45,7 +45,7 @@ var InteractView = React.createClass({
         var response;
 
         if (this.state.loading) {
-            sendButton = <img src="../image/loading.gif" />;
+            sendButton = <i className="fa fa-spinner fa-pulse"/>;
         }
         else {
             sendButton = <a href='javascript:void(0)' onClick={this.onClick}>送信</a>;

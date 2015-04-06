@@ -133,28 +133,37 @@ module.exports = React.createClass({
         if (this.props.admin) {
             if (this.state.editing === 'edit') {
                 edit = (
-                        <a className="edit" href="javascript:void(0)" title="キャンセル" onClick={this.onCancel}>✖</a>
+                    <a className="edit" href="javascript:void(0)" title="キャンセル" onClick={this.onCancel}>
+                        <i className="fa fa-times edit"/>
+                    </a>
                 );
             } else if (this.state.editing === 'exec') {
                 edit = (
                         <a className="edit" title="変更中">
-                        <img src="../image/loading.gif"/>
+                        <i className="fa fa-spinner fa-pulse"/>
                         </a>
                 );
             } else {
                 edit = (
-                        <a className="edit" href="javascript:void(0)" title="変更する" onClick={this.onEdit}>✏</a>
+                    <a className="edit" href="javascript:void(0)" title="変更する" onClick={this.onEdit}>
+                        <i className="fa fa-pencil-square-o edit"/>
+                    </a>
                 );
             }
         }
         var unreads = this.props.comment.unreads;
-        unreads = (unreads > 0) ? <div className="unread">{unreads}</div> : null;
+        unreads = (unreads > 0) ? (
+            <div className="unread">
+                <span className="base"><i className="fa fa-circle"/></span>
+                <span className="text">{unreads}</span>
+            </div>
+        ) : null;
         var stars = this.props.comment.stars;
         stars = (stars > 0) ? (
-                <span className="fa-stack">
-                <i className="fa fa-star fa-stack-1x"></i>
-                <span className="star"><i className="fa fa-star fa-stack-1x"></i></span>
-                </span>
+                <div className="star">
+                <span className="base"><i className="fa fa-star"/></span>
+                <span className="colored"><i className="fa fa-star-o"/></span>
+                </div>
         ) : null;
         return (
                 <td {...props}>

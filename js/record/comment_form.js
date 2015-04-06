@@ -93,7 +93,7 @@ module.exports = React.createClass({
         switch (this.state.mode) {
             case 'querying-preview':
                 comment_area = (
-                    <img src="../image/loading.gif"/>
+                    <i className="fa fa-spinner fa-pulse"/>
                 );
                 submitButton = (
                     <button disabled>コメントする</button>

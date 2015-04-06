@@ -132,7 +132,7 @@ var Record = React.createClass({
     },
 
     render: function() {
-        if (!this.state) return (<img src="../image/loading.gif"/>);
+        if (!this.state) return <i className="fa fa-spinner fa-pulse"/>;
 
         var filter;
         if (this.state.admin) {

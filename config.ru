@@ -52,7 +52,7 @@ map base_path do
   end
 
   use Rack::Rewrite do
-    send_file %r{^(/(index.html|record|post|jar|image|css|admin|account)[^?]*)(\?.*)?$},
+    send_file %r{^(/(index.html|record|post|jar|image|css|admin|account|fonts)[^?]*)(\?.*)?$},
               'public$1',
               if: (proc do |env|
       path = Rack::Request.new(env).path_info

@@ -57,7 +57,7 @@ module.exports = React.createClass({
         return (
                 <ul className="status_toolbar">
                 <li className="toolbutton">
-                <a href="javascript:void(0)" onClick={this.runTest}>⚡ テストを再実行</a>
+                <a href="javascript:void(0)" onClick={this.runTest}><i className="fa fa-bolt"/> テストを再実行</a>
                 </li>
                 </ul>
         );
@@ -90,7 +90,7 @@ module.exports = React.createClass({
         if (!this.state.init) {
             return (
                     <div className="status_view">
-                    <img src="../image/loading.gif"/>
+                    <i className="fa fa-spinner fa-pulse"/>
                     </div>
             );
         }

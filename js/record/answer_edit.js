@@ -82,7 +82,7 @@ var AnswerEdit = React.createClass({
             return (
                     <div>
                     <div className="list_view">
-                    <img src="./loading.gif" />
+                    <i className="fa fa-spinner fa-pulse"/>
                     </div>
                     </div>
             );

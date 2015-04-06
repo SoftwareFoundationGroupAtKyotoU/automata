@@ -59,7 +59,9 @@ module.exports = React.createClass({
     render: function() {
         return (
                 <div className="nav" ref="nav">
-                <div className="button" onClick={this.scrollTop}>🔝</div>
+                <div className="button" onClick={this.scrollTop}>
+                <i className="fa fa-arrow-up"/>
+                </div>
                 <div className="tag">{this.props.name}</div>
                 </div>
         );

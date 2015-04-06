@@ -224,7 +224,7 @@ var LogView = React.createClass({
         } else {
             return (
                     <ul className='status_toolbar'>
-                    <li className='toolbutton'><a href="javascript:void(0)" onClick={this.onEdit}>✏ 編集</a></li>
+                    <li className='toolbutton'><a href="javascript:void(0)" onClick={this.onEdit}><i className="fa fa-pencil-square-o"/> 編集</a></li>
                     </ul>
             );
         }
@@ -234,7 +234,7 @@ var LogView = React.createClass({
         if (!this.state.init) {
             return (
                     <div className="status_view">
-                    <img src="../image/loading.gif"/>
+                    <i className="fa fa-spinner fa-pulse"/>
                     </div>
             );
         }

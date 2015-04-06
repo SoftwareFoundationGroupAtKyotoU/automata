@@ -96,8 +96,8 @@ module.exports = React.createClass({
                 break;
         }
         var loading = (this.state.request === 'issue') ?
-                      (<i className="fa fa-refresh fa-spin"></i>) :
-                      (<i className="fa fa-refresh"></i>)
+                      (<i className="fa fa-refresh fa-spin"/>) :
+                      (<i className="fa fa-refresh"/>)
         if (this.props.interval > 0) {
             return (
                 <span title="自動更新:有効" style={{ color: color }}>{loading}</span>
