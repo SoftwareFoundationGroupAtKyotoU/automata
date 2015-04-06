@@ -25,10 +25,8 @@ class App
       passwd: passwd
     }
 
-    this = self
-
-    subject = this.conf[:template, tmpl, :subject].gsub(/%\{([a-z]+)\}/) { data[$1.to_sym] }
-    body = this.conf[:template, tmpl, :body].gsub(/%\{([a-z]+)\}/) { data[$1.to_sym] }
-    Mailer.send_mail(email, subject, body)
+    subject = self.conf[:template, tmpl, :subject].gsub(/%\{([a-z]+)\}/) { data[$1.to_sym] }
+    body = self.conf[:template, tmpl, :body].gsub(/%\{([a-z]+)\}/) { data[$1.to_sym] }
+    Mailer.send_mail(email, subject, body, self.conf)
   end
 end
