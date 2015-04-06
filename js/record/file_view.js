@@ -271,7 +271,8 @@ var FileView = (function() {
         },
 
         componentWillReceiveProps: function() {
-            this.open(_.result(this.getParams(), 'splat', ''));
+            var path = _.result(this.getParams(), 'splat', '');
+            if (this.state.path !== path) this.open(path);
         },
 
         render: function() {
