@@ -2,11 +2,11 @@
 
 require 'bundler/setup'
 require 'haml'
-require 'mail'
 require 'securerandom'
 
 require_relative '../app'
 require_relative '../helper'
+require_relative '../mailer'
 require_relative '../reset'
 require_relative '../string/random'
 
@@ -119,17 +119,8 @@ module Account
       env['rack.session']['token'] = token
       env['rack.session']['email'] = email
 
-      mail = Mail.new do
-        from    Conf.new[:master, :authn, :admin]
-        to      email
-        subject 'noreply'
-        body    "ページに戻って，次のトークンを入力してください．\n\n#{token}"
-      end
-      mail.charset = 'utf-8'
-      mail_config = Conf.new[:master, :mail] || {}
-      mail_options = Hash[mail_config.map { |k, v| [k.to_sym, v] }]
-      mail.delivery_method(:smtp, mail_options)
-      mail.deliver
+      body = "ページに戻って，次のトークンを入力してください．\n\n#{token}"
+      Mailer.send_mail(email, 'noreply', body)
 
       Haml::Engine.new(page).render do
         Haml::Engine.new(form_token).render
