@@ -1,9 +1,0 @@
-su:
-  - admin
-
-post:
-  subtitle: "レポート提出"
-
-record:
-  subtitle: "レポート提出状況"
-
