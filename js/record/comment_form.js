@@ -1,6 +1,7 @@
 var _ = require('lodash');
 var React = require('react');
 var api = require('../api.js');
+var Highlight = require('./highlight.js');
 
 function formAclArgument(userFlag, otherFlag) {
     var aclAry = [];
@@ -105,8 +106,7 @@ module.exports = React.createClass({
                 break;
             case 'preview':
                 comment_area = (
-                    <div className="preview messsage"
-                         dangerouslySetInnerHTML={{__html: this.state.commentHTML}}/>
+                    <Highlight className="preview message">{this.state.commentHTML}</Highlight>
                 );
                 submitButton = (
                     <button onClick={this.submitComment}>コメントする</button>
