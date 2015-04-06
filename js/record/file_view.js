@@ -30,7 +30,7 @@ var FileEntry = (function() {
                 report: p.report,
                 splat: p.path + name
             };
-            var link = (entry.type === 'bin')
+            var link = (entry.type === 'bin' && entry.name.indexOf('.class') < 0)
                 ? (<a href={uri}>{name}</a>)
                 : (<Link to="file" params={params}>{name}</Link>);
             return (
