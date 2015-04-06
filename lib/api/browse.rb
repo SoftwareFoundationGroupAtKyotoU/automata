@@ -115,7 +115,7 @@ module API
         result = Open3.popen3("#{vimcmd} #{Shellwords.escape(path.realpath.to_s)}",
                               { chdir: dir.to_s }) do |i, o, e, t|
           i.close
-          o.read
+          o.read.force_encoding('utf-8')
         end
         return helper.json_response({'type' => 'txt', 'body' => result})
       elsif '.class' == path.extname && 'highlight' == helper.params['type']
