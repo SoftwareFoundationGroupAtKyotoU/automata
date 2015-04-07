@@ -40,6 +40,7 @@ interact:
 
 browse:
   applet:
+    file: \.class$
     java_library: ["objectdrawV1.1.2.jar"]
     width: 800
     height: 400
