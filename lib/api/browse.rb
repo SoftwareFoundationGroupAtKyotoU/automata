@@ -34,7 +34,6 @@ module API
   #     - pathがバイナリファイルを指すとき:
   #       { type: 'bin' }
   class Browse
-
     def call(env)
       helper = Helper.new(env)
       app = App.new(env['REMOTE_USER'])
@@ -117,7 +116,6 @@ module API
       end
     end
 
-
     def gen_applet_html(src, path, user, app, report_id)
       # applet tag consists of five attributes, 'code', 'codebase', 'archive', 'height' and 'width'
       # 'code' is a name of main class
@@ -174,6 +172,5 @@ module API
 APPLET
       return applet_html
     end
-    
   end
 end
