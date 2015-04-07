@@ -58,7 +58,7 @@ check:
       input: solved.in
       output: :argument
       sandbox: "URI of tester.cgi."
-      run: # nothing
+      run: "" # nothing
     build:
       ignore:
         - \.o$
