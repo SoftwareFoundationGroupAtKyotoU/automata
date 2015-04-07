@@ -38,6 +38,12 @@ interact:
   example_report:
     run: # another commands to start an interpreter
 
+browse:
+  applet:
+    java_library: ["objectdrawV1.1.2.jar"]
+    width: 800
+    height: 400
+
 check:
   default:
     require: # prerequisite files
@@ -46,10 +52,6 @@ check:
     ignore: # ignored files/directories when uploaded
       - __MACOSX
       - .DS_Store
-    applet:
-      java_library: ["objectdrawV1.1.2.jar"]
-      width: 800
-      height: 400
     test:
       files:
         - test.byte
