@@ -125,6 +125,21 @@ mapping:
         mapping:
           "run": &run
 
+  "browse":
+    type: map
+    mapping:
+      "applet":
+        type: map
+        mapping:
+          "java_library":
+            type: seq
+            sequence:
+              - type: str
+          "width":
+            type: int
+          "height":
+            type: int
+
   "check":
     type: map
     required: yes
@@ -141,17 +156,6 @@ mapping:
             type: seq
             sequence:
               - type: str
-          "applet":
-            type: map
-            mapping:
-              "java_library":
-                type: seq
-                sequence:
-                  - type: str
-              "width":
-                type: int
-              "height":
-                type: int
           "test":
             type: map
             mapping:
