@@ -3,6 +3,7 @@
 require 'shellwords'
 require 'time'
 require 'shared-mime-info'
+require 'mime-types'
 require 'open3'
 
 require_relative '../app'
@@ -73,7 +74,7 @@ module API
           if f.directory?
             type = 'dir'
           else
-            type = MIME.check(f.to_s).media_type == 'text' ? 'txt' : 'bin'
+            type = mime(f).media_type == 'text' ? 'txt' : 'bin'
           end
           {
             'name' => f.basename.to_s,
@@ -98,7 +99,7 @@ module API
             conf
           )
           helper.json_response({'type' => 'txt', 'body' => html})
-        elsif MIME.check(path.to_s).media_type == 'text'
+        elsif mime(path).media_type == 'text'
           dir = File.join(File.dirname(File.expand_path(__FILE__)),
                           '../../script/vim')
           vimcmd =
@@ -118,7 +119,7 @@ module API
         end
       else
         header = {
-          'Content-Type' => MIME.check(path.to_s).to_s,
+          'Content-Type' => mime(path).to_s,
           'Content-Length' => path.size
         }
         content = nil
@@ -126,5 +127,8 @@ module API
         Rack::Response.new([content], 200, header)
       end
     end
+
+    def mime(path)
+      MIME::Types.type_for(path.to_s)[0] || MIME.check(path.to_s)
   end
 end

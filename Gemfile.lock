@@ -42,6 +42,7 @@ DEPENDENCIES
   kramdown
   kwalify
   mail
+  mime-types
   rack
   rack-rewrite
   rack-test
