@@ -32,23 +32,15 @@ module Browse
       height = conf['height'] || 400
 
       applet_html = <<"APPLET"
-      <?xml version="1.0" encoding="utf-8"?>
-      <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-      <html xmlns="http://www.w3.org/1999/xhtml">
-        <body>
-          <pre>
-            <applet
-              code="#{File.basename(path.to_s, '.*')}"
-              codebase="#{codebase_from_root}
-              #{libs.empty? ? '' : 'archive="' + libs.join(',') + '"'}
-              width="#{width}"
-              height="#{height}"
-              >
-            Note: This demo requires a Java enabled browser.  If you see this message then your browser either doesn't support Java or has had Java disabled.
-            </applet>
-          </pre>
-        </body>
-      </html>
+      <applet
+        code="#{File.basename(path.to_s, '.*')}"
+        codebase="#{codebase_from_root}"
+        #{libs.empty? ? '' : 'archive="' + libs.join(',') + '"'}
+        width="#{width}"
+        height="#{height}"
+      >
+      Note: This demo requires a Java enabled browser.  If you see this message then your browser either doesn't support Java or has had Java disabled.
+      </applet>
 APPLET
       return applet_html
     end

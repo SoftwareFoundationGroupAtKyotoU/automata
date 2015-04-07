@@ -26,10 +26,12 @@ module API
   # Return value:
   #   - pathがディレクトリのとき: JSON
   #     { type: 'dir',
-  #       body: [ { name: ファイル名, type: dir|txt|bin,
+  #       body: [ { name: ファイル名, type: dir|txt|bin|html,
   #                 size: byte, time: yyyy-dd-mmThh:MM:ss+ZONE } ] }
   #   - type=rawまたは指定がないとき: ファイルそのもの
   #   - type=highlightのとき: JSON
+  #     - pathがHTMLを生成するファイルを指すとき:
+  #       { type: 'html', body: HTMLファイル }
   #     - pathがテキストファイルを指すとき:
   #       { type: 'txt', body: テキストをハイライトしたHTML }
   #     - pathがバイナリファイルを指すとき:
@@ -73,6 +75,8 @@ module API
         files.map! do |f|
           if f.directory?
             type = 'dir'
+          elsif find_browse_conf(app, f)
+            type = 'html'
           else
             type = mime(f).media_type == 'text' ? 'txt' : 'bin'
           end
@@ -85,8 +89,7 @@ module API
         end
         return helper.json_response({'type' => 'dir', 'body' => files})
       elsif 'highlight' == helper.params['type']
-        name, conf =
-          app.conf[:master, :browse].find {|k,v| path.to_s =~ /#{v['file']}/}
+        name, conf = find_browse_conf(app, path)
         if name
           require_relative "../browse/#{name}"
           clazz =
@@ -98,7 +101,7 @@ module API
             report_id,
             conf
           )
-          helper.json_response({'type' => 'txt', 'body' => html})
+          helper.json_response({'type' => 'html', 'body' => html})
         elsif mime(path).media_type == 'text'
           dir = File.join(File.dirname(File.expand_path(__FILE__)),
                           '../../script/vim')
@@ -130,5 +133,11 @@ module API
 
     def mime(path)
       MIME::Types.type_for(path.to_s)[0] || MIME.check(path.to_s)
+    end
+
+    def find_browse_conf(app, path)
+      path = path.to_s
+      (app.conf[:master, :browse] || {}).find{|k,v| path.to_s =~ /#{v['file']}/}
+    end
   end
 end
