@@ -101,7 +101,13 @@ module API
         return helper.json_response({'type' => 'txt', 'body' => result})
       elsif '.class' == path.extname && 'highlight' == helper.params['type']
         # return html including applet tag when .class file is selected
-        applet_html = self.gen_applet_html(src, path, user, app, report_id)
+        applet_html = self.gen_applet_html(
+          Pathname('..'),
+          path.relative_path_from(src),
+          user,
+          report_id,
+          app.conf[:master, :browse, :applet]
+        )
         helper.json_response({'type' => 'txt', 'body' => applet_html})
       elsif  helper.params['type'] == 'highlight'
         helper.json_response({'type' => 'bin'})
@@ -116,41 +122,34 @@ module API
       end
     end
 
-    def gen_applet_html(src, path, user, app, report_id)
+    def gen_applet_html(root, path, user, report_id, conf)
       # applet tag consists of five attributes, 'code', 'codebase', 'archive', 'height' and 'width'
       # 'code' is a name of main class
       # 'codebase' is relative_path from "/public/record/" to a path where .class files exist
       # 'archive' is relative path from 'codebase' to "/public/jar/"
       
-      # name of main class
-      applet_code = "code=\"#{File.basename(path.to_s, '.*')}\""
+      # the path to the directory including .class file
+      codebase_from_root =
+        [
+         root,
+         'browse',
+         ::User.make_token(user).to_s,
+         report_id,
+         path.parent
+        ].reduce {|dir,sub| dir+sub}
 
-      # base_path means dir where .class files exist
-      base_path = path.parent
-      base_path_from_src = base_path.relative_path_from(src)      
-
-      # relative path from "/public/record/" to base_path
-      applet_codebase =
-        'codebase="../browse/' +
-        [::User.make_token(user).to_s, report_id, base_path_from_src.to_s].join('/') + '"'
-
-      # archive_path_from_src means 
-      # Pathname('/public/jar/').relative_path_from(Pathname('/public/browse/user_id/kadai_id/'))
-      archive_path_from_src = Pathname('../../../jar/')
-      libs = app.conf[:master, :check, :default, :applet, :java_library]
+      archive_path = root + 'jar'
+      libs = conf['java_library']
       if libs.nil? || libs.empty?
-        applet_archive = ''
+        libs = []
       else
-        archive_path_from_class = src.relative_path_from(base_path) + archive_path_from_src
-        applet_archive =
-          "archive=\"#{ (libs.map { |item| archive_path_from_class + item }).join(',') }\""
+        rel_archive_path = archive_path.relative_path_from(codebase_from_root)
+        libs = (libs.map { |item| rel_archive_path + item })
       end
 
       # width and height of applet view
-      w = app.conf[:master, :check, :default, :applet, :width] || 500
-      h = app.conf[:master, :check, :default, :applet, :height] || 400
-      applet_width = "width=\"#{w}\""
-      applet_height = "height=\"#{h}\""
+      width = conf['width'] || 500
+      height = conf['height'] || 400
       
       applet_html = <<"APPLET"
       <?xml version="1.0" encoding="utf-8"?>
@@ -158,11 +157,12 @@ module API
       <html xmlns="http://www.w3.org/1999/xhtml">
         <body>
           <pre>
-            <applet #{applet_code}
-              #{applet_codebase}
-              #{applet_archive}
-              #{applet_width}
-              #{applet_height}
+            <applet
+              code="#{File.basename(path.to_s, '.*')}"
+              codebase="#{codebase_from_root}
+              #{libs.empty? ? '' : '"archive=' + libs.join(',') + '"'}
+              width="#{width}"
+              height="#{height}"
               >
             Note: This demo requires a Java enabled browser.  If you see this message then your browser either doesn't support Java or has had Java disabled.
             </applet>
