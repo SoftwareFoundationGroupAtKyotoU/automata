@@ -64,7 +64,7 @@ mapping:
     type: map
     required: no
     mapping:
-     "addres":
+     "address":
        type: str
        required: no
      "port":
@@ -180,6 +180,7 @@ mapping:
             type: map
             required: yes
             mapping:
+              "ignore": *ignore
               "command": &command
                 type: seq
                 sequence:

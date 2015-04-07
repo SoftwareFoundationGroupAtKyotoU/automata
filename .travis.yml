@@ -8,3 +8,4 @@ rvm:
 
 script:
   - bundle exec rake test
+  - cp config/example/*.yml config/ && bundle exec rake verify
