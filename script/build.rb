@@ -9,7 +9,6 @@ require 'time'
 
 require_relative 'helper'
 require_relative '../lib/app'
-require_relative '../lib/dir/each_leaf'
 require_relative '../lib/log'
 require_relative '../lib/report/exercise'
 

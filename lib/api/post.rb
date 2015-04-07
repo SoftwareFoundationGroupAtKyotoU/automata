@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'fileutils'
+require 'find'
 require 'pathname'
 require 'tempfile'
 require 'tmpdir'
@@ -12,7 +13,6 @@ require_relative '../helper'
 require_relative '../app'
 require_relative '../report/exercise'
 require_relative '../log'
-require_relative '../dir/each_leaf'
 
 module API
   class Post
@@ -95,7 +95,8 @@ module API
       lift_dir(app, rep_id, ignore, src_dir)
 
       # clean entries
-      Dir.each_leaf(src_dir, File::FNM_DOTMATCH) do |f|
+      Find.find(src_dir) do |f|
+        next if File.directory?(f)
         FileUtils.rm(f) if f =~ /#{ignore}/
       end
 
