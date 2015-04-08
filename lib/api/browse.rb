@@ -3,6 +3,7 @@
 require 'shellwords'
 require 'time'
 require 'shared-mime-info'
+require 'mime-types'
 require 'open3'
 
 require_relative '../app'
@@ -25,10 +26,12 @@ module API
   # Return value:
   #   - pathがディレクトリのとき: JSON
   #     { type: 'dir',
-  #       body: [ { name: ファイル名, type: dir|txt|bin,
+  #       body: [ { name: ファイル名, type: dir|txt|bin|html,
   #                 size: byte, time: yyyy-dd-mmThh:MM:ss+ZONE } ] }
   #   - type=rawまたは指定がないとき: ファイルそのもの
   #   - type=highlightのとき: JSON
+  #     - pathがHTMLを生成するファイルを指すとき:
+  #       { type: 'html', body: HTMLファイル }
   #     - pathがテキストファイルを指すとき:
   #       { type: 'txt', body: テキストをハイライトしたHTML }
   #     - pathがバイナリファイルを指すとき:
@@ -72,8 +75,10 @@ module API
         files.map! do |f|
           if f.directory?
             type = 'dir'
+          elsif find_browse_conf(app, f)
+            type = 'html'
           else
-            type = MIME.check(f.to_s).media_type == 'text' ? 'txt' : 'bin'
+            type = mime(f).media_type == 'text' ? 'txt' : 'bin'
           end
           {
             'name' => f.basename.to_s,
@@ -83,37 +88,41 @@ module API
           }
         end
         return helper.json_response({'type' => 'dir', 'body' => files})
-      elsif MIME.check(path.to_s).media_type == 'text' &&
-            helper.params['type'] == 'highlight'
-        dir = File.join(File.dirname(File.expand_path(__FILE__)),
-                        '../../script/vim')
-        vimcmd =
-          [ 'vim -e -s',
-            "--cmd 'set runtimepath+=.'",
-            "--cmd 'source vimrc'",
-            '-S src2html.vim'
-          ].join(' ');
-        result = Open3.popen3("#{vimcmd} #{Shellwords.escape(path.realpath.to_s)}",
-                              { chdir: dir.to_s }) do |i, o, e, t|
-          i.close
-          o.read.force_encoding('utf-8')
+      elsif 'highlight' == helper.params['type']
+        name, conf = find_browse_conf(app, path)
+        if name
+          require_relative "../browse/#{name}"
+          clazz =
+            ::Browse.const_get(name.slice(0,1).capitalize + name.slice(1..-1))
+          html = clazz.new.html(
+            Pathname('..'),
+            path.relative_path_from(src),
+            user,
+            report_id,
+            conf
+          )
+          helper.json_response({'type' => 'html', 'body' => html})
+        elsif mime(path).media_type == 'text'
+          dir = File.join(File.dirname(File.expand_path(__FILE__)),
+                          '../../script/vim')
+          vimcmd =
+            [ 'vim -e -s',
+              "--cmd 'set runtimepath+=.'",
+              "--cmd 'source vimrc'",
+              '-S src2html.vim'
+            ].join(' ');
+          result = Open3.popen3("#{vimcmd} #{Shellwords.escape(path.realpath.to_s)}",
+                                { chdir: dir.to_s }) do |i, o, e, t|
+            i.close
+            o.read.force_encoding('utf-8')
+          end
+          return helper.json_response({'type' => 'txt', 'body' => result})
+        else
+          helper.json_response({'type' => 'bin'})
         end
-        return helper.json_response({'type' => 'txt', 'body' => result})
-      elsif '.class' == path.extname && 'highlight' == helper.params['type']
-        # return html including applet tag when .class file is selected
-        applet_html = self.gen_applet_html(
-          Pathname('..'),
-          path.relative_path_from(src),
-          user,
-          report_id,
-          app.conf[:master, :browse, :applet]
-        )
-        helper.json_response({'type' => 'txt', 'body' => applet_html})
-      elsif  helper.params['type'] == 'highlight'
-        helper.json_response({'type' => 'bin'})
       else
         header = {
-          'Content-Type' => MIME.check(path.to_s).to_s,
+          'Content-Type' => mime(path).to_s,
           'Content-Length' => path.size
         }
         content = nil
@@ -122,55 +131,13 @@ module API
       end
     end
 
-    def gen_applet_html(root, path, user, report_id, conf)
-      # applet tag consists of five attributes, 'code', 'codebase', 'archive', 'height' and 'width'
-      # 'code' is a name of main class
-      # 'codebase' is relative_path from "/public/record/" to a path where .class files exist
-      # 'archive' is relative path from 'codebase' to "/public/jar/"
-      
-      # the path to the directory including .class file
-      codebase_from_root =
-        [
-         root,
-         'browse',
-         ::User.make_token(user).to_s,
-         report_id,
-         path.parent
-        ].reduce {|dir,sub| dir+sub}
+    def mime(path)
+      MIME::Types.type_for(path.to_s)[0] || MIME.check(path.to_s)
+    end
 
-      archive_path = root + 'jar'
-      libs = conf['java_library']
-      if libs.nil? || libs.empty?
-        libs = []
-      else
-        rel_archive_path = archive_path.relative_path_from(codebase_from_root)
-        libs = (libs.map { |item| rel_archive_path + item })
-      end
-
-      # width and height of applet view
-      width = conf['width'] || 500
-      height = conf['height'] || 400
-      
-      applet_html = <<"APPLET"
-      <?xml version="1.0" encoding="utf-8"?>
-      <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-      <html xmlns="http://www.w3.org/1999/xhtml">
-        <body>
-          <pre>
-            <applet
-              code="#{File.basename(path.to_s, '.*')}"
-              codebase="#{codebase_from_root}
-              #{libs.empty? ? '' : '"archive=' + libs.join(',') + '"'}
-              width="#{width}"
-              height="#{height}"
-              >
-            Note: This demo requires a Java enabled browser.  If you see this message then your browser either doesn't support Java or has had Java disabled.
-            </applet>
-          </pre>
-        </body>
-      </html>
-APPLET
-      return applet_html
+    def find_browse_conf(app, path)
+      path = path.to_s
+      (app.conf[:master, :browse] || {}).find{|k,v| path.to_s =~ /#{v['file']}/}
     end
   end
 end

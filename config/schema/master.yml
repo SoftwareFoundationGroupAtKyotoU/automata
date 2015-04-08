@@ -131,6 +131,9 @@ mapping:
       "applet":
         type: map
         mapping:
+          "file":
+            type: str
+            required: yes
           "java_library":
             type: seq
             sequence:

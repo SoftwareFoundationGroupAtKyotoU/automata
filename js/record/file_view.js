@@ -30,7 +30,7 @@ var FileEntry = (function() {
                 report: p.report,
                 splat: p.path + name
             };
-            var link = (entry.type === 'bin' && entry.name.indexOf('.class') < 0)
+            var link = entry.type === 'bin'
                 ? (<a href={uri}>{name}</a>)
                 : (<Link to="file" params={params}>{name}</Link>);
             return (
@@ -141,20 +141,24 @@ var FileViewer = (function() {
         render: function() {
             var content = this.props.content;
 
-            // line number
-            var ln = '';
-            var i = 1, arr;
-            var re = new RegExp("\n", 'g');
-            while ((arr = re.exec(content)) !== null) {
-                ln += i++ + "\n";
-            }
-
-            return <table className="file_browser file"><tr>
-                <td className="linenumber"><pre>{ln}</pre></td>
+            var tds = [
                 <td className="content"><pre dangerouslySetInnerHTML={
                     {__html: content }
                 }/></td>
-            </tr></table>;
+            ];
+
+            // line number
+            if (this.props.type === 'txt') {
+                var ln = '';
+                var i = 1, arr;
+                var re = new RegExp("\n", 'g');
+                while ((arr = re.exec(content)) !== null) {
+                    ln += i++ + "\n";
+                }
+                tds.unshift(<td className="linenumber"><pre>{ln}</pre></td>);
+            }
+
+            return <table className="file_browser file"><tr>{tds}</tr></table>;
         }
     });
 })();
@@ -241,6 +245,13 @@ var FileView = (function() {
                         break;
                     case 'bin':
                         location.href = FileView.rawPath(this.props.token, this.props.report, path);
+                        break;
+                    case 'html':
+                        _.assign(newState, {
+                            type: 'html',
+                            content: result.body
+                        });
+                        break;
                     default:
                         _.assign(newState, {
                             mode: 'error'
@@ -305,7 +316,8 @@ var FileView = (function() {
                             </a>
                         );
                     } else {
-                        render = <FileViewer  content={s.content}/>;
+                        render = <FileViewer content={s.content}
+                                             type={s.type} />;
                     }
                     break;
                 default:

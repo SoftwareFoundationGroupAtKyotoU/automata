@@ -9,6 +9,7 @@ gem 'sanitize', '~>3.1'
 gem 'mail'
 gem 'kwalify'
 gem 'shared-mime-info'
+gem 'mime-types'
 gem 'haml'
 gem 'rack-rewrite'
 
