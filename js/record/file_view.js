@@ -214,8 +214,16 @@ var FileView = (function() {
                 path: path
             });
             api.get(
-                { api: 'browse', data: data.clone().assign({ type: 'highlight' }).value() },
-                { api: 'browse', data: data.clone().assign({ type: 'raw' }).value() }
+                {
+                    api: 'browse',
+                    data: data.clone().assign({ type: 'highlight' }).value(),
+                    ownError: true
+                },
+                {
+                    api: 'browse',
+                    data: data.clone().assign({ type: 'raw' }).value(),
+                    ownError: true
+                }
             ).done(function(result, rawContent) {
                 var newState = {
                     path: path,
