@@ -142,6 +142,14 @@ mapping:
             type: int
           "height":
             type: int
+      "image":
+        type: map
+        mapping:
+          "file":
+            type: str
+            required: yes
+          "max-width":
+            type: int
 
   "check":
     type: map
