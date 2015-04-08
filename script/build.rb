@@ -47,17 +47,18 @@ file_loc = nil
     break
   end
 end
-raise "config error" unless file_loc
 
-test_files_dir = file_loc['location']
+test_files_dir = (file_loc || {})['location']
 
 # copy files
 FileUtils.rm_r(dir[:test].to_s) if File.exist?(dir[:test].to_s)
 
 helper.copy_src_files(dir[:target].to_s)
 
-test_files = Dir.glob("#{dir[:build]}/#{test_files_dir}/*")
-FileUtils.cp_r(test_files, dir[:test].to_s)
+if test_files_dir
+  test_files = Dir.glob("#{dir[:build]}/#{test_files_dir}/*")
+  FileUtils.cp_r(test_files, dir[:test].to_s)
+end
 
 # make input file
 if !conf[:test].empty?
