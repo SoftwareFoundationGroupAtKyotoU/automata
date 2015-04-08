@@ -76,7 +76,7 @@ module API
             type = MIME.check(f.to_s).media_type == 'text' ? 'txt' : 'bin'
           end
           {
-            'name' => f.basename.to_s,
+            'name' => f.basename.to_s.force_encoding('utf-8'),
             'type' => type,
             'size' => f.size,
             'time' => f.mtime.iso8601
@@ -159,8 +159,8 @@ module API
           <pre>
             <applet
               code="#{File.basename(path.to_s, '.*')}"
-              codebase="#{codebase_from_root}
-              #{libs.empty? ? '' : '"archive=' + libs.join(',') + '"'}
+              codebase="#{codebase_from_root}"
+              #{libs.empty? ? '' : 'archive="' + libs.join(',') + '"'}
               width="#{width}"
               height="#{height}"
               >
