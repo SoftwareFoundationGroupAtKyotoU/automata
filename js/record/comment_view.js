@@ -9,6 +9,7 @@ var api = require('../api');
 
 var CommentForm = require('./comment_form.js');
 var Highlight = require('./highlight.js');
+var Loading = require('../loading');
 
 var ACL_MESSAGE_FOR_ALL      = "全員に公開";
 var ACL_MESSAGE_FOR_USER     = "提出者に公開";
@@ -16,6 +17,8 @@ var ACL_MESSAGE_FOR_OTHER    = "提出者以外に公開";
 var ACL_MESSAGE_FOR_PRIVATE  = "非公開";
 
 var Comment = React.createClass({
+    mixins: [Loading.Mixin],
+
     getInitialState: function() {
         return {
             mode: 'normal',
@@ -136,38 +139,31 @@ var Comment = React.createClass({
         this.normalMode();
     },
 
-    render: function() {
-        var comment_box;
+    nowLoading: function() {
+        return this.state.mode == 'reloading';
+    },
+
+    afterLoading: function() {
         switch (this.state.mode) {
             case 'editing':
-                comment_box = (
-                    <CommentForm admin={this.props.admin}
-                                 token={this.props.token}
-                                 report={this.props.report}
-                                 comment_id={this.props.comment.id}
-                                 defaultText={this.state.rawHTML}
-                                 aclUserFlag={this.acl('user')}
-                                 aclOtherFlag={this.acl('other')}
-                                 afterSubmit={this.reloadComment}
-                                 onCancel={this.onCancel}/>
-                );
-                break;
-            case 'reloading':
-                comment_box = (
-                    <div className="form"><i className="fa fa-spinner fa-pulse"/></div>
-                );
+                return <CommentForm admin={this.props.admin}
+                                    token={this.props.token}
+                                    report={this.props.report}
+                                    comment_id={this.props.comment.id}
+                                    defaultText={this.state.rawHTML}
+                                    aclUserFlag={this.acl('user')}
+                                    aclOtherFlag={this.acl('other')}
+                                    afterSubmit={this.reloadComment}
+                                    onCancel={this.onCancel}/>;
                 break;
             default:
-                comment_box = (
-                    <div className="form">
-                        <Highlight className="message">
-                            {this.props.comment.content}
-                        </Highlight>
-                    </div>
-                );
-                break;
+               return <Highlight className="message">
+                         {this.props.comment.content}
+                      </Highlight>;
         }
+    },
 
+    render: function() {
         var editButtons;
         if (this.props.admin || this.props.comment.user === this.props.loginUser) {
             var buttons = [
@@ -229,7 +225,7 @@ var Comment = React.createClass({
         );
         if (this.acl('user') || this.acl('other')) {
             return (
-                <li>{div_meta}{comment_box}</li>
+                <li>{div_meta}<div className="form">{this.renderLoading()}</div></li>
             );
         } else {
             return (

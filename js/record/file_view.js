@@ -5,6 +5,7 @@ var Link = Router.Link;
 var $ = require('jquery');
 var api = require('../api');
 var CopyToClipboard = require('./copy_to_clipboard.js');
+var Loading = require('../loading');
 
 var FileEntry = (function() {
     var humanReadableSize = function(size) {
@@ -205,7 +206,7 @@ var FileView = (function() {
     };
 
     return React.createClass({
-        mixins: [Router.State],
+        mixins: [Router.State, Loading.Mixin],
 
         open: function(path) {
             var data = _.chain({
@@ -294,22 +295,32 @@ var FileView = (function() {
             if (this.state.path !== path) this.open(path);
         },
 
-        render: function() {
+        nowLoading: function() {
+            return this.state.mode === 'loading';
+        },
+
+        toolBar: function() {
             var s = this.state;
             var p = this.props;
 
-            var toolBar;
-            var render;
             switch (s.mode) {
-                case 'loading':
-                    render = <i className="fa fa-spinner fa-pulse"/>;
-                    break;
                 case 'show':
-                    toolBar = <Breadcrum token={p.token}
-                                         report={p.report}
-                                         path={s.path}
-                                         rawContent={s.rawContent}/>;
+                    return <Breadcrum token={p.token}
+                                      report={p.report}
+                                      path={s.path}
+                                      rawContent={s.rawContent}/>;
+                    break;
+                default:
+                    return undefined;
+            }
+        },
 
+        afterLoading: function() {
+            var s = this.state;
+            var p = this.props;
+
+            switch (s.mode) {
+                case 'show':
                     if (s.type === 'dir') {
                         render = [(
                             <FileBrowser token={p.token}
@@ -329,20 +340,21 @@ var FileView = (function() {
                     }
                     break;
                 default:
-                    toolBar = <Breadcrum token={p.token}
-                                         report={p.report}
-                                         path={s.path}
-                                         rawContent={s.rawContent}/>;
-
                     render = 'なし';
             }
 
+            return render;
+        },
+
+        render: function() {
+            var p = this.props;
+
             return (<div id={"summary-" + p.report + "_status_window"}
                          style={ {display: "block"} }>
-                          <div className="status_header">{toolBar}</div>
+                          <div className="status_header">{this.toolBar()}</div>
                           <div id={"summary-" + p.report + "_status_view"}
                                className="status_view">
-                              {render}
+                              {this.renderLoading()}
                           </div>
                     </div>);
         }

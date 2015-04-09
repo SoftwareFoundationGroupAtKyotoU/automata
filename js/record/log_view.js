@@ -1,5 +1,6 @@
 var React = require('react');
 var api = require('../api');
+var Loading = require('../loading');
 
 var Log = React.createClass({
     render: function() {
@@ -157,6 +158,8 @@ var LogEdit = React.createClass ({
 });
 
 var LogView = React.createClass({
+    mixins: [Loading.Mixin],
+
     getInitialState: function(){
         return {
             init: false,
@@ -230,21 +233,15 @@ var LogView = React.createClass({
         }
     },
 
-    render: function() {
-        if (!this.state.init) {
-            return (
-                    <div className="status_view">
-                    <i className="fa fa-spinner fa-pulse"/>
-                    </div>
-            );
-        }
+    nowLoading: function() {
+        return !this.state.init;
+    },
+
+    afterLoading: function() {
         if (!this.state.data) {
-            return (
-                    <div className="status_view">
-                    なし
-                    </div>
-            );
+            return 'なし';
         }
+
         var status = this.state.data;
         var logedit;
         if (this.state.onEdit) {
@@ -252,15 +249,17 @@ var LogView = React.createClass({
         } else {
             logedit = (<LogMessages log={this.state.data.log}/>);
         }
-        return (
-                <div>
-                <div className="status_header">{this.toolBar()}</div>
-                <div id={'status_view'} className='status_view'>
-                <Log data={status} />
-                {logedit}
-                </div>
-                </div>
-        );
+
+        return [<Log data={status} />, {logedit}];
+    },
+
+    render: function() {
+        return <div>
+                   <div className="status_header">{this.toolBar()}</div>
+                   <div id={'status_view'} className='status_view'>
+                       {this.renderLoading()}
+                   </div>
+               </div>;
     }
 });
 

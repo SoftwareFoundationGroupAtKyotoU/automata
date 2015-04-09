@@ -3,6 +3,7 @@ var React = require('react');
 var AnswerEdit = require('./answer_edit.js');
 var UserModule = require('./user.js');
 var api = require('../api');
+var Loading = require('../loading');
 
 var Solved = React.createClass({
     render: function() {
@@ -48,6 +49,8 @@ var Unsolved = React.createClass({
 });
 
 var AnswerView = React.createClass({
+    mixins: [Loading.Mixin],
+
     getInitialState: function() {
         return {
             solved: [],
@@ -96,7 +99,7 @@ var AnswerView = React.createClass({
     editModeOn: function() { this.setState({ editMode: true }); },
 
     toolBar: function() {
-        return (
+        return this.props.admin && (
                 <ul className="status_toolbar">
                 <li className="toolbutton">
                 <a href="javascript:void(0)" onClick={this.editModeOn}><i className="fa fa-pencil-square-o"/> 編集</a>
@@ -113,60 +116,32 @@ var AnswerView = React.createClass({
         this.componentDidMount();
     },
 
-    render: function() {
-        if (!this.state.mounted) {
-            return (
-                    <div>
-                    <div className="status_view">
-                    <i className="fa fa-spinner fa-pulse"/>
-                    </div>
-                    </div>
-            );
-        }
-        else if (this.state.editMode) {
-            return (
-                    <div>
-                    <div className="status_view">
-                    <AnswerEdit token={this.props.token}
-                                report={this.props.report}
-                                solved={this.state.solved}
-                                onCancel={this.editModeOff}
-                                posted={this.posted} />
-                    </div>
-                    </div>
-            );
+    nowLoading: function() {
+        return !this.state.mounted;
+    },
+
+    afterLoading: function() {
+        if (this.state.editMode) {
+            return <AnswerEdit token={this.props.token}
+                               report={this.props.report}
+                               solved={this.state.solved}
+                               onCancel={this.editModeOff}
+                               posted={this.posted} />;
         }
         else if (this.state.solved.length === 0) {
-            return (
-                    <div>
-                    <div className="status_view">
-                    なし
-                    </div>
-                    </div>
-            );
-        }
-        else if (this.props.admin) {
-            return (
-                    <div>
-                    <div className="status_header">{this.toolBar()}</div>
-                    <div className="status_view">
-                    <Solved solved={this.state.solved}/>
-                    <Unsolved unsolved={this.state.unsolved}/>
-                    </div>
-                    </div>
-            );
+            return 'なし';
         }
         else {
-            return (
-                    <div>
-                    <div className="status_header"></div>
-                    <div className="status_view">
-                    <Solved solved={this.state.solved}/>
-                    <Unsolved unsolved={this.state.unsolved}/>
-                    </div>
-                    </div>
-            );
+            return [<Solved solved={this.state.solved}/>,
+                    <Unsolved unsolved={this.state.unsolved}/>];
         }
+    },
+
+    render: function() {
+        return <div>
+                   <div className="status_header">{this.toolBar()}</div>
+                   <div className="status_view">{this.renderLoading()}</div>
+               </div>;
     }
 });
 
