@@ -159,8 +159,8 @@ module API
           <pre>
             <applet
               code="#{File.basename(path.to_s, '.*')}"
-              codebase="#{codebase_from_root}"
-              #{libs.empty? ? '' : 'archive="' + libs.join(',') + '"'}
+              codebase="#{codebase_from_root}
+              #{libs.empty? ? '' : '"archive=' + libs.join(',') + '"'}
               width="#{width}"
               height="#{height}"
               >
