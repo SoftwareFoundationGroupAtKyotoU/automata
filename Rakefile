@@ -55,8 +55,13 @@ end
 task 'htaccess' do
   conf = Conf.new
   ['api'].each do |dir|
-    puts("add public/#{dir}/.htaccess")
-    open("public/#{dir}/.htaccess", 'a').write <<EOF
+    path = "public/#{dir}/.htaccess"
+    if File.exist?(path)
+      print "#{path} already exists. Rewrite it (y or N)? "
+      next if STDIN.gets !~ /^y/i
+    end
+    puts "Create #{path}"
+    open(path, 'w').write <<EOF
 AuthType Digest
 AuthUserFile "#{conf[:master, :authn, :htdigest]}"
 AuthName "#{conf[:master, :authn, :realm]}"
