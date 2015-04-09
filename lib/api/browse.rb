@@ -81,7 +81,7 @@ module API
             type = mime(f).media_type == 'text' ? 'txt' : 'bin'
           end
           {
-            'name' => f.basename.to_s,
+            'name' => f.basename.to_s.force_encoding('utf-8'),
             'type' => type,
             'size' => f.size,
             'time' => f.mtime.iso8601
