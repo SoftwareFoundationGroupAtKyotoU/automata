@@ -44,6 +44,9 @@ browse:
     java_library: ["objectdrawV1.1.2.jar"]
     width: 800
     height: 400
+  image:
+    file: \.(png|jpg|jpeg|gif)$
+    max-width: 100
 
 check:
   default:
