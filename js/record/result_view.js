@@ -141,7 +141,7 @@ module.exports = React.createClass({
                     <div className="status_header">{this.toolBar()}</div>
                     <div className="status_view">
                     <h3>通過率</h3>
-                    <p>{this.state.test_result.passed}/{this.state.test_result.number}</p>
+                    {rate}
                     <h3>詳細</h3>
                     {testcase}
                     </div>
