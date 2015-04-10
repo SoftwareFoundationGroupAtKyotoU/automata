@@ -8,7 +8,9 @@ require_relative '../file/random_basename'
 module Sandbox
   class Tester
     def run_cmd(cmd, args, dir, output = nil)
-      cmd = ([Pathname.new(dir) + cmd] + args).join(' ')
+      cmd = Pathname.new(dir) + cmd
+      FileUtils.chmod(0755, cmd)
+      run = ([cmd] + args).join(' ')
       if output
         output = Pathname.new(dir) + output
         system("#{run} > /dev/null 2>&1", { chdir: dir.to_s })
