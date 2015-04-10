@@ -43,12 +43,14 @@ begin
   fs = conf['files']
   output = conf['output']
   output = output.is_a?(Symbol) ? ':'+output.to_s : output
+  max_time = conf['max_wait_time']
 
   cmd =
     [ 'curl',
       "-F 'file=@#{ZIP}'",
       "-F 'cmd=#{run}'",
       output && "-F 'output=#{output}'",
+      max_time && "--max-time #{max_time}",
       conf['sandbox'],
     ].compact.join(' ')
 

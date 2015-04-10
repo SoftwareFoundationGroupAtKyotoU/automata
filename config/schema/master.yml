@@ -187,6 +187,8 @@ mapping:
               "run":
                 type: str
                 required: yes
+              "max_wait_time":
+                type: int
           "build":
             type: map
             required: yes
