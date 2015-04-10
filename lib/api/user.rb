@@ -52,8 +52,8 @@ module API
         end
       end
 
-      time = Time.now.to_f
-      last = helper.params['last'].to_f
+      # Get 'now' here to perform next auto reload correctly
+      now = Time.now.to_f
 
       if helper.params['type'] == 'status'
         schemes = app.conf[:scheme, :scheme].reject do |s|
@@ -66,23 +66,26 @@ module API
               status: helper.params['status'],
               log: !helper.params['log'].nil?
             }
-            report = app.report(option, s['id'], u.real_login)
-            if last && report
-              report = nil if Time.parse(report.to_hash['timestamp']).to_f < last
-            end
-            u[s['id']] = report
+            u[s['id']] = app.report(option, s['id'], u.real_login)
           end
         end
       end
 
       users.map! do |u|
         u = u.to_hash
-        u['lastUpdate'] = time
+        u['lastUpdate'] = now
         u
       end
 
+      last = helper.params['last'].to_f
       if last > 0
-        users.reject!{|u| !u.has_key?('report')}
+        users.reject! do |u|
+          schemes.all? do |s|
+            time = ((u['report']||{})[s['id']]||{})['timestamp']
+            time = time ? Time.parse(time).to_f : 0
+            time < last
+          end
+        end
       end
 
       if !app.su? || helper.params['email'].nil?
