@@ -27,6 +27,7 @@ record:
   show_login: false
   open: false
   detail: detail
+  reload: 5000 # millisecond
 
 comment:
   enable: true
