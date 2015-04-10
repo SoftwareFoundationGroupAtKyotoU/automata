@@ -4,9 +4,14 @@ require_relative '../app'
 require_relative '../helper'
 
 module API
-  # Usage: user [user=<login>] [type={info|status}]
-  #             [status={solved|record}] [log] [report=<report-id>]
+  # Usage: user [user=<login>]
+  #             [type={info|status}]
+  #             [email]
+  #             [status={solved|record}]
+  #             [log]
+  #             [report=<report-id>]
   #             [filter=<assigned_TA>]
+  #             [last=<float seconds>]
   #   ユーザごとの情報を表示
   # Options:
   #   user           ログイン名が<login>のユーザの情報のみ取得
@@ -20,6 +25,7 @@ module API
   #   report         <report-id>のレポートに関する情報のみ取得
   #   filter         <assined_TA>の担当学生の情報のみ取得
   #                  (ユーザー名以外ならリモートユーザーの担当学生のみ)
+  #   last           これ以降に更新されたユーザー情報のみ取得
   # Security:
   #   master.su に入っていないユーザに関しては user オプションによらず
   #   ログイン名が remote_user の情報のみ取得可能
