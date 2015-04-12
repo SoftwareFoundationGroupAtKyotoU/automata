@@ -4,9 +4,14 @@ require_relative '../app'
 require_relative '../helper'
 
 module API
-  # Usage: user [user=<login>] [type={info|status}]
-  #             [status={solved|record}] [log] [report=<report-id>]
+  # Usage: user [user=<login>]
+  #             [type={info|status}]
+  #             [email]
+  #             [status={solved|record}]
+  #             [log]
+  #             [report=<report-id>]
   #             [filter=<assigned_TA>]
+  #             [last=<float seconds>]
   #   ユーザごとの情報を表示
   # Options:
   #   user           ログイン名が<login>のユーザの情報のみ取得
@@ -20,6 +25,7 @@ module API
   #   report         <report-id>のレポートに関する情報のみ取得
   #   filter         <assined_TA>の担当学生の情報のみ取得
   #                  (ユーザー名以外ならリモートユーザーの担当学生のみ)
+  #   last           これ以降に更新されたユーザー情報のみ取得
   # Security:
   #   master.su に入っていないユーザに関しては user オプションによらず
   #   ログイン名が remote_user の情報のみ取得可能
@@ -46,8 +52,8 @@ module API
         end
       end
 
-      time = Time.now.to_f
-      last = helper.params['last'].to_f
+      # Get 'now' here to perform next auto reload correctly
+      now = Time.now.to_f
 
       if helper.params['type'] == 'status'
         schemes = app.conf[:scheme, :scheme].reject do |s|
@@ -60,23 +66,26 @@ module API
               status: helper.params['status'],
               log: !helper.params['log'].nil?
             }
-            report = app.report(option, s['id'], u.real_login)
-            if last && report
-              report = nil if Time.parse(report.to_hash['timestamp']).to_f < last
-            end
-            u[s['id']] = report
+            u[s['id']] = app.report(option, s['id'], u.real_login)
           end
         end
       end
 
       users.map! do |u|
         u = u.to_hash
-        u['lastUpdate'] = time
+        u['lastUpdate'] = now
         u
       end
 
+      last = helper.params['last'].to_f
       if last > 0
-        users.reject!{|u| !u.has_key?('report')}
+        users.reject! do |u|
+          schemes.all? do |s|
+            time = ((u['report']||{})[s['id']]||{})['timestamp']
+            time = time ? Time.parse(time).to_f : 0
+            time < last
+          end
+        end
       end
 
       if !app.su? || helper.params['email'].nil?
