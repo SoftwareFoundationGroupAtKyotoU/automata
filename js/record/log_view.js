@@ -250,7 +250,7 @@ var LogView = React.createClass({
             logedit = (<LogMessages log={this.state.data.log}/>);
         }
 
-        return [<Log data={status} />, {logedit}];
+        return [<Log data={status} />, logedit];
     },
 
     render: function() {
