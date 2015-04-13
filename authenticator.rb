@@ -11,7 +11,8 @@ class Authenticator
     @conf = Conf.new
   end
 
-  def call(env)
+  def auth(env)
+    md5 = nil
     if env['PATH_INFO'] =~ /^\/account/ && @conf[:master, :authn_account]
       md5 = Rack::Auth::Digest::MD5.new(
         @app,
@@ -27,7 +28,6 @@ class Authenticator
           @conf[:master, :authn_account, :passwd]
         ].join(':'))
       end
-      return md5.call(env)
     elsif env['PATH_INFO'] =~ /^\/(admin|api|browse|post|record|download)/
       md5 = Rack::Auth::Digest::MD5.new(
         @app,
@@ -39,7 +39,27 @@ class Authenticator
         htdigest = WEBrick::HTTPAuth::Htdigest.new(htdigest_path)
         htdigest.get_passwd(@conf[:master, :authn, :realm], username, true)
       end
-      return md5.call(env)
+    end
+    md5
+  end
+
+  def call(env)
+    md5 = auth(env)
+
+    if md5
+      res = md5.call(env)
+      res[2] = [<<-EOH
+        <html>
+          <head><title>401 Unauthorized</title></head>
+          <body>
+            <h1>Unauthorized</h1><p>username or password is wrong.</p>
+          </body>
+        </html>
+        EOH
+      ]
+      res[1]['Content-Length'] = res[2][0].length.to_s
+      res[1]['Content-Type'] = 'text/html'
+      return res
     end
     @app.call(env)
   end
