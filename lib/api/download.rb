@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
 require 'zip'
+
 require_relative '../app'
+require_relative '../log'
+require_relative '../helper'
 
 module API
   # Usage: download report=<report-id> user=<login>
