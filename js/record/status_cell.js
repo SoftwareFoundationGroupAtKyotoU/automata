@@ -2,9 +2,10 @@ var React = require('react');
 var Router = require('react-router');
 var Link = Router.Link;
 var api = require('../api');
+var Loading = require('../loading');
 
 module.exports = React.createClass({
-    mixins: [Router.Navigation],
+    mixins: [Router.Navigation, Loading.Mixin],
 
     status_map: {
         'none':     '未提出',
@@ -77,6 +78,24 @@ module.exports = React.createClass({
         };
     },
 
+    nowLoading: function() { return this.state.editing === 'exec'; },
+
+    afterLoading: function() {
+        switch (this.state.editing) {
+        case 'edit':
+            return <a className="edit" href="javascript:void(0)"
+                      title="キャンセル" onClick={this.onCancel}>
+                       <i className="fa fa-times edit"/>
+                   </a>;
+            break;
+        default:
+            return <a className="edit" href="javascript:void(0)"
+                      title="変更する" onClick={this.onEdit}>
+                       <i className="fa fa-pencil-square-o edit"/>
+                   </a>;
+        }
+    },
+
     render: function() {
         var status = ['report', this.props.report, 'status'].reduce(function(r, k) {
             if (typeof r[k] === 'undefined') r[k] = {};
@@ -129,28 +148,7 @@ module.exports = React.createClass({
                     }}>{this.status_map[status]}</Link>
             );
         }
-        var edit;
-        if (this.props.admin) {
-            if (this.state.editing === 'edit') {
-                edit = (
-                    <a className="edit" href="javascript:void(0)" title="キャンセル" onClick={this.onCancel}>
-                        <i className="fa fa-times edit"/>
-                    </a>
-                );
-            } else if (this.state.editing === 'exec') {
-                edit = (
-                        <a className="edit" title="変更中">
-                        <i className="fa fa-spinner fa-pulse"/>
-                        </a>
-                );
-            } else {
-                edit = (
-                    <a className="edit" href="javascript:void(0)" title="変更する" onClick={this.onEdit}>
-                        <i className="fa fa-pencil-square-o edit"/>
-                    </a>
-                );
-            }
-        }
+        var edit = this.props.admin && this.renderLoading();
         var unreads = this.props.comment.unreads;
         unreads = (unreads > 0) ? (
             <div className="unread">
@@ -167,8 +165,8 @@ module.exports = React.createClass({
         ) : null;
         return (
                 <td {...props}>
-                <div className="notify">{unreads}{stars}</div>
-                {content}{edit}
+                    <div className="notify">{unreads}{stars}</div>
+                    {content}{edit}
                 </td>
         );
     }

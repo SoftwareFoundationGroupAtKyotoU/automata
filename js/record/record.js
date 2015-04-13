@@ -9,6 +9,7 @@ var $ = require('jquery');
 require('jquery.cookie');
 var api = require('../api');
 var ui = require('../ui2');
+var Loading = require('../loading');
 
 var DetailList = require('./detail_list.js');
 var SummaryList = require('./summary_list.js');
@@ -18,7 +19,8 @@ var AutoReload = require('./auto_reload.js');
 var Record = React.createClass({
     mixins: [
         Router.Navigation,
-        Router.State
+        Router.State,
+        Loading.Mixin
     ],
 
     toggleFilter: function() {
@@ -131,9 +133,9 @@ var Record = React.createClass({
         }.bind(this));
     },
 
-    render: function() {
-        if (!this.state) return <i className="fa fa-spinner fa-pulse"/>;
+    nowLoading: function() { return !this.state; },
 
+    afterLoading: function() {
         var filter;
         if (this.state.admin) {
             if (this.state.filtered) {
@@ -205,7 +207,9 @@ var Record = React.createClass({
                               comments={this.state.comments}/>
             </div>
         );
-    }
+    },
+
+    render: Loading.Mixin.renderLoading
 });
 
 var routes = (

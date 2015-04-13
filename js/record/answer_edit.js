@@ -1,6 +1,7 @@
 var React = require('react');
 var api = require('../api');
 var exercise = require('../exercise');
+var Loading = require('../loading');
 
 var Report = React.createClass({
     getInitialState: function() {
@@ -55,6 +56,7 @@ var Report = React.createClass({
 });
 
 var AnswerEdit = React.createClass({
+    mixins: [Loading.Mixin],
 
     getInitialState: function() {
         return {
@@ -77,26 +79,20 @@ var AnswerEdit = React.createClass({
         }.bind(this));
     },
 
-    render: function() {
-        if (!this.state.exercise_list) {
-            return (
-                    <div>
-                    <div className="list_view">
-                    <i className="fa fa-spinner fa-pulse"/>
-                    </div>
-                    </div>
-            );
-        } else {
-            return (
-                    <Report token={this.props.token}
-                            report={this.props.report}
-                            solved={this.props.solved}
-                            exercise_list={this.state.exercise_list}
-                            onCancel={this.props.onCancel}
-                            posted={this.props.posted} />
-            );
-        }
-    }
+    nowLoading: function() {
+        return !this.state.exercise_list;
+    },
+
+    afterLoading: function() {
+        return <Report token={this.props.token}
+                       report={this.props.report}
+                       solved={this.props.solved}
+                       exercise_list={this.state.exercise_list}
+                       onCancel={this.props.onCancel}
+                       posted={this.props.posted} />
+    },
+
+    render: Loading.Mixin.renderLoading
 });
 
 module.exports = AnswerEdit;

@@ -1,6 +1,7 @@
 var React = require('react');
 var _ = require('lodash');
 var api = require('../api');
+var Loading = require('../loading');
 
 api.modify = function(param) {
     var data = {
@@ -79,7 +80,7 @@ var TextCellComponent = React.createClass({
         } else if (this.state.editing === 'exec') {
             return React.DOM.td(
                 null,
-                React.DOM.img({ src: '../image/loading.gif' }),
+                Loading.Icon,
                 ' ',
                 this.props.value
             );
@@ -95,6 +96,8 @@ var TextCellComponent = React.createClass({
 var TextCell = React.createFactory(TextCellComponent);
 
 var DeleteCellComponent = React.createClass({
+    mixins: [Loading.Mixin],
+
     onDelete: function() {
         if (confirm('really delete the following user?\n' + this.props.value)) {
             api.post({
@@ -118,21 +121,19 @@ var DeleteCellComponent = React.createClass({
         };
     },
 
+    nowLoading: function() { return !this.state.deleting === 'none'; },
+
+    afterLoading: function() {
+        return React.DOM.a({
+            href: 'javascript:void(0)',
+            style: { textDecoration: 'none' },
+            title: '削除する',
+            onClick: this.onDelete
+        }, '♲');
+    },
+
     render: function() {
-        var del;
-        if (this.state.deleting === 'none') {
-            del = React.DOM.a({
-                href: 'javascript:void(0)',
-                style: { textDecoration: 'none' },
-                title: '削除する',
-                onClick: this.onDelete
-            }, '♲');
-        } else {
-            del = React.DOM.img({
-                src: '../image/loading.gif'
-            });
-        }
-        return React.DOM.td(null, del, ' ', this.props.value);
+        return React.DOM.td(null, this.renderLoading(), ' ', this.props.value);
     }
 });
 
@@ -187,7 +188,7 @@ var SelectCellComponent = React.createClass({
         } else if (this.state.editing === 'exec') {
             return React.DOM.td(
                 null,
-                React.DOM.img({ src: '../image/loading.gif' }),
+                Loading.Icon,
                 ' ',
                 this.props.value
             );
@@ -297,10 +298,14 @@ var UserTableComponent = React.createClass({
                     delUser: this.delUser
                 });
             }, this);
-            return React.DOM.table(
-                null,
-                React.DOM.thead(null, header),
-                React.DOM.tbody(null, rows)
+            return React.DOM.div(
+                { style: { display: "inline" } },
+                React.DOM.h2(null, 'ユーザ管理'),
+                React.DOM.table(
+                    null,
+                    React.DOM.thead(null, header),
+                    React.DOM.tbody(null, rows)
+                )
             );
         } else {
             return null;
@@ -311,6 +316,8 @@ var UserTableComponent = React.createClass({
 var UserTable = React.createFactory(UserTableComponent);
 
 var AdminComponent = React.createClass({
+    mixins: [Loading.Mixin],
+
     getInitialState: function() {
         return {};
     },
@@ -332,26 +339,18 @@ var AdminComponent = React.createClass({
         }.bind(this));
     },
 
+    nowLoading: function() {
+        return _.isUndefined(this.state.admin);
+    },
+
+    afterLoading: function() {
+        return this.state.admin ?
+            UserTable({ admins: this.state.all_admins }) :
+            React.DOM.h2(null, '権限がありません');
+    },
+
     render: function() {
-        if (this.state.admin) {
-            return React.DOM.div(
-                null,
-                React.DOM.h2(null, 'ユーザ管理'),
-                UserTable({ admins: this.state.all_admins })
-            );
-        } else if (this.state.admin === false) {
-            return React.DOM.div(
-                null,
-                React.DOM.h2(null, '権限がありません')
-            );
-        } else {
-            return React.DOM.div(
-                null,
-                React.DOM.img({
-                    src: '../image/loading.gif'
-                })
-            );
-        }
+        return React.DOM.div(null, this.renderLoading());
     }
 });
 

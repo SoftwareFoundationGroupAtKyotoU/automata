@@ -2,6 +2,7 @@ var _ = require('lodash');
 var React = require('react');
 var api = require('../api.js');
 var Highlight = require('./highlight.js');
+var Loading = require('../loading');
 
 function formAclArgument(userFlag, otherFlag) {
     var aclAry = [];
@@ -93,9 +94,7 @@ module.exports = React.createClass({
         var disabled = false;
         switch (this.state.mode) {
             case 'querying-preview':
-                comment_area = (
-                    <i className="fa fa-spinner fa-pulse"/>
-                );
+                comment_area = Loading.Icon;
                 submitButton = (
                     <button disabled>コメントする</button>
                 );
@@ -164,7 +163,7 @@ module.exports = React.createClass({
             );
         }
         return (
-            <div className="form">
+            <div style={ {display: "inline"} }>
                 {comment_area}{submitButton}{previewButton}{cancelButton}{checkBox}
             </div>
         );
