@@ -7,12 +7,12 @@ require 'tempfile'
 require 'tmpdir'
 require 'time'
 require 'kconv'
-require 'zip'
 
 require_relative '../helper'
 require_relative '../app'
 require_relative '../report/exercise'
 require_relative '../log'
+require_relative '../zip/unzip'
 
 module API
   class Post
@@ -65,12 +65,7 @@ module API
 
       # extract archive file
       begin
-        Zip::File.open(path) do |zip_file|
-          zip_file.each do |entry|
-            FileUtils.mkdir_p(File.dirname("#{src_dir}/#{entry.name}"))
-            entry.extract("#{src_dir}/#{entry.name}")
-          end
-        end
+        Zip::File.unzip(path, src_dir)
       rescue => e
         app.logger.error("post.cgi failed to unzip \"#{path}\" with \"#{e}\"")
         return helper.internal_server_error(ERR[:unzip])

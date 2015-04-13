@@ -1,5 +1,4 @@
 # coding: utf-8
-require 'logger'
 require 'pathname'
 require 'strscan'
 require 'time'
@@ -13,7 +12,7 @@ require_relative 'conf'
 require_relative 'log'
 require_relative 'store'
 require_relative 'user'
-require_relative 'logger_ext'
+require_relative 'app/logger_ext'
 
 class App
   base_dir = Pathname.new(File.dirname(File.expand_path(__FILE__))) + '..'
@@ -31,14 +30,6 @@ class App
     interact_script: SCRIPT + 'interact'
   }
 
-  LOGGER_LEVEL = {
-    "FATAL" => Logger::FATAL,
-    "ERROR" => Logger::ERROR,
-    "WARN"  => Logger::WARN,
-    "INFO"  => Logger::INFO,
-    "DEBUG" => Logger::DEBUG,
-  }
-
   attr_reader :conf
 
   def initialize(remote_user=nil)
@@ -54,10 +45,7 @@ class App
   end
 
   def logger()
-    unless @logger
-      @logger = Logger.new(conf[:master, :logger, :path])
-      @logger.level = LOGGER_LEVEL[conf[:master, :logger, :level]]
-    end
+    @logger = Logger.new(conf) unless @logger
     return @logger
   end
 

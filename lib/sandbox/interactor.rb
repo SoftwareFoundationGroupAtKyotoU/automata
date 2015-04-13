@@ -3,6 +3,8 @@
 require 'tmpdir'
 require 'open3'
 require_relative '../helper'
+require_relative '../app/logger_ext'
+require_relative '../zip/unzip'
 
 module Sandbox
   # Usage: interactor file=<zip file> cmd=<command> input=<string>
@@ -16,8 +18,13 @@ module Sandbox
         file.close
 
         # extract archive file
-        res = system("env 7z x -o#{dir} #{path} > /dev/null 2>&1")
-        raise RuntimeError, :unzip unless res
+        begin
+          Zip::File.unzip(path, dir)
+        rescue => e
+          msg = "interactor.cgi failed to unzip \"#{path}\" with \"#{e}\""
+          App::Logger.new.error(msg)
+          raise RuntimeError, msg
+        end
 
         # run
         cmd = helper.params['cmd']

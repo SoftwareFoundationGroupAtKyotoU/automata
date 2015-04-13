@@ -4,6 +4,8 @@ require 'tmpdir'
 require 'fileutils'
 require_relative '../helper'
 require_relative '../file/random_basename'
+require_relative '../app/logger_ext'
+require_relative '../zip/unzip'
 
 module Sandbox
   class Tester
@@ -31,8 +33,13 @@ module Sandbox
         file.close
 
         # extract archive file
-        res = system("env 7z x -o#{dir} #{path} > /dev/null 2>&1")
-        raise RuntimeError, :unzip unless res
+        begin
+          Zip::File.unzip(path, dir)
+        rescue => e
+          msg = "tester.cgi failed to unzip \"#{path}\" with \"#{e}\""
+          App::Logger.new.error(msg)
+          raise RuntimeError, msg
+        end
 
         # command line argument
         args = []
