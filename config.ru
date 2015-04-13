@@ -24,7 +24,7 @@ require 'lib/sandbox/interactor'
 require 'authenticator'
 require 'router'
 
-use Rack::CommonLogger
+use Rack::CommonLogger if ENV['RACK_ENV'] != 'development'
 
 base_uri = Conf.new[:master, :base_path, :uri] || '/'
 base_path = File.join(Conf.new[:master, :base_path, :host] || '', base_uri)
