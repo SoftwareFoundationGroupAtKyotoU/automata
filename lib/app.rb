@@ -134,11 +134,13 @@ class App
   def delete_user(id)
     backup_dir = DB + 'backup' + Time.new.iso8601
     raise RuntimeError, '頻度が高すぎるためリクエストを拒否しました' if File.exist?(backup_dir)
+    raise RuntimeError, 'Invalid delete id' if id.nil? || id.empty?
     FileUtils.mkdir_p(backup_dir)
     # remove and backup user directories
     Pathname.glob(KADAI + '*').each {|path|
-      src = path + id
-      if File.exist?(src)
+      path = path.expand_path
+      src = (path + id).expand_path
+      if File.exist?(src) && path.children.include?(src)
         dst = backup_dir + path.basename
         FileUtils.mv(src, dst)
       end
