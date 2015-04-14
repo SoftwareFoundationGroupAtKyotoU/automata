@@ -29,6 +29,17 @@ mapping:
     sequence:
       - type: str
 
+  "cookie_key":
+    type: map
+    required: yes
+    mapping:
+      "secret":
+        type: str
+        required: yes
+      "old_secret":
+        type: str
+        required: yes
+
   "authn":
     type: map
     required: yes

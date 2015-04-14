@@ -9,6 +9,13 @@ logger:
 su:
   - admin
 
+# Secret key used to encode cookie information in CGI mode.  Because this value
+# must not be revealed, use SecureRandom to generate this value.
+# cf. http://qiita.com/labocho/items/32efc5b7c73aba3500ff
+cookie_key:
+  secret: 'This value MUST be changed'
+  old_secret: 'This value MUST be changed and different from secret'
+
 authn:
   htdigest: "path to .htdigest"
   realm: "realm"
@@ -21,7 +28,6 @@ mail:
   authentication: "plain"
   user_name: "username"
   password: "password"
-
 
 record:
   show_login: false

@@ -26,8 +26,10 @@ require 'router'
 
 use Rack::CommonLogger if ENV['RACK_ENV'] != 'development'
 
-base_uri = Conf.new[:master, :base_path, :uri] || '/'
-base_path = File.join(Conf.new[:master, :base_path, :host] || '', base_uri)
+conf = Conf.new
+
+base_uri = conf[:master, :base_path, :uri] || '/'
+base_path = File.join(conf[:master, :base_path, :host] || '', base_uri)
 
 use Rack::Rewrite do
   r301 %r{^#{base_uri}$}, base_uri + '/', if: (proc { |_| base_uri != '/' })
@@ -76,7 +78,9 @@ map base_path do
             '/api/download.cgi?user=$1&report=$2'
   end
 
-  use Rack::Session::Pool, key: 'rack.session', secret: 'account-secret-key'
+  use Rack::Session::Pool,
+      key: 'rack.session',
+      expire_after: 600 # 10 minutes
 
   routes = [
     { pattern: '/account/register.cgi', controller: Account::Register.new },
