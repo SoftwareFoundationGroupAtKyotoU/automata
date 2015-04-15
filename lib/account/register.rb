@@ -140,13 +140,12 @@ module Account
 
     def receive_user_info(env, email_s, name, ruby, login)
       begin
-        if validate(email_s, login)
-          env['rack.session']['name']  = name
-          env['rack.session']['ruby']  = ruby
-          env['rack.session']['login'] = login
-          return Haml::Engine.new(page).render do
-            Haml::Engine.new(confirm(email_s, name, ruby, login)).render
-          end
+        validate(email_s, name, ruby, login)
+        env['rack.session']['name']  = name
+        env['rack.session']['ruby']  = ruby
+        env['rack.session']['login'] = login
+        return Haml::Engine.new(page).render do
+          Haml::Engine.new(confirm(email_s, name, ruby, login)).render
         end
       rescue InvalidArguments
         msg = '入力された値のどれかが空か，学籍番号が10桁の半角数字ではありません．'
@@ -170,8 +169,22 @@ module Account
     end
 
     def receive_confirmation(env, email, name, ruby, login)
-      env['rack.session'].clear
-      register(email, name, ruby, login)
+      begin
+        validate(email, name, ruby, login)
+        register(email, name, ruby, login)
+        env['rack.session'].clear
+      rescue InvalidArguments, AlreadyRegistered => e
+        app = App.new
+        app.logger.warn <<-EOS
+Something go wrong in register.rb: These values,
+email: \"#{email}\", name: \"#{name}\", ruby: \"#{ruby}\", login: \"#{login}\"
+should have been validated, but validation fails with error: #{e}
+        EOS
+        return Haml::Engine.new(page).render do
+          Haml::Engine.new(form_signup(email, name, ruby, login)).render
+        end
+      end
+
       Haml::Engine.new(page).render do
         Haml::Engine.new(register_succeed).render
       end
@@ -204,7 +217,7 @@ module Account
         return helper.ok(receive_user_info(env, email_s, name, ruby, login))
       end
 
-      if confirmed
+      if confirmed && email_s && name_s && ruby_s && login_s
         html = receive_confirmation(env, email_s, name_s, ruby_s, login_s)
         return helper.ok(html)
       end
@@ -215,18 +228,19 @@ module Account
       helper.ok(html)
     end
 
-    def validate(email, login)
+    def validate(email, name, _ruby, login)
       app = App.new
       def app.su?
         true
       end
       login = login.to_s
-      fail InvalidArguments if login !~ /[0-9]{10}/
+      fail InvalidArguments if login !~ /^[0-9]{10}$/
+      fail InvalidArguments if name.empty?
+      fail InvalidArguments if email !~ /^[^@]+@.+$/
       # Checks whether the email address or the login are already used or not.
-      if app.users(true).any? { |u| u.email == email || u.real_login == login }
-        fail AlreadyRegistered
+      fail AlreadyRegistered if app.users(true).any? do |u|
+        u.email == email || u.real_login == login
       end
-      true
     end
 
     def register(email, name, ruby, login)

@@ -99,6 +99,7 @@ class App
     users.find do |u|
       u.email == info['email'] && u.real_login == info['login']
     end
+    logger.info("User added: #{info}")
   end
 
   # Set a password for a user.
@@ -158,6 +159,8 @@ class App
     htd = WEBrick::HTTPAuth::Htdigest.new(htdigest)
     htd.delete_passwd(realm, id)
     htd.flush
+
+    logger.info("User deleted: #{id}")
   end
 
   def user_from_token(token)
