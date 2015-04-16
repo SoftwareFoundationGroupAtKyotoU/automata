@@ -3,20 +3,10 @@ var Router = require('react-router');
 var Link = Router.Link;
 var api = require('../api');
 var Loading = require('../loading');
+var Status = require('./status');
 
 module.exports = React.createClass({
     mixins: [Router.Navigation, Loading.Mixin],
-
-    status_map: {
-        'none':     '未提出',
-        'OK':       '受理',
-        'NG':       '要再提出',
-        'build':    '確認中',
-        'check':    '確認中',
-        'build:NG': '要再提出',
-        'check:NG': '要再提出',
-        'report':   'レポート確認中',
-    },
 
     onEdit: function(e) {
         e.preventDefault();
@@ -122,12 +112,12 @@ module.exports = React.createClass({
         }
         var content;
         if (this.state.editing === 'edit') {
-            var opts = Object.keys(this.status_map).map(function(key) {
+            var opts = Object.keys(Status.terms).map(function(key) {
                 var name;
                 if (key === 'none') {
-                    name = '(' + this.status_map[key] + ')';
+                    name = '(' + Status.terms[key] + ')';
                 } else {
-                    name = key + ' (' + this.status_map[key] + ')';
+                    name = key + ' (' + Status.terms[key] + ')';
                 }
                 return (
                         <option value={key}>{name}</option>
@@ -139,13 +129,13 @@ module.exports = React.createClass({
                     </select>
             );
         } else if (this.props.isSelected) {
-            content = this.status_map[status];
+            content = Status.terms[status];
         } else {
             content = (
                     <Link to="user" params={{
                         token: this.props.user.token,
                         report: this.props.report
-                    }}>{this.status_map[status]}</Link>
+                    }}>{Status.terms[status]}</Link>
             );
         }
         var edit = this.props.admin && this.renderLoading();

@@ -2,6 +2,7 @@ var _ = require('lodash');
 var React = require('react');
 var api = require('../api');
 var Loading = require('../loading');
+var Status = require('./status');
 
 function isPassed(t) {
     if (typeof t !== 'string') t = t.result;
@@ -47,11 +48,11 @@ module.exports = React.createClass({
                 report: this.props.report
             }
         }).done(function() {
-            this.componentDidMount();
+            this.updateTestResult();
         }.bind(this));
 
         this.setState({
-            init: false
+            status: 'loading'
         });
     },
 
@@ -68,32 +69,98 @@ module.exports = React.createClass({
 
     getInitialState: function() {
         return {
-            init: false
+            status: 'loading'
         };
     },
 
-    componentDidMount: function() {
+    updateTestResult: function() {
+        var data = {
+            user: this.props.token,
+            report: this.props.report,
+        };
+
+        if (!this.isMounted()) return;
+
+        this.setState({
+            status: 'loading'
+        });
+
         api.get({
-            api: 'test_result',
-            data: {
-                user: this.props.token,
-                report: this.props.report
+            api: 'user',
+            data: _.assign({ type: 'status' }, data)
+        }).done(function(u) {
+            if (!this.isMounted()) return;
+
+            if (_.isUndefined(u[0].report)) {
+              this.setState({
+                status: 'none'
+              });
+              return;
             }
-        }).done(function(result) {
-            if (this.isMounted()) {
+
+            var status = u[0].report[this.props.report].status;
+            switch (status) {
+            case 'report':
+            case 'OK':
+                api.get({
+                    api: 'test_result',
+                    data: data
+                }).done(function(result) {
+                    this.setState({
+                        test_result: result,
+                        status: 'done'
+                    });
+                }.bind(this));
+                break;
+
+            case 'build':
+            case 'check':
                 this.setState({
-                    test_result: result,
-                    init: true
+                    status: 'loading'
                 });
+                setTimeout(this.updateTestResult, 3 * 1000);
+                break;
+
+            case 'NG':
+            case 'build:NG':
+            case 'check:NG':
+            case 'none':
+                this.setState({
+                    status: status
+                });
+                break;
+            default:
+              throw ("Unknown status '" + status + "' from a server");
             }
         }.bind(this));
     },
 
+    componentDidMount: function() { this.updateTestResult(); },
+
     nowLoading: function() {
-        return !this.state.init;
+        return this.state.status === 'loading';
     },
 
     afterLoading: function() {
+        var status = this.state.status;
+        switch (status) {
+        case 'NG':
+        case 'build:NG':
+        case 'check:NG':
+        case 'none':
+            return 'なし (' + Status.terms[status] + ')'
+            break;
+
+        case 'done':
+            return this.renderDoneStatus();
+            break;
+
+        default:
+            throw ("Unknown status '" + status + "' in a client");
+        }
+    },
+
+    renderDoneStatus: function() {
         var passed = this.state.test_result.passed;
         var number = this.state.test_result.number;
         if (_.isUndefined(passed) || _.isUndefined(number)) {
