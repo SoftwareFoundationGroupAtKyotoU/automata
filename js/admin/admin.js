@@ -16,7 +16,7 @@ api.modify = function(param) {
     }).done(param.callback);
 };
 
-var createButton = function(text, icon) {
+var createButton = function(text, iconClass) {
     return React.createFactory(React.createClass({
         render: function() {
             return React.DOM.a({
@@ -24,14 +24,16 @@ var createButton = function(text, icon) {
                 style: { textDecoration: 'none' },
                 title: text,
                 onClick: this.props.onClick
-            }, icon);
+            }, React.DOM.i({
+                className: "fa " + iconClass
+            }));
         }
     }));
 };
 
-var EditButton = createButton('変更する', '✏');
-var CancelButton = createButton('キャンセル', '✖');
-var OKButton = createButton('実行', '✔');
+var EditButton   = createButton('変更する', "fa-pencil-square-o");
+var CancelButton = createButton('キャンセル', "fa-times");
+var OKButton     = createButton('実行', "fa-check");
 
 var TextCellComponent = React.createClass({
     onEdit: function() {
@@ -129,7 +131,9 @@ var DeleteCellComponent = React.createClass({
             style: { textDecoration: 'none' },
             title: '削除する',
             onClick: this.onDelete
-        }, '♲');
+        }, React.DOM.i({
+            className: "fa fa-trash-o"
+        }));
     },
 
     render: function() {
