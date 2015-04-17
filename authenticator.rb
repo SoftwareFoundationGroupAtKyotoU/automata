@@ -48,17 +48,19 @@ class Authenticator
 
     if md5
       res = md5.call(env)
-      res[2] = [<<-EOH
-        <html>
-          <head><title>401 Unauthorized</title></head>
-          <body>
-            <h1>Unauthorized</h1><p>username or password is wrong.</p>
-          </body>
-        </html>
-        EOH
-      ]
-      res[1]['Content-Length'] = res[2][0].length.to_s
-      res[1]['Content-Type'] = 'text/html'
+      if res[0] == 401
+        res[2] = [<<-EOH
+          <html>
+            <head><title>401 Unauthorized</title></head>
+            <body>
+              <h1>Unauthorized</h1><p>username or password is wrong.</p>
+            </body>
+          </html>
+          EOH
+        ]
+        res[1]['Content-Length'] = res[2][0].length.to_s
+        res[1]['Content-Type'] = 'text/html'
+      end
       return res
     end
     @app.call(env)

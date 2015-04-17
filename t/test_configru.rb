@@ -7,7 +7,11 @@ class TestConfigRu < Test::Unit::TestCase
       define_method(:initialize) do
         @conf = {
           'master' => {
-            'base_path' => { 'uri' => '/path' }
+            'base_path' => { 'uri' => '/path' },
+            'authn_account' => {
+              'user' => 'account_user',
+              'passwd' => 'account_passwd'
+            }
           }
         }
       end
@@ -46,14 +50,13 @@ class TestConfigRu < Test::Unit::TestCase
     assert_equal './record/', last_response.header['Location']
   end
 
-  def test_static
+  def test_static_without_auth
     get '/path/'
     assert last_response.ok?
     assert_equal File.read('public/index.html'), last_response.body
 
     get '/path/account/'
-    assert last_response.ok?
-    assert_equal File.read('public/account/index.html'), last_response.body
+    assert last_response.unauthorized?
 
     get '/path/admin/'
     assert last_response.unauthorized?
@@ -89,7 +92,13 @@ class TestConfigRu < Test::Unit::TestCase
     assert_equal File.read('public/css/navigator.css'), last_response.body
   end
 
-  def test_account
+  def test_account_with_auth
+    digest_authorize 'account_user', 'account_passwd'
+
+    get '/path/account/'
+    assert last_response.ok?
+    assert_equal File.read('public/account/index.html'), last_response.body
+
     get '/path/account/register.cgi'
     assert last_response.ok?
     rack_env = { 'rack.session' => {}, 'rack.input' => {} }
