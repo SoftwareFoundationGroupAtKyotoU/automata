@@ -9,6 +9,7 @@ require 'time'
 require 'kconv'
 
 require_relative '../helper'
+require_relative '../syspath'
 require_relative '../app'
 require_relative '../user'
 require_relative '../report/exercise'
@@ -46,10 +47,8 @@ module API
       return helper.bad_request(ERR[:invalid] % rep_id) unless rep_scheme_data
       return helper.forbidden(ERR[:closed] % rep_id) if rep_scheme_data['type'] == 'closed'
 
-      user_dir = app.user_dir(rep_id)
-      log_file = user_dir + App::FILES[:log]
-
-      src_dir = user_dir + time.iso8601 + 'src'
+      log_file = SysPath::user_log(rep_id, app.user)
+      src_dir = SysPath::user_src_dir(rep_id, app.user, time.iso8601)
       return helper.forbidden(ERR[:capacity]) if File.exist?(src_dir)
 
       FileUtils.mkdir_p(src_dir)
@@ -120,16 +119,16 @@ module API
       Log.new(log_file).write(:data, time, 'status' => 'build', 'report' => exs)
 
       # build and run test
-      cmd = App::FILES[:test_script]
+      cmd = SysPath::FILES[:test_script]
       cmd = "#{cmd} --id=#{time.iso8601} '#{rep_id}' '#{app.user}'"
       cmd = "#{cmd} > /dev/null 2>&1"
       system(cmd)
 
       # GC
-      until app.check_disk_usage(user_dir)
+      until app.check_disk_usage(SysPath::user_dir(rep_id, app.user))
         break unless Log.new(log_file).transaction do |log|
           log.size > 1 && log.pop.tap do |id|
-            FileUtils.rm_r((user_dir + id).to_s) if id
+            FileUtils.rm_r(SysPath::user_post_dir(rep_id, app.user, id).to_s) if id
           end
         end
       end

@@ -2,6 +2,7 @@
 
 require 'zip'
 
+require_relative '../syspath'
 require_relative '../app'
 require_relative '../log'
 require_relative '../helper'
@@ -22,12 +23,13 @@ module API
       report_id = helper.params['report']
       return helper.bad_request unless report_id
 
-      user_dir = app.user_dir(report_id)
-      time = Log.new(user_dir + App::FILES[:log]).latest(:data)['id']
+      time = Log.new(SysPath::user_log(report_id, user)).latest(:data)['id']
       return helper.bad_request unless time
 
       output = Zip::OutputStream.write_buffer do |zos|
-        Dir.chdir(user_dir + time + 'src') { zip(Pathname.new('.'), zos, app) }
+        Dir.chdir(SysPath::user_src_dir(report_id, user, time)) {
+          zip(Pathname.new('.'), zos, app)
+        }
       end.string
 
       header = {

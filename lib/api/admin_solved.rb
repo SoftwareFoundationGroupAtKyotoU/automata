@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+require_relative '../syspath'
 require_relative '../app'
 require_relative '../log'
 require_relative '../report/exercise'
@@ -43,7 +44,7 @@ module API
       exercises.sort! { |a, b| a.to_ex <=> b.to_ex }
 
       begin
-        log_file = App::KADAI + report_id + user + App::FILES[:log]
+        log_file = SysPath::user_log(report_id, user)
         Log.new(log_file).transaction do |log|
           log.latest(:data)['report'] = exercises
         end

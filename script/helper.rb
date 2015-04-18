@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+require_relative '../lib/syspath'
 require_relative '../lib/app'
 require_relative '../lib/conf'
 require_relative '../lib/log'
@@ -39,19 +40,13 @@ EOM
   end
 
   def log_file
-    user_dir + App::FILES[:log]
+    SysPath::user_log(report_id, user)
   end
 
   def dir
     {
-      user: user_dir,
-      src:  user_dir + log['id'] + 'src'
-    }
-  end
-
-  def file
-    {
-      log: dir[:user] + App::FILES[:log]
+      user: SysPath::user_dir(report_id, user),
+      src:  SysPath::user_src_dir(report_id, user, log['id'])
     }
   end
 
@@ -81,9 +76,5 @@ EOM
         merged_conf_iter(nconf, c, rest.first, rest.drop(1))
       end
     end
-  end
-
-  def user_dir
-    App::KADAI + report_id + user
   end
 end

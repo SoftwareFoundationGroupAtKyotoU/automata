@@ -2,6 +2,7 @@
 
 require 'rack'
 require 'fileutils'
+require_relative '../syspath'
 require_relative '../app'
 require_relative '../log'
 require_relative '../comment'
@@ -111,7 +112,7 @@ module API
         comments = Hash[*report_ids.map do |id|
                           c = users.map do |u|
                             group = app.su? ? :super : (app.user == u ? :user : :other)
-                            dir = App::KADAI + id + u + 'comment'
+                            dir = SysPath::comment_dir(id, u)
                             FileUtils.mkdir_p(dir) unless dir.exist?
                             {
                               user:    u,

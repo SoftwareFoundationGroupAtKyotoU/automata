@@ -2,6 +2,7 @@
 
 require 'open3'
 require 'shellwords'
+require_relative '../syspath'
 require_relative '../app'
 require_relative '../helper'
 
@@ -33,14 +34,14 @@ module API
       return helper.bad_request unless report_id
 
       # reject if report hasn't been submitted
-      log = Log.new(app.user_dir(report_id) + App::FILES[:log], true).latest(:data)
+      log = Log.new(SysPath::user_log(report_id, user), true).latest(:data)
       return helper.bad_request if log.empty?
 
       input = helper.params['input']
       input = '' if input.nil?
 
       cmd =
-        [ App::FILES[:interact_script],
+        [ SysPath::FILES[:interact_script],
           Shellwords.escape(report_id),
           Shellwords.escape(user)
         ].join(' ')

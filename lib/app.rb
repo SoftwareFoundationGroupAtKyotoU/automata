@@ -7,6 +7,7 @@ require 'webrick'
 
 require 'bundler/setup'
 
+require_relative 'syspath'
 require_relative 'clone'
 require_relative 'conf'
 require_relative 'log'
@@ -15,21 +16,6 @@ require_relative 'user'
 require_relative 'app/logger_ext'
 
 class App
-  base_dir = Pathname.new(File.dirname(File.expand_path(__FILE__))) + '..'
-  DB     = base_dir + 'db'
-  KADAI  = DB + 'kadai'
-  BUILD  = base_dir + 'build'
-  SCRIPT = base_dir + 'script'
-
-  FILES = {
-    data:            DB + 'data.yml',
-    log:             'log.yml',
-    build:           SCRIPT + 'build.rb',
-    sandbox:         SCRIPT + 'test.rb',
-    test_script:     SCRIPT + 'test',
-    interact_script: SCRIPT + 'interact'
-  }
-
   attr_reader :conf
 
   def initialize(remote_user=nil)
@@ -37,12 +23,12 @@ class App
     @conf = Conf.new
   end
 
-  def file(name)
-    @files ||= Hash.new do |h, k|
-      File.open(FILES[k], 'r:utf-8'){|f| h[k] = YAML.load(f) }
-    end
-    return @files[name]
-  end
+  # def file(name)
+  #   @files ||= Hash.new do |h, k|
+  #     File.open(FILES[k], 'r:utf-8'){|f| h[k] = YAML.load(f) }
+  #   end
+  #   return @files[name]
+  # end
 
   def logger()
     @logger = Logger.new(conf) unless @logger
@@ -63,7 +49,7 @@ class App
 
   def users(all = false)
     if @users.nil? || all
-      user_store = Store::YAML.new(FILES[:data])
+      user_store = Store::YAML.new(SysPath::FILES[:data])
       user_store.ro.transaction do |store|
         @users = (store['data'] || []).map{|u| User.new(u)}
         @users.reject!{|u| u.login != user} unless conf[:master, :record, :open] || su? || all
@@ -90,8 +76,8 @@ class App
     return nil if users.any? do |u|
       u.email == info['email'] || u.real_login == info['login']
     end
-    FileUtils.touch FILES[:data]
-    user_store = Store::YAML.new(FILES[:data])
+    FileUtils.touch SysPath::FILES[:data]
+    user_store = Store::YAML.new(SysPath::FILES[:data])
     user_store.transaction do |store|
       store['data'] = (store['data'] || []) + [info]
     end
@@ -115,7 +101,7 @@ class App
   end
 
   def modify_user(id, info)
-    user_store = Store::YAML.new(App::FILES[:data])
+    user_store = Store::YAML.new(SysPath::FILES[:data])
     user_store.transaction {|store|
       users = (store['data'] || [])
       users.map! {|user|
@@ -133,12 +119,12 @@ class App
   end
 
   def delete_user(id)
-    backup_dir = DB + 'backup' + Time.new.iso8601
+    backup_dir = SysPath::BACKUP + Time.new.iso8601
     raise RuntimeError, '頻度が高すぎるためリクエストを拒否しました' if File.exist?(backup_dir)
     raise RuntimeError, 'Invalid delete id' if id.nil? || id.empty?
     FileUtils.mkdir_p(backup_dir)
     # remove and backup user directories
-    Pathname.glob(KADAI + '*').each {|path|
+    Pathname.glob(SysPath::KADAI + '*').each {|path|
       path = path.expand_path
       src = (path + id).expand_path
       if File.exist?(src) && path.children.include?(src)
@@ -147,7 +133,7 @@ class App
       end
     }
     # remove user data
-    user_store = Store::YAML.new(App::FILES[:data])
+    user_store = Store::YAML.new(SysPath::FILES[:data])
     user_store.transaction {|store|
       users = (store['data'] || [])
       users.reject! {|user| user['login'] == id}
@@ -180,6 +166,7 @@ class App
     end
   end
 
+  # TOOD: u : User
   def report(option, id, u)
     require_relative 'report'
 
@@ -193,7 +180,7 @@ class App
     type = (conf[:scheme, :scheme].find{|r| r['id']==id} || {})['type']
 
     if (type == 'post') or (type == 'closed')
-      fname = KADAI + id + u + FILES[:log]
+      fname = SysPath::user_log(id, u)
       return nil unless File.exist?(fname)
       yaml = Log.new(fname, true).latest(:data)
       # add timestamp of initial submit
@@ -205,7 +192,7 @@ class App
       yaml = yaml.find{|x| x['login'] == u} || {}
       yaml = yaml['report'] || {}
       yaml = yaml[id] || {}
-      timestamp = File.mtime(FILES[:data]).iso8601
+      timestamp = File.mtime(SysPath::FILES[:data]).iso8601
       src = Report::Source::Manual.new(yaml, optional, timestamp)
     end
 
@@ -226,8 +213,8 @@ class App
     checkers = {
       size: proc{ StringScanner.new(`du -sk "#{dir}"`).scan(/\d+/).to_i },
       entries: proc do
-        if (dir + App::FILES[:log]).exist?
-          Log.new(dir + App::FILES[:log]).size
+        if (dir + SysPath::FILES[:log]).exist?
+          Log.new(dir + SysPath::FILES[:log]).size
         else
           Pathname.new(dir).children.select(&:directory?).size
         end
