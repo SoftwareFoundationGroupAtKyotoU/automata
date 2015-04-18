@@ -16,9 +16,9 @@ module API
   # Actions:
   #   get     [type=raw|html] [id=<comment-id>] [offset=<offset>] [limit=<limit>]
   #           コメントを取得
-  #   post    message=<content> [ref=<comment-id>] [acl=<acl>]
+  #   post    message=<content> [acl=<acl>]
   #           コメントを投稿
-  #   edit    id=<comment-id> message=<content> [ref=<comment-id>] [acl=<acl>]
+  #   edit    id=<comment-id> message=<content> [acl=<acl>]
   #           コメントを編集(上書き)
   #   delete  id=<comment-id>
   #           コメントを削除
@@ -140,9 +140,8 @@ module API
           return helper.json_response(content)
         when 'post'
           content = helper.params['message']
-          ref = helper.params['ref']
           acl = convert(helper.params['acl']) { |a| a.split(',') }
-          comments[report_id][0][:comment].add(content: content, ref: ref, acl: acl)
+          comments[report_id][0][:comment].add(content: content, acl: acl)
 
           return helper.ok('done')
         when 'edit'
@@ -150,10 +149,9 @@ module API
           helper.exit_with_bad_request unless id
 
           content = helper.params['message']
-          ref = helper.params['ref']
           acl = convert(helper.params['acl']) { |a| a.split(',') }
           comments[report_id][0][:comment] \
-            .edit(id: id, content: content, ref: ref, acl: acl)
+            .edit(id: id, content: content, acl: acl)
 
           return helper.ok('done')
         when 'delete'
