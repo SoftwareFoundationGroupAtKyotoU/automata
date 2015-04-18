@@ -14,10 +14,12 @@ module.exports = React.createClass({
             };
         });
         var ths = [{ label: '名前' }].concat(scheme).map(function(s) {
+            var className = _.isUndefined(this.props.report) ? '' :
+                this.props.report == s.id ? 'selected' : '';
             return (
-                    <th>{s.label}</th>
+                    <th className={className}>{s.label}</th>
             );
-        });
+        }, this);
         var users;
         if (this.props.users.length > 0) {
             users = this.props.users.map(function(user) {
