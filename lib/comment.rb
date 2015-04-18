@@ -240,7 +240,6 @@ class Comment
     idx['id'] = args[:id]
     idx['user'] = args[:user] if args[:user]
     idx['acl'] = args[:acl].select{|a| a=='user' || a=='other'} if args[:acl]
-    idx['ref'] = args[:ref].to_i if args[:ref]
     idx['create'] = args[:create] if args[:create]
     idx['timestamp'] = Time.now.iso8601
     return idx
