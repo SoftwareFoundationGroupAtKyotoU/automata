@@ -23,13 +23,6 @@ class App
     @conf = Conf.new
   end
 
-  # def file(name)
-  #   @files ||= Hash.new do |h, k|
-  #     File.open(FILES[k], 'r:utf-8'){|f| h[k] = YAML.load(f) }
-  #   end
-  #   return @files[name]
-  # end
-
   def logger()
     @logger = Logger.new(conf) unless @logger
     return @logger
@@ -166,7 +159,6 @@ class App
     end
   end
 
-  # TOOD: u : User
   def report(option, id, u)
     require_relative 'report'
 
