@@ -119,4 +119,4 @@ rescue => e
   }
 end
 
-Log.new(helper.file[:log]).write(:data, post_tz, info)
+Log.new(helper.log_file).write(:data, post_tz, info)

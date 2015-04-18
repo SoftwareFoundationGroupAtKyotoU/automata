@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'shellwords'
+require_relative '../syspath'
 require_relative '../app'
 require_relative '../helper'
 
@@ -33,7 +34,7 @@ module API
       return helper.bad_request unless report_id
 
       cmd =
-        [ App::FILES[:test_script],
+        [ SysPath::FILES[:test_script],
           Shellwords.escape(report_id),
           Shellwords.escape(user)
         ].join(' ')

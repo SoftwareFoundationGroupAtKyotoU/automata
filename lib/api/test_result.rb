@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+require_relative '../syspath'
 require_relative '../app'
 require_relative '../log'
 require_relative '../helper'
@@ -30,9 +31,8 @@ module API
       report_id = helper.params['report']
       return helper.json_response({}) unless report_id
 
-      dir_user = App::KADAI + report_id + user
-      log_file = dir_user + App::FILES[:log]
-      return helper.json_response({}) unless [dir_user, log_file].all?(&:exist?)
+      log_file = SysPath::user_log(report_id, user)
+      return helper.json_response({}) unless log_file.exist?
 
       log = Log.new(log_file, true).latest(:data)
       result = {}

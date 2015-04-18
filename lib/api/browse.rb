@@ -6,6 +6,7 @@ require 'shared-mime-info'
 require 'mime-types'
 require 'open3'
 
+require_relative '../syspath'
 require_relative '../app'
 require_relative '../log'
 require_relative '../helper'
@@ -52,12 +53,11 @@ module API
       report_id = helper.params['report']
 
       path = helper.params['path'] || '.'
-      dir_user = App::KADAI + report_id + user
-      log_file = dir_user + App::FILES[:log]
-      return helper.not_found unless [dir_user, log_file].all?(&:exist?)
-      time = Log.new(log_file, true).latest(:data)['id']
+      log_file = SysPath::user_log(report_id, user)
+      return helper.not_found unless log_file.exist?
 
-      src = dir_user + time + 'src'
+      time = Log.new(log_file, true).latest(:data)['id']
+      src = SysPath::user_src_dir(report_id, user, time)
       path = (src + path).expand_path
       return helper.forbidden unless path.to_s.index(src.to_s) == 0 # dir traversal
       return helper.not_found unless [src, path].all?(&:exist?)

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+require_relative '../syspath'
 require_relative '../app'
 require_relative '../log'
 require_relative '../helper'
@@ -53,7 +54,7 @@ module API
         data['log'] = data_log unless data_log.empty?
 
         unless data.empty?
-          log_file = App::KADAI + report_id + user + App::FILES[:log]
+          log_file = SysPath::user_log(report_id, user)
           Log.new(log_file).transaction do |log|
             return helper.bad_request if log.latest(:data)['id'] != log_id
             log.update(:data, log_id, data)

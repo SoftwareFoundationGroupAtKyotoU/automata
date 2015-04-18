@@ -8,7 +8,7 @@ require 'yaml'
 require 'time'
 
 require_relative 'helper'
-require_relative '../lib/app'
+require_relative '../lib/syspath'
 require_relative '../lib/log'
 require_relative '../lib/report/exercise'
 
@@ -23,10 +23,7 @@ helper = Helper.new(report_id, user, post_tz)
 dir = {}
 dir[:test]   = helper.dir[:user] + 'test'
 dir[:target] = dir[:test] + 'src'
-dir[:build]  = App::BUILD
-
-yml = {}
-helper.file.each{|name, file| yml[name] = YAML.load_file(file)||{} rescue {} }
+dir[:build]  = SysPath::BUILD
 
 conf = {}
 [:build, :test].each do |k|
@@ -97,4 +94,4 @@ info = Dir.chdir(dir[:test].to_s) do
   info
 end
 
-Log.new(helper.file[:log]).write(:build, post_tz, info)
+Log.new(helper.log_file).write(:build, post_tz, info)

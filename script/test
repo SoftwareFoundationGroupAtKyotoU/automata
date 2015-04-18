@@ -7,6 +7,7 @@ Dir.chdir(File.dirname(File.expand_path($0)))
 require 'time'
 
 require_relative 'helper'
+require_relative '../lib/syspath'
 require_relative '../lib/permission'
 
 err = {
@@ -31,11 +32,11 @@ time = log['id']
 cmd = {}
 
 # ../test/build.rb report_id user post
-cmd[:build] = "#{App::FILES[:build]} '#{report_id}' '#{user}' '#{time}'"
+cmd[:build] = "#{SysPath::FILES[:build]} '#{report_id}' '#{user}' '#{time}'"
 cmd[:build] = "#{cmd[:build]} > /dev/null 2>#{helper.dir[:user] + 'build_fatal.log'}"
 
 # ../test/test.rb report_id user post
-cmd[:test] = "#{App::FILES[:sandbox]} '#{report_id}' '#{user}' '#{time}'"
+cmd[:test] = "#{SysPath::FILES[:sandbox]} '#{report_id}' '#{user}' '#{time}'"
 cmd[:test] = "#{cmd[:test]} > /dev/null 2>&1 &" # do not wait
 
 begin
