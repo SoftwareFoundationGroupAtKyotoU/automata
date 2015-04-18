@@ -105,8 +105,12 @@ tr:nth-child(2n+1) td {
 table.record {
    outline-style: none;
 }
+
+th.selected {
+   color: #f0e68c;
+}
+
 table.record.focus,
-td.selected,
 td.selectable:hover {
    outline: dashed 2px #cccccc;
 }

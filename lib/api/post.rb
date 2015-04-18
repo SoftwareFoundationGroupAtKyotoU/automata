@@ -10,6 +10,7 @@ require 'kconv'
 
 require_relative '../helper'
 require_relative '../app'
+require_relative '../user'
 require_relative '../report/exercise'
 require_relative '../log'
 require_relative '../zip/unzip'
@@ -133,7 +134,7 @@ module API
         end
       end
 
-      helper.redirect('../record/')
+      helper.redirect("../record/#/#{::User.make_token(app.user)}/#{rep_id}/")
     rescue RuntimeError => e
       entry = { 'status' => 'NG', 'log' => { 'error' => e.to_s } }
       Log.new(log_file).write(:data, time, entry)
