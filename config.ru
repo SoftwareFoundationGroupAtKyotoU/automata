@@ -21,8 +21,9 @@ require 'lib/account/reset'
 require 'lib/account/register'
 require 'lib/sandbox/tester'
 require 'lib/sandbox/interactor'
-require 'authenticator'
-require 'router'
+require 'middleware/authenticator'
+require 'middleware/router'
+require 'middleware/error_page'
 
 use Rack::CommonLogger if ENV['RACK_ENV'] != 'development'
 
@@ -42,6 +43,8 @@ map base_path do
     # reload changed files per request, EXCEPT this config.ru
     use Rack::Reloader, 0
   end
+
+  use ErrorPage if ENV['RACK_ENV'] == 'production'
 
   use Rack::Rewrite do
     r301 %r{^/(account|admin|post|record)$}, './$1/'

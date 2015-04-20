@@ -1,5 +1,5 @@
 
-require_relative 'lib/conf'
+require_relative '../lib/conf'
 require 'rack/auth/digest/md5'
 require 'digest/md5'
 require 'webrick'
