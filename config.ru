@@ -21,8 +21,8 @@ require 'lib/account/reset'
 require 'lib/account/register'
 require 'lib/sandbox/tester'
 require 'lib/sandbox/interactor'
-require 'authenticator'
-require 'router'
+require 'middleware/authenticator'
+require 'middleware/router'
 
 use Rack::CommonLogger if ENV['RACK_ENV'] != 'development'
 
