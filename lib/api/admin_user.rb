@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require_relative '../app'
+require_relative '../user'
 require_relative '../helper'
 
 module API
@@ -23,7 +24,7 @@ module API
       return helper.forbidden unless app.su?
 
       token = helper.params['user'] || ''
-      user = app.user_from_token(token)
+      user = ::User.from_token_or_login(token)
       return helper.bad_request("Unknown user: #{token}") if user.nil?
 
       method = helper.params['method'] || ''
@@ -33,9 +34,9 @@ module API
           h[k] = helper.params[k]
           h
         }
-        app.modify_user(user, info)
+        ::User.modify(user, info)
       when :delete
-        app.delete_user(user)
+        ::User.delete(user)
       else
         return helper.bad_request("Unknown method: #{method}")
       end

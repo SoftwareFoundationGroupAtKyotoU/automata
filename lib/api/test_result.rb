@@ -23,15 +23,15 @@ module API
       return helper.json_response({}) unless user
 
       # resolve real login name in case user id is a token
-      user = app.users.inject(nil) do |r, u|
-        (u.token == user || u.real_login == user) ? u.real_login : r
+      user = app.visible_users.inject(nil) do |r, u|
+        (u.token == user || u.real_login == user) ? u : r
       end
       return helper.json_response({}) unless user
 
       report_id = helper.params['report']
       return helper.json_response({}) unless report_id
 
-      log_file = SysPath::user_log(report_id, user)
+      log_file = SysPath.user_log(report_id, user)
       return helper.json_response({}) unless log_file.exist?
 
       log = Log.new(log_file, true).latest(:data)

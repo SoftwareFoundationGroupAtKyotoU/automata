@@ -3,6 +3,7 @@
 require 'shellwords'
 require_relative '../syspath'
 require_relative '../app'
+require_relative '../user'
 require_relative '../helper'
 
 module API
@@ -26,7 +27,7 @@ module API
       return helper.bad_request unless user
 
       # resolve real login name in case user id is a token
-      user = app.user_from_token(user)
+      user = ::User.from_token_or_login(user)
       return helper.bad_request unless user
 
       # report ID must be specified
@@ -36,7 +37,7 @@ module API
       cmd =
         [ SysPath::FILES[:test_script],
           Shellwords.escape(report_id),
-          Shellwords.escape(user)
+          Shellwords.escape(user.login)
         ].join(' ')
       system(cmd)
 

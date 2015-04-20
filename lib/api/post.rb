@@ -11,7 +11,6 @@ require 'kconv'
 require_relative '../helper'
 require_relative '../syspath'
 require_relative '../app'
-require_relative '../user'
 require_relative '../report/exercise'
 require_relative '../log'
 require_relative '../zip/unzip'
@@ -47,8 +46,8 @@ module API
       return helper.bad_request(ERR[:invalid] % rep_id) unless rep_scheme_data
       return helper.forbidden(ERR[:closed] % rep_id) if rep_scheme_data['type'] == 'closed'
 
-      log_file = SysPath::user_log(rep_id, app.user)
-      src_dir = SysPath::user_src_dir(rep_id, app.user, time.iso8601)
+      log_file = SysPath.user_log(rep_id, app.user)
+      src_dir = SysPath.user_src_dir(rep_id, app.user, time.iso8601)
       return helper.forbidden(ERR[:capacity]) if File.exist?(src_dir)
 
       FileUtils.mkdir_p(src_dir)
@@ -87,7 +86,7 @@ module API
       ignore = '(?:'+ignore.join('|')+')' if ignore.is_a?(Array)
 
       # lift directories
-      lift_dir(app, rep_id, ignore, src_dir)
+      lift_dir(rep_id, ignore, src_dir)
 
       # clean entries
       Find.find(src_dir) do |f|
@@ -120,20 +119,20 @@ module API
 
       # build and run test
       cmd = SysPath::FILES[:test_script]
-      cmd = "#{cmd} --id=#{time.iso8601} '#{rep_id}' '#{app.user}'"
+      cmd = "#{cmd} --id=#{time.iso8601} '#{rep_id}' '#{app.user.login}'"
       cmd = "#{cmd} > /dev/null 2>&1"
       system(cmd)
 
       # GC
-      until app.check_disk_usage(SysPath::user_dir(rep_id, app.user))
+      until app.check_disk_usage(SysPath.user_dir(rep_id, app.user))
         break unless Log.new(log_file).transaction do |log|
           log.size > 1 && log.pop.tap do |id|
-            FileUtils.rm_r(SysPath::user_post_dir(rep_id, app.user, id).to_s) if id
+            FileUtils.rm_r(SysPath.user_post_dir(rep_id, app.user, id).to_s) if id
           end
         end
       end
 
-      helper.redirect("../record/#/#{::User.make_token(app.user)}/#{rep_id}/")
+      helper.redirect("../record/#/#{app.user.token}/#{rep_id}/")
     rescue RuntimeError => e
       entry = { 'status' => 'NG', 'log' => { 'error' => e.to_s } }
       Log.new(log_file).write(:data, time, entry)
@@ -150,7 +149,7 @@ module API
       end
     end
 
-    def lift_dir(app, rep_id, ignore, src_dir)
+    def lift_dir(rep_id, ignore, src_dir)
       # remove ignored files
       Dir.glob("#{src_dir}/*", File::FNM_DOTMATCH) do |e|
         FileUtils.rm_rf((src_dir+e).to_s) if e =~ /#{ignore}/
@@ -166,7 +165,7 @@ module API
           FileUtils.rmdir(entries_dir)
           FileUtils.mv(Dir.glob("#{tmpdir}/*"), src_dir.to_s)
         end
-        lift_dir(app, rep_id, ignore, src_dir)
+        lift_dir(rep_id, ignore, src_dir)
       end
     end
   end

@@ -3,6 +3,8 @@ require 'bundler/setup'
 require 'rack'
 require 'json'
 
+require_relative 'clone'
+
 class Helper
   include Rack
 

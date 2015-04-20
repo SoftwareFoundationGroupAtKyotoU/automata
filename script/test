@@ -25,7 +25,7 @@ end
 Dir.chdir(oldwd){ Permission.ensure_writable(helper.dir[:user].to_s) }
 
 report_id = helper.report_id
-user = helper.user
+user = helper.user.real_login
 log = helper.log
 time = log['id']
 

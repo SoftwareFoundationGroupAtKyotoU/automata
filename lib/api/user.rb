@@ -34,7 +34,7 @@ module API
       helper = Helper.new(env)
       app = App.new(env['REMOTE_USER'])
 
-      users = app.users
+      users = app.visible_users
       if !helper.params['user'].nil?
         users.select! do |u|
           (helper.params['user'] == u.real_login ||
@@ -66,7 +66,7 @@ module API
               status: helper.params['status'],
               log: !helper.params['log'].nil?
             }
-            u[s['id']] = app.report(option, s['id'], u.real_login)
+            u[s['id']] = app.report(option, s['id'], u)
           end
         end
       end

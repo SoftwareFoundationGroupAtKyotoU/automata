@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require_relative '../lib/syspath'
-require_relative '../lib/app'
+require_relative '../lib/user'
 require_relative '../lib/conf'
 require_relative '../lib/log'
 
@@ -32,7 +32,7 @@ EOM
 
   def initialize(report_id, user, id)
     @report_id = report_id
-    @user = user
+    @user = User.from_login(user)
     @id = id
     @log = @id ?
       Log.new(log_file, true).retrieve(:data, @id) :
@@ -40,13 +40,13 @@ EOM
   end
 
   def log_file
-    SysPath::user_log(report_id, user)
+    SysPath.user_log(report_id, user)
   end
 
   def dir
     {
-      user: SysPath::user_dir(report_id, user),
-      src:  SysPath::user_src_dir(report_id, user, log['id'])
+      user: SysPath.user_dir(report_id, user),
+      src:  SysPath.user_src_dir(report_id, user, log['id'])
     }
   end
 

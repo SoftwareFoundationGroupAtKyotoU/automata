@@ -5,42 +5,66 @@ require 'app'
 
 class AppTest < Test::Unit::TestCase
   def setup
-    $original_app_initialize = App.allocate.method(:initialize)
-    App.class_eval do
-      define_method(:initialize) {}
+
+    @user = User.new(
+              'login'     => 'user_id',
+              'name'      => 'user_name',
+              'ruby'      => 'user_ruby',
+              'email'     => 'user@example.com',
+              'assigned'  => 'assigned_TA'
+            )
+    stub(User).from_login(@user.login) { @user }
+
+    @su = User.new(
+            'login'     => 'suser_id',
+            'name'      => 'suser_name',
+            'ruby'      => 'suser_ruby',
+            'email'     => 'suser@example.com',
+            'assigned'  => 'sassigned_TA'
+          )
+    stub(User).from_login(@su.login) { @su }
+
+    stub(User).all_users {
+      [ @user, @su ]
+    }
+
+    $original_conf_initialize = Conf.allocate.method(:initialize)
+    Conf.class_eval do
+      define_method(:initialize) do
+        @conf = {
+          'master' => { 'su' => %w(suser_id) }
+        }
+      end
     end
-    @app = App.new
   end
 
   def teardown
-    App.class_eval do
-      define_method(:initialize, $original_app_initialize)
+    Conf.class_eval do
+      define_method(:initialize, $original_conf_initialize)
     end
   end
 
-  def test_user_names_from_token
-    stub(@app).users do
-      [User.new(
-        { 'login'  => 'login-id1',
-          'name'   => 'user name1',
-          'ruby'   => 'user ruby1',
-          'email'  => '1a@b.c'
-        }),
-       User.new(
-         { 'login'  => 'login-id2',
-           'name'   => 'user name2',
-           'ruby'   => 'user ruby2',
-           'email'  => '2a@b.c'
-         })]
-    end
-    user1 = @app.users[0]
-    user2 = @app.users[1]
+  def test_no_user
+    assert(App.new.user.nil?, 'App.new.user == nil')
+  end
 
-    user_token1 = User.make_token(user1.real_login)
-    user_token2 = User.make_token(user2.real_login)
+  def test_user
+    assert_equal(@user, App.new(@user.login).user)
+    assert_equal(@su,   App.new(@su.login).user)
+  end
 
-    assert_equal({user_token1 => user1.name}, @app.user_names_from_tokens([user_token1]))
-    assert_equal({user_token1 => user1.name, user_token2 => user2.name},
-                 @app.user_names_from_tokens([user_token1, user_token2]))
+  def test_su?
+    assert(!App.new.su?,              'App.new.su? == false')
+    assert(!App.new(@user.login).su?, 'app.su? == false')
+    assert(App.new(@su.login).su?,    'app.su? == true')
+  end
+
+  def test_visible_users
+    assert(App.new.visible_users.nil?,
+           'App.new.visible_users == nil')
+    assert_equal([@user], App.new(@user.login).visible_users,
+                 'visible users for normal users')
+    assert_equal([@user, @su], App.new(@su.login).visible_users,
+                 'visible users for super users')
   end
 end

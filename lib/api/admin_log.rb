@@ -2,6 +2,7 @@
 
 require_relative '../syspath'
 require_relative '../app'
+require_relative '../user'
 require_relative '../log'
 require_relative '../helper'
 
@@ -30,7 +31,7 @@ module API
       return helper.bad_request unless user
 
       # resolve real login name in case user id is a token
-      user = app.user_from_token(user)
+      user = ::User.from_token_or_login(user)
       return helper.bad_request unless user
 
       # report ID must be specified
@@ -54,7 +55,7 @@ module API
         data['log'] = data_log unless data_log.empty?
 
         unless data.empty?
-          log_file = SysPath::user_log(report_id, user)
+          log_file = SysPath.user_log(report_id, user)
           Log.new(log_file).transaction do |log|
             return helper.bad_request if log.latest(:data)['id'] != log_id
             log.update(:data, log_id, data)
