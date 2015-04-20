@@ -90,7 +90,7 @@ module API
       lift_dir(app, rep_id, ignore, src_dir)
 
       # clean entries
-      Find.find(src_dir) do |f|
+      Find.find(src_dir.to_s) do |f|
         next if File.directory?(f)
         FileUtils.rm(f) if f =~ /#{ignore}/
       end
