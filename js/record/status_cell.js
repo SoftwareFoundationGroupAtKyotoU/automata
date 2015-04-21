@@ -37,11 +37,15 @@ module.exports = React.createClass({
                 user: this.props.user.token,
                 report: this.props.report,
                 status: new_status
-            }
+            },
+            ownError: true
         }).done(function() {
             this.props.updateStatus(this.props.user.token,
                                     this.props.report,
                                     new_status);
+        }.bind(this)).fail(function() {
+          alert('提出状況の変更に失敗しました．課題が提出済みであるか，提出ファイルの更新がないかを確認してください．');
+        }).always(function() {
             this.setState({
                 editing: 'done'
             });
