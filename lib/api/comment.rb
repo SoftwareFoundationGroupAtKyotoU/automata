@@ -4,6 +4,7 @@ require 'rack'
 require 'fileutils'
 require_relative '../syspath'
 require_relative '../app'
+require_relative '../user'
 require_relative '../log'
 require_relative '../comment'
 require_relative '../helper'
@@ -81,7 +82,7 @@ module API
       end
 
       # resolve real login name in case user id is a token
-      users = users.map { |u| app.user_from_token(u) }
+      users = users.map { |u| ::User.from_token_or_login(u) }
       users.compact!
       return helper.bad_request if users.empty?
 
@@ -95,7 +96,7 @@ module API
       end
 
       # permission check for other users
-      if !app.su? && app.user != users[0]
+      if !app.su? && app.user.real_login != users[0].real_login
         if !app.conf[:master, :record, :open] || action != 'get'
           return helper.forbidden
         end
@@ -111,12 +112,12 @@ module API
         report_ids = report_id ? [report_id] : app.conf[:scheme, :scheme].map{|r| r['id']}
         comments = Hash[*report_ids.map do |id|
                           c = users.map do |u|
-                            group = app.su? ? :super : (app.user == u ? :user : :other)
-                            dir = SysPath::comment_dir(id, u)
+                            group = app.su? ? :super : (app.user.real_login == u.real_login ? :user : :other)
+                            dir = SysPath.comment_dir(id, u)
                             FileUtils.mkdir_p(dir) unless dir.exist?
                             {
                               user:    u,
-                              comment: ::Comment.new(app.user, group, dir, config)
+                              comment: ::Comment.new(app.user.login, group, dir, config)
                             }
                           end
                           [id, c]
@@ -131,7 +132,7 @@ module API
           args    = { type: type, id: id, offset: offset, limit: limit }
           content = comments[report_id][0][:comment].retrieve(args)
           # Get user names
-          user_names = app.user_names_from_tokens(content.map { |entry| entry['user'] })
+          user_names = user_names_from_logins(content.map { |entry| entry['user'] })
           starList = comments[report_id][0][:comment].stars()
           content = content.map do |entry|
             entry.merge(user_name: user_names[entry['user']],
@@ -195,10 +196,13 @@ module API
 
           return helper.json_response(content)
         when 'list_news'
-          name_to_token = Hash[*app.users.map { |u| [u.real_login, u.token] }.flatten]
+          name_to_token =
+            Hash[*app.visible_users.map do |u|
+                   [u.real_login, u.token]
+                 end.flatten]
           content = Hash[*report_ids.map do |id|
                            c = Hash[*comments[id].map do |c|
-                                      [name_to_token[c[:user]], c[:comment].news]
+                                      [name_to_token[c[:user].real_login], c[:comment].news]
                                     end.flatten]
                            [id, c]
                          end.flatten]
@@ -217,6 +221,15 @@ module API
       rescue => e
         app.logger.error(e.to_s)
         return helper.internal_server_error([e.to_s, e.backtrace].join("\n"))
+      end
+    end
+
+    # Returns a hash represents relation between login ids and names.
+    # @param [Array<String>] logins an array of logins
+    def user_names_from_logins(logins)
+      ::User.all_users.inject(Hash.new) do |r, u|
+        login = logins.find {|l| u.real_login == l}
+        login.nil? ? r : r.merge({ login => u.name })
       end
     end
   end

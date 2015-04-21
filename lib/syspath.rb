@@ -21,9 +21,10 @@ module SysPath
 
   # Returns a path to an user directory
   # @param [String] report_id report name
-  # @param [String] user user id
+  # @param [User] user user id
+  # TODO
   def self.user_dir(report_id, user)
-    KADAI + report_id + user
+    KADAI + report_id + user.real_login
   end
 
   # Returns a path to a log file for a user

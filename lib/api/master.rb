@@ -2,7 +2,6 @@
 
 require_relative '../app'
 require_relative '../helper'
-require_relative '../user'
 
 module API
   # Usage: master [year] [user]
@@ -21,12 +20,12 @@ module API
 
     def call(env)
       helper = ::Helper.new(env)
-      app = ::App.new(env['REMOTE_USER'])
+      app = App.new(env['REMOTE_USER'])
 
       conf = app.conf[:master]
-      conf[:user] = env['REMOTE_USER']
+      conf[:user] = app.user.login
       conf[:admin] = app.su?
-      conf[:token] = ::User.make_token(app.user)
+      conf[:token] = app.user.token
       conf[:all_admins] = conf['su']
       conf[:reload] = app.conf[:master, :record, :reload] || 0
       conf[:interact] = !!conf['interact']

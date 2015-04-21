@@ -21,6 +21,29 @@ class AdminLogTest < Test::Unit::TestCase
       end
     end
 
+    # su
+    @user0 = User.new(
+               'login' => 'user0',
+               'name'  => 'user name0',
+               'ruby'  => 'user ruby0',
+               'email' => 'a0@b.c'
+             )
+    stub(User).from_login('user0') { @user0 }
+    stub(User).from_token_or_login('user0') { @user0 }
+    stub(User).from_token_or_login(User.make_token('user0')) { @user0 }
+
+    stub(User).from_token_or_login(User.make_token('user1')) {
+      User.new(
+        'login' => 'user1',
+        'name'  => 'user name1',
+        'ruby'  => 'user ruby1',
+        'email' => 'a1@b.c'
+      )
+    }
+
+    stub(User).from_token_or_login('not_exist_user') { nil }
+    stub(User).from_login(nil) { nil }
+
     @user = 'user-for-test-use-only'
     @report = 'report-for-test-use-only'
     @log_id = %w(2000-01-01T16:00:00+09:00 2000-01-01T17:00:00+09:00)
@@ -50,25 +73,6 @@ class AdminLogTest < Test::Unit::TestCase
   end
 
   def test_query_parameters
-    any_instance_of(App) do |klass|
-      stub(klass).users do
-        [
-          User.new(
-            'login' => 'user0',
-            'name'  => 'user name0',
-            'ruby'  => 'user ruby0',
-            'email' => 'a0@b.c'
-          ),
-          User.new(
-            'login' => 'user1',
-            'name'  => 'user name1',
-            'ruby'  => 'user ruby1',
-            'email' => 'a1@b.c'
-          )
-        ]
-      end
-    end
-
     get '/'
     assert last_response.forbidden?
 
@@ -76,6 +80,7 @@ class AdminLogTest < Test::Unit::TestCase
 
     get '/', {}, rack_env
     assert last_response.bad_request?
+
 
     get '/', { 'user' => 'not_exist_user' }, rack_env
     assert last_response.bad_request?
@@ -96,17 +101,14 @@ class AdminLogTest < Test::Unit::TestCase
   end
 
   def test_log_update
-    any_instance_of(App) do |klass|
-      stub(klass).users do
-        [
-          User.new(
-            'login' => @user,
-            'name'  => 'user name0',
-            'ruby'  => 'user ruby0',
-            'email' => 'a0@b.c'
-          )
-        ]
-      end
+
+    stub(User).from_token_or_login(@user) do
+      User.new(
+        'login' => @user,
+        'name'  => 'user name0',
+        'ruby'  => 'user ruby0',
+        'email' => 'a0@b.c'
+      )
     end
 
     # log id must be latest

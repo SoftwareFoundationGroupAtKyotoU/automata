@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 
 require 'rake/testtask'
-require_relative 'lib/app'
+require_relative 'lib/user'
 require_relative 'lib/conf'
 
 Rake::TestTask.new do |t|
   t.pattern = 't/**/test*.rb'
 end
 
-class App
-  def add_user_with_passwd(name, ruby, login, email)
-    u = add_user(
+class User
+  def self.add_with_passwd(name, ruby, login, email)
+    u = self.add(
       'name'  => name,
       'ruby'  => ruby,
       'login' => login,
@@ -18,7 +18,7 @@ class App
     )
     if u
       puts "Add user #{login}."
-      set_passwd(login, login)
+      self.set_passwd(login, login, Conf.new)
       return true
     end
     false
@@ -26,12 +26,6 @@ class App
 end
 
 task 'dummy' do
-  app = App.new
-
-  def app.su?
-    true
-  end
-
   dummy_users = [
     ['松村 史郎', 'まつむら しろう', 'matsumura', 'shirou@example.com'],
     ['柏原 高明', 'かしわら たかあき', 'takaaki', 'kashiwara@example.com'],
@@ -47,7 +41,7 @@ task 'dummy' do
 
   cnt = 0
   dummy_users.map do |u|
-    cnt += 1 if app.add_user_with_passwd(u[0], u[1], u[2], u[3])
+    cnt += 1 if User.add_with_passwd(u[0], u[1], u[2], u[3])
   end
   puts "Added #{cnt} users."
 end

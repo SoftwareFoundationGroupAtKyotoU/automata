@@ -7,7 +7,9 @@ require 'mime-types'
 require 'open3'
 
 require_relative '../syspath'
+require_relative '../conf'
 require_relative '../app'
+require_relative '../user'
 require_relative '../log'
 require_relative '../helper'
 
@@ -46,18 +48,18 @@ module API
       user = helper.params['user']
 
       # resolve real login name in case user id is a token
-      user = app.user_from_token(user)
+      user = ::User.from_token_or_login(user)
       return helper.forbidden unless user
 
       return helper.bad_request unless helper.params['report']
       report_id = helper.params['report']
 
       path = helper.params['path'] || '.'
-      log_file = SysPath::user_log(report_id, user)
+      log_file = SysPath.user_log(report_id, user)
       return helper.not_found unless log_file.exist?
 
       time = Log.new(log_file, true).latest(:data)['id']
-      src = SysPath::user_src_dir(report_id, user, time)
+      src = SysPath.user_src_dir(report_id, user, time)
       path = (src + path).expand_path
       return helper.forbidden unless path.to_s.index(src.to_s) == 0 # dir traversal
       return helper.not_found unless [src, path].all?(&:exist?)
@@ -97,7 +99,7 @@ module API
           html = clazz.new.html(
             Pathname('..'),
             path.relative_path_from(src),
-            user,
+            user.login,
             report_id,
             conf
           )

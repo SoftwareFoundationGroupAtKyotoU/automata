@@ -4,8 +4,9 @@ require 'bundler/setup'
 require 'haml'
 require 'securerandom'
 
-require_relative '../app'
+require_relative '../app/logger_ext'
 require_relative '../helper'
+require_relative '../user'
 require_relative '../mailer'
 require_relative '../reset'
 require_relative '../string/random'
@@ -108,7 +109,7 @@ module Account
     end
 
     def receive_email(env, email)
-      if App.new.users(true).any? { |u| u.email == email }
+      if User.all_users.any? { |u| u.email == email }
         msg = '入力されたメールアドレスは既に登録されています．'
         return Haml::Engine.new(page(msg)).render do
           Haml::Engine.new(form_email).render
@@ -152,9 +153,9 @@ module Account
       rescue AlreadyRegistered
         msg = '入力された学籍番号は既に登録されています．'
       rescue => e
-        app = App.new
-        app.logger.error(e.to_s)
-        e.backtrace.each { |m| app.logger.error(m) }
+        logger = App::Logger.new
+        logger.error(e.to_s)
+        e.backtrace.each { |m| logger.error(m) }
         msg = 'エラーが発生しました．管理者に連絡してください．'
       end
       Haml::Engine.new(page(msg)).render do
@@ -174,8 +175,8 @@ module Account
         register(email, name, ruby, login)
         env['rack.session'].clear
       rescue InvalidArguments, AlreadyRegistered => e
-        app = App.new
-        app.logger.warn <<-EOS
+        logger = App::Logger.new
+        logger.warn <<-EOS
 Something go wrong in register.rb: These values,
 email: \"#{email}\", name: \"#{name}\", ruby: \"#{ruby}\", login: \"#{login}\"
 should have been validated, but validation fails with error: #{e}
@@ -229,32 +230,24 @@ should have been validated, but validation fails with error: #{e}
     end
 
     def validate(email, name, _ruby, login)
-      app = App.new
-      def app.su?
-        true
-      end
       login = login.to_s
       fail InvalidArguments if login !~ /^[0-9]{10}$/
       fail InvalidArguments if name.empty?
       fail InvalidArguments if email !~ /^[^@]+@.+$/
       # Checks whether the email address or the login are already used or not.
-      fail AlreadyRegistered if app.users(true).any? do |u|
+      fail AlreadyRegistered if User.all_users.any? do |u|
         u.email == email || u.real_login == login
       end
     end
 
     def register(email, name, ruby, login)
-      app = App.new
-      def app.su?
-        true
-      end
-      app.add_user(
+      User.add(
         'name'  => name,
         'ruby'  => ruby,
         'login' => login.to_s,
         'email' => email
       )
-      app.reset(email, :passwd_issue)
+      App.reset(email, :passwd_issue)
     end
   end
 end

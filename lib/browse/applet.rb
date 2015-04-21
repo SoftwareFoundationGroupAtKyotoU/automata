@@ -13,7 +13,7 @@ module Browse
         [
          root,
          'browse',
-         ::User.make_token(user).to_s,
+         User.make_token(user).to_s,
          report_id,
          path.parent
         ].reduce {|dir,sub| dir+sub}

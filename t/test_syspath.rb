@@ -2,6 +2,7 @@ require 'test/unit'
 
 require 'pathname'
 require 'syspath'
+require 'user'
 
 class SysPahtTest < Test::Unit::TestCase
   def test_constnats
@@ -25,24 +26,32 @@ class SysPahtTest < Test::Unit::TestCase
   end
 
   def test_dir
-    assert_equal(SysPath::user_dir('report_id', 'user_name'),
-                SysPath::KADAI + 'report_id' + 'user_name',
-                'SysPath::user_dir')
+    user = User.new(
+             'login'     => 'user id',
+             'name'      => 'user name',
+             'ruby'      => 'user ruby',
+             'email'     => 'user@example.com',
+             'assigned'  => 'assigned TA'
+           )
 
-    assert_equal(SysPath::user_log('report_id', 'user_name'),
-                SysPath::user_dir('report_id', 'user_name') + SysPath::FILES[:log],
-                'SysPath::log')
+    assert_equal(SysPath.user_dir('report_id', user),
+                SysPath::KADAI + 'report_id' + user.real_login,
+                'SysPath.user_dir')
 
-    assert_equal(SysPath::user_post_dir('report_id', 'user_name', 'post_time'),
-                SysPath::user_dir('report_id', 'user_name') + 'post_time',
-                'SysPath::user_post_dir')
+    assert_equal(SysPath.user_log('report_id', user),
+                SysPath.user_dir('report_id', user) + SysPath::FILES[:log],
+                'SysPath.user_log')
 
-    assert_equal(SysPath::user_src_dir('report_id', 'user_name', 'post_time'),
-                SysPath::user_post_dir('report_id', 'user_name', 'post_time') + 'src',
-                'SysPath::user_src_dir')
+    assert_equal(SysPath.user_post_dir('report_id', user, 'post_time'),
+                SysPath.user_dir('report_id', user) + 'post_time',
+                'SysPath.user_post_dir')
 
-    assert_equal(SysPath::comment_dir('report_id', 'user_name'),
-                SysPath::user_dir('report_id', 'user_name') + 'comment',
-                'SysPath::comment_dir')
+    assert_equal(SysPath.user_src_dir('report_id', user, 'post_time'),
+                SysPath.user_post_dir('report_id', user, 'post_time') + 'src',
+                'SysPath.user_src_dir')
+
+    assert_equal(SysPath.comment_dir('report_id', user),
+                SysPath.user_dir('report_id', user) + 'comment',
+                'SysPath.comment_dir')
   end
 end
