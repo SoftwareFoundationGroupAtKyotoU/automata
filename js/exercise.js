@@ -81,7 +81,6 @@ var Check = React.createClass({
                        <input id={id} type='checkbox'
                               name='ex[]' value={sub.name}
                               checked={this.checked(sub.name)}
-                              required={sub.required}
                               onChange={this.onChangeChild} />
                        <Label for={id}
                               name={sub.name}
@@ -99,7 +98,6 @@ var Check = React.createClass({
         return <li>
                    <input id={this.id()} type='checkbox' name='ex[]'
                            value={p.ex.name} checked={this.checked(p.ex.name)}
-                           required={p.ex.label === 'all'}
                            onChange={this.onChange} />
                    <Label for={this.id()}
                           name={p.ex.name}
