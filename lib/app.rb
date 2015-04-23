@@ -13,22 +13,27 @@ require_relative 'app/logger_ext'
 class App
   attr_reader :conf, :user
 
+  # @param [String] login id of a remote user
   def initialize(remote_user=nil)
     @user = User.from_login(remote_user)
     @conf = Conf.new
   end
 
+  # Returns a logger object
+  # @return [App::Logger] which refers to app.conf
   def logger()
     @logger = Logger.new(conf) unless @logger
     return @logger
   end
 
+  # Returns whetehr app.user is a super user
+  # @return [bool]
   def su?
     return !user.nil? && conf[:master, :su].include?(user.real_login)
   end
 
   # Return users visible from a remote user
-  # @return [Array(User)] users visible from a remote user or nil if a remote
+  # @return [Array<User>] users visible from a remote user or nil if a remote
   # user is not set
   def visible_users
     return nil if user.nil?
@@ -44,6 +49,15 @@ class App
     return users
   end
 
+  # Returns a report status
+  # @param [Hash{Symbol => String}] option maps:
+  #  status: => 'solved'|'record'|otherwise
+  #    specifies a form reporesetnting a report status
+  #  log:    => bool
+  #    if :log is specified, then the report status contains log information
+  # @param [String] report id
+  # @param [User] user who submitted the report
+  # @return [Report Object] in report.rb
   def report(option, id, u)
     require_relative 'report'
 
@@ -84,6 +98,9 @@ class App
     end
   end
 
+  # Returns whetehr a directory consumes too capacity of a file system
+  # @param [String, Pathname] a path to a checked directory
+  # return [bool]
   def check_disk_usage(dir)
     dir = Pathname.new(dir.to_s) unless dir.is_a?(Pathname)
 
