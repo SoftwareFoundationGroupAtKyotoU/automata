@@ -1,7 +1,9 @@
+# AllowEncodedSlashes must be On in VirtualHost setting.
 RewriteEngine on
+RewriteBase /
 RewriteRule ^.*$ %{REQUEST_URI} [C,DPI]
 RewriteCond %{QUERY_STRING} (?:^|&)path=
-RewriteRule ^(.*?)/browse/([^/]+)/([^/]+)/.+$ $1/api/browse.cgi?user=$2&report=$3 [L,QSA]
+RewriteRule ^/(.*?)/browse/([^/]+)/([^/]+)/.+$ $1/api/browse.cgi?user=$2&report=$3 [B,L,QSA]
 RewriteCond %{QUERY_STRING} !(?:^|&)path=
-RewriteRule ^(.*?)/browse/([^/]+)/([^/]+)/(.+)$ $1/api/browse.cgi?user=$2&report=$3&path=$4 [L]
+RewriteRule ^/(.*?)/browse/([^/]+)/([^/]+)/(.+)$ $1/api/browse.cgi?user=$2&report=$3&path=$4 [B,L]
 RewriteRule ^(.*)$ $1 [R=404]
