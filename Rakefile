@@ -18,7 +18,7 @@ class User
     )
     if u
       puts "Add user #{login}."
-      self.set_passwd(login, login, Conf.new)
+      self.set_passwd(login, login)
       return true
     end
     false
