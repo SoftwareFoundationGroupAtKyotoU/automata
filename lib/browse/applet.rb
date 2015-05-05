@@ -2,6 +2,16 @@
 
 module Browse
   class Applet
+    def encode_path(path)
+      return [
+        [ '&', '%26' ],
+        [ '?', '%3F' ],
+        [ '+', '%2B' ]
+      ].inject(path){
+        |p, x| p.sub(x[0],x[1])
+      }
+    end
+    
     def html(root, path, user, report_id, conf)
       # applet tag consists of five attributes, 'code', 'codebase', 'archive', 'height' and 'width'
       # 'code' is a name of main class
@@ -34,7 +44,7 @@ module Browse
       applet_html = <<"APPLET"
       <applet
         code="#{File.basename(path.to_s, '.*')}"
-        codebase="#{codebase_from_root}"
+        codebase="#{encode_path(codebase_from_root)}"
         #{libs.empty? ? '' : 'archive="' + libs.join(',') + '"'}
         width="#{width}"
         height="#{height}"

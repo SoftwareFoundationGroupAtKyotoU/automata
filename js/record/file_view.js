@@ -364,15 +364,17 @@ var FileView = (function() {
 FileView.encodePath = function(path) {
     return [
         [ '&', '%26' ],
-        [ '\\?', '%3F' ]
+        [ '\\?', '%3F' ],
+        [ '\\+', '%2B' ]
     ].reduce(function(r, x) {
         return r.replace(new RegExp(x[0], 'g'), x[1]);
     }, encodeURI(path));
 };
 
 FileView.rawPath = function(user, report, path) {
-    var epath = FileView.encodePath(path);
-    pathname = '/browse/'+user+'/'+report+'/'+epath;
+    var myepath = FileView.encodePath(path);
+    pathname = '/browse/'+user+'/'+report+'/'+myepath;
+    var epath = encodeURIComponent(path)
     var param = path != epath ? ('?path=' + epath) : '';
     return api.root + pathname + param;
 };
