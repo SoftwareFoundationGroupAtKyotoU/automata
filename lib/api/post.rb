@@ -85,13 +85,16 @@ module API
       ignore = ignore || '(?!.*)'
       ignore = '(?:'+ignore.join('|')+')' if ignore.is_a?(Array)
 
+      # convert file names to utf8
+      entries2utf8(src_dir)
+
       # lift directories
       lift_dir(rep_id, ignore, src_dir)
 
       # clean entries
       Find.find(src_dir.to_s) do |f|
         next if File.directory?(f)
-        FileUtils.rm(f) if f =~ /#{ignore}/
+        FileUtils.rm(f) if f.to_s =~ /#{ignore}/
       end
 
       # check requirements
@@ -104,9 +107,6 @@ module API
         FileUtils.rm_rf(src_dir.parent.to_s)
         fail ERR[:prerequisite]
       end
-
-      # convert file names to utf8
-      entries2utf8(src_dir)
 
       # solved exercises
       exs = helper.params['ex']
@@ -142,7 +142,7 @@ module API
     private
 
     def entries2utf8(path)
-      path.children do |e|
+      path.children.each do |e|
         entries2utf8(e) if e.directory?
         utf8 = e.to_s.toutf8
         e.rename(utf8) if utf8 != e.to_s
