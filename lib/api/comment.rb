@@ -32,8 +32,6 @@ module API
   #           コメントに星印を付ける
   #   unstar  id=<comment-id>
   #           コメントの星印を外す
-  #   news
-  #           未読コメント情報を取得
   #   list_news
   #           未読コメント情報のリストを取得
   #
@@ -191,10 +189,6 @@ module API
           comments[report_id][0][:comment].unstar(id)
 
           return helper.ok('done')
-        when 'news'
-          content = comments[report_id][0][:comment].news
-
-          return helper.json_response(content)
         when 'list_news'
           name_to_token =
             Hash[*app.visible_users.map do |u|
