@@ -2,10 +2,10 @@
 
 require 'shellwords'
 require 'time'
-require 'shared-mime-info'
 require 'mime-types'
 require 'open3'
 
+require_relative '../shared-mime-info_ext'
 require_relative '../syspath'
 require_relative '../conf'
 require_relative '../app'
@@ -139,7 +139,7 @@ module API
 
     def find_browse_conf(app, path)
       path = path.to_s
-      (app.conf[:master, :browse] || {}).find{|k,v| path.to_s =~ /#{v['file']}/}
+      (app.conf[:master, :browse] || {}).find{|k,v| path =~ /#{v['file']}/}
     end
   end
 end
