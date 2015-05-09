@@ -177,7 +177,7 @@ class Comment
         db_index.ro.transaction do |db|
           entries = filter_forbidden(db[:entries] || [])
           return {
-            'unreads'  => entries.count {|e| r[@user] && r[@user][e['id']] != true },
+            'unreads'  => entries.count {|e| !(r[@user] && r[@user][e['id']] == true) },
             'stars'    => entries.count {|e| s[@user] && s[@user][e['id']] == true },
             'comments' => entries.size
           }
