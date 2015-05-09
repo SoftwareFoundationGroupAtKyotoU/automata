@@ -2,6 +2,7 @@
 
 module Browse
   class Applet
+    
     def html(root, path, user, report_id, conf)
       # applet tag consists of five attributes, 'code', 'codebase', 'archive', 'height' and 'width'
       # 'code' is a name of main class
@@ -17,6 +18,8 @@ module Browse
          report_id,
          path.parent
         ].reduce {|dir,sub| dir+sub}
+
+      encoded_codebase = URI.escape(codebase_from_root.to_s, Regexp.new("[^#{URI::PATTERN::UNRESERVED}]")).gsub('%2F', '/')
 
       archive_path = root + 'jar'
       libs = conf['java_library']
@@ -34,7 +37,7 @@ module Browse
       applet_html = <<"APPLET"
       <applet
         code="#{File.basename(path.to_s, '.*')}"
-        codebase="#{codebase_from_root}"
+        codebase="#{encoded_codebase}"
         #{libs.empty? ? '' : 'archive="' + libs.join(',') + '"'}
         width="#{width}"
         height="#{height}"

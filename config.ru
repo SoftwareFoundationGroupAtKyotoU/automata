@@ -67,8 +67,8 @@ map base_path do
 
   use Rack::Rewrite do
     # path is included as a query parameter
-    rewrite %r{^(.*)/browse/([^/]+)/([^/]+)/(.+)$},
-            '$1/api/browse.cgi?user=$2&report=$3$4',
+    rewrite %r{^(.*)/browse/([^/]+)/([^/]+)/([^?]+).*$},
+            '$1/api/browse.cgi?user=$2&report=$3&path=$4',
             if: proc { |env| env['QUERY_STRING'] =~ /(?:^|&)path=/ }
     # path is included in uri but not as a query parameter
     rewrite %r{^(.*)/browse/([^/]+)/([^/]+)/(.+)$},
