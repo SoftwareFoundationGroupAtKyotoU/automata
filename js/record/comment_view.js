@@ -229,7 +229,7 @@ var Comment = React.createClass({
             );
         } else {
             return (
-                <li className="private">{div_meta}{comment_box}</li>
+                <li className="private">{div_meta}<div className="form">{this.renderLoading()}</div></li>
             );
         }
     }
