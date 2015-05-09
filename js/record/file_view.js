@@ -371,7 +371,7 @@ FileView.encodePath = function(path) {
 
 FileView.rawPath = function(user, report, path) {
     var epath = FileView.encodePath(path);
-    pathname = '/browse/'+user+'/'+report+'/'+epath;
+    var pathname = '/browse/'+user+'/'+report+'/'+epath;
     var epath_param = encodeURIComponent(path)
     var param = path != epath_param ? ('?path=' + epath_param) : '';
     return api.root + pathname + param;
