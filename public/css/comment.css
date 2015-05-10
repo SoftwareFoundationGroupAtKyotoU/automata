@@ -36,7 +36,7 @@ td.status .notify {
 .unread {
     position: absolute;
     top: 8px;
-    left: -15px;
+    left: 1px;
     display: inline-block;;
     vertical-align: middle;
     width: 16px;
@@ -89,4 +89,34 @@ td.status .notify {
 
 .star .colored {
     color: gray;
+}
+
+.all_comments {
+    position: absolute;
+    top: 8px;
+    left: -15px;
+    display: inline-block;;
+    vertical-align: middle;
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+    line-height: 16px;
+}
+
+.all_comments .base,
+.all_comments .text {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    text-align: center;
+}
+
+.all_comments .base {
+    color: #d0d;
+}
+
+.all_comments .text {
+    color: white;
+    font-weight: bold;
+    font-size: 10px;
 }
