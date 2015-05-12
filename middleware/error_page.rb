@@ -1,3 +1,4 @@
+require_relative '../lib/app/logger_ext'
 
 # Rack middleware to handle exception, which simply dismisses error details
 # and inidicates that something go wrong.
@@ -8,7 +9,10 @@ class ErrorPage
 
   def call(env)
     res = @app.call(env)
-  rescue
+  rescue => e
+    logger = App::Logger.new
+    logger.error("#{e}\n#{e.backtrace.join("\n")}")
+
     body = <<-EOH
     <html>
       <head><title>500 Internal Server Error</title></head>
