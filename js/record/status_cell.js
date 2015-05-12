@@ -157,9 +157,16 @@ module.exports = React.createClass({
                 <span className="colored"><i className="fa fa-star-o"/></span>
                 </div>
         ) : null;
+        var all_comments = this.props.comment.comments;
+        all_comments = (all_comments > 0) ? (
+                <div className="all_comments">
+                <span className="base"><i className="fa fa-circle"/></span>
+                <span className="text">{all_comments}</span>
+                </div>
+        ) : null;
         return (
                 <td {...props}>
-                    <div className="notify">{unreads}{stars}</div>
+                    <div className="notify">{unreads}{stars}{all_comments}</div>
                     {content}{edit}
                 </td>
         );
