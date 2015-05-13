@@ -85,9 +85,6 @@ module API
       ignore = ignore || '(?!.*)'
       ignore = '(?:'+ignore.join('|')+')' if ignore.is_a?(Array)
 
-      # convert file names to utf8
-      entries2utf8(src_dir)
-
       # lift directories
       lift_dir(rep_id, ignore, src_dir)
 
@@ -140,14 +137,6 @@ module API
     end
 
     private
-
-    def entries2utf8(path)
-      path.children.each do |e|
-        entries2utf8(e) if e.directory?
-        utf8 = e.to_s.toutf8
-        e.rename(utf8) if utf8 != e.to_s
-      end
-    end
 
     def lift_dir(rep_id, ignore, src_dir)
       # remove ignored files
