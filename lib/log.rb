@@ -46,7 +46,7 @@ class Log < Store::YAML
     popped_id = nil
     transaction do
       root = @store.roots.min_by{|r| oldest_id(r)}
-      if root
+      if !root.nil? && !root.empty?
         popped_id = oldest_id(root)
         @store.roots.each do |r|
           @store[r] = (@store[r]||[]).reject{|x| x['id'] == popped_id }
