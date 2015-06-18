@@ -335,8 +335,15 @@ var FileView = (function() {
                             </a>
                         );
                     } else {
-                        render = <FileViewer content={s.content}
-                                             type={s.type} />;
+                        render = [(<FileViewer content={s.content}
+                                   type={s.type} />)];
+                        if ('entries' in s){
+                            render.push((<FileBrowser token={p.token}
+                                        report={p.report}
+                                        path={s.path.substring(0,s.path.lastIndexOf('/')+1)}
+                                        entries={s.entries}/>
+                                       ));
+                        }
                     }
                     break;
                 default:
