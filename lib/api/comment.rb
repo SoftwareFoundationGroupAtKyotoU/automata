@@ -80,7 +80,7 @@ module API
       end
 
       # resolve real login name in case user id is a token
-      users = users.map { |u| ::User.from_token_or_login(u) }
+      users = users.map { |u| app.user_from_token_or_login(u) }
       users.compact!
       return helper.bad_request if users.empty?
 

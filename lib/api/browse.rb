@@ -48,7 +48,7 @@ module API
       user = helper.params['user']
 
       # resolve real login name in case user id is a token
-      user = ::User.from_token_or_login(user)
+      user = app.user_from_token_or_login(user)
       return helper.forbidden unless user
 
       return helper.bad_request unless helper.params['report']

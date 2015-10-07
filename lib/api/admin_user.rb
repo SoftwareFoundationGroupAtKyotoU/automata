@@ -24,7 +24,7 @@ module API
       return helper.forbidden unless app.su?
 
       token = helper.params['user'] || ''
-      user = ::User.from_token_or_login(token)
+      user = app.user_from_token_or_login(token)
       return helper.bad_request("Unknown user: #{token}") if user.nil?
 
       method = helper.params['method'] || ''

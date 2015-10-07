@@ -13,7 +13,6 @@ class AppTest < Test::Unit::TestCase
               'email'     => 'user@example.com',
               'assigned'  => 'assigned_TA'
             )
-    stub(User).from_login(@user.login) { @user }
 
     @su = User.new(
             'login'     => 'suser_id',
@@ -22,7 +21,6 @@ class AppTest < Test::Unit::TestCase
             'email'     => 'suser@example.com',
             'assigned'  => 'sassigned_TA'
           )
-    stub(User).from_login(@su.login) { @su }
 
     stub(User).all_users {
       [ @user, @su ]
