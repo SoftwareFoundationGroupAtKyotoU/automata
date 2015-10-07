@@ -13,12 +13,6 @@ require_relative 'app/logger_ext'
 
 class User
 
-  # Return a user whose token or login is t_or_l
-  # @param [String] token or login
-  def self.from_token_or_login(t_or_l)
-    (self.all_users.select {|u| u.token == t_or_l || u.real_login == t_or_l})[0]
-  end
-
   # Return a user whose login is login
   # @param [String] login
   def self.from_login(login)

@@ -31,7 +31,7 @@ module API
       return helper.bad_request unless user
 
       # resolve real login name in case user id is a token
-      user = ::User.from_token_or_login(user)
+      user = app.user_from_token_or_login(user)
       return helper.bad_request unless user
 
       # report ID must be specified

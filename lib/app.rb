@@ -49,6 +49,12 @@ class App
     return users
   end
 
+  # Return a user whose token or login is t_or_l
+  # @param [String] token or login
+  def user_from_token_or_login(t_or_l)
+    (visible_users.select {|u| u.token == t_or_l || u.real_login == t_or_l})[0]
+  end
+
   # Returns a report status
   # @param [Hash{Symbol => String}] option maps:
   #  status: => 'solved'|'record'|otherwise

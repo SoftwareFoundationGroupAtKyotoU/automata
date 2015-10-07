@@ -17,7 +17,7 @@ module API
       app = App.new(env['REMOTE_USER'])
 
       token = helper.params['user'] || ''
-      user = ::User.from_token_or_login(token)
+      user = app.user_from_token_or_login(token)
       return helper.bad_request("Unknown user: #{token}") if user.nil? && app.su?
       return helper.forbidden if user.nil?
 
