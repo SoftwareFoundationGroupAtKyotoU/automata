@@ -11,6 +11,7 @@ module API
   #   ログを変更
   # Options:
   #   status   ステータスを変更
+  #   delay    提出遅れの状態を変更
   #   message  メッセージを変更
   #   error    エラーメッセージを変更
   #   reason   エラーの詳細を変更
@@ -46,6 +47,9 @@ module API
         data = {}
         st = helper.params['status']
         data['status'] = st if st
+
+        delay = helper.params['delay']
+        data['delay'] = delay if delay
 
         data_log = {}
         LOGKEYS.each do |k|

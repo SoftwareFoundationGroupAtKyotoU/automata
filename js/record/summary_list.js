@@ -33,6 +33,8 @@ module.exports = React.createClass({
                                         isButton={true}
                                         admin={this.props.admin}
                                         updateStatus={this.props.updateStatus}
+                                        changeDelayStatus={this.props.changeDelayStatus}
+                                        delayOptions={this.props.delayOptions}
                                         comment={comment}
                                         isSelected={this.props.report === s.id}/>
                     );

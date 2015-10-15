@@ -1,6 +1,7 @@
 # coding: utf-8
 require 'pathname'
 require 'strscan'
+require 'time'
 
 require 'bundler/setup'
 
@@ -55,6 +56,18 @@ class App
     (visible_users.select {|u| u.token == t_or_l || u.real_login == t_or_l})[0]
   end
 
+  # Return delay options
+  # @return [Array<String>] delay options from master.yml
+  def delay_options
+    delay_opts = []
+    if conf[:master, :delay]
+      conf[:master, :delay].each do |d|
+        delay_opts << d['label'] if d && d['label']
+      end
+    end
+    return delay_opts
+  end
+
   # Returns a report status
   # @param [Hash{Symbol => String}] option maps:
   #  status: => 'solved'|'record'|otherwise
@@ -80,8 +93,22 @@ class App
       fname = SysPath.user_log(id, u)
       return nil unless File.exist?(fname)
       yaml = Log.new(fname, true).latest(:data)
+
       # add timestamp of initial submit
       yaml['initial_submit'] = Log.new(fname, true).oldest(:data)['id']
+      # add delay status of the report
+      if su?
+        if yaml['delay'].nil?
+          yaml['delay'] = delay_status(id, yaml['initial_submit'])
+        else
+          unless delay_options.include?(yaml['delay'])
+            logger.error("'#{yaml['delay']}' is not defined in master.yml.")
+            yaml['delay'] = delay_status(id, yaml['initial_submit'])
+          end
+        end
+      else
+        yaml['delay'] = ''
+      end
       src = Report::Source::Post.new(yaml, optional)
     else
       yaml = file(:data) rescue {}
@@ -127,5 +154,67 @@ class App
     end
 
     return true
+  end
+
+  private
+
+  SCALE = [:day, :hour, :min, :sec]
+
+  # Returns delay status
+  # @param [String] report id
+  # @param [String] time of the initial submit of the report
+  # return [String] delay status of the report
+  def delay_status(id, initial_submit)
+    deadline_yml =
+      (conf[:scheme, :scheme].find{|r| r['id']==id} || {})['deadline']
+    return '' unless deadline_yml
+
+    # Check if only the date of the deadline of the report are set
+    deadline = Time.parse(deadline_yml['date']
+                           .concat('T' + (deadline_yml['time'] || '23:59:59'))
+                           .concat(deadline_yml['timezone'] || ''))
+    deadline = deadline - 1 if deadline_yml['time']
+    delay_sec = [(Time.parse(initial_submit) - deadline), 0].max.to_i
+    # Time.at returns time based on a local time zone.
+    # So we get the time in UTC in order to get exact delay time of submissions.
+    delay = Time.at(delay_sec).getgm
+
+    delay_time = {}
+    delay_time[:day] = delay.day-1
+    delay_time[:hour] = delay.hour
+    delay_time[:min] = delay.min
+    delay_time[:sec] = delay.sec
+
+    delay_opts = conf[:master, :delay]
+    labels = delay_options
+
+    if labels && !labels.empty?
+      delay_opts.each do |opt|
+        return opt['label'] if opt['otherwise']
+
+        satisfied = true
+        # Check the condition associated with a label.
+        # Return the label if the condition is satisfied.
+        SCALE.each do |s|
+          set_time = (opt[s.to_s] || 0)
+          if delay_time[s] < set_time
+            return opt['label']
+          elsif delay_time[s] > set_time
+            satisfied = false
+            break
+          end
+        end
+        return opt['label'] if satisfied
+      end
+      # Return the last label if no conditions are satisfied.
+      return delay_opts.last['label']
+    elsif delay_sec == 0
+      return '遅れなし'
+    else
+      scale = {:day => '日と', :hour => '時間', :min => '分', :sec => '秒'}
+      return SCALE.reduce('') do |str, s|
+        str.concat((delay_time[s].to_s + scale[s] if delay_time[s] > 0) || '')
+      end
+    end
   end
 end

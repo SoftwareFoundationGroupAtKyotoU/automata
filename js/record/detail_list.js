@@ -63,6 +63,8 @@ var ReportList = React.createClass({
                                             report={this.props.scheme.id}
                                             admin={this.props.admin}
                                             updateStatus={this.props.updateStatus}
+                                            changeDelayStatus={this.props.changeDelayStatus}
+                                            delayOptions={this.props.delayOptions}
                                             comment={comment}/>
                         );
                     } else if (/^optional/.test(r.field)) {
@@ -135,6 +137,8 @@ var DetailList = React.createClass({
                     <ReportList scheme={s}
                                 admin={this.props.admin}
                                 updateStatus={this.props.updateStatus}
+                                changeDelayStatus={this.props.changeDelayStatus}
+                                delayOptions={this.props.delayOptions}
                                 users={this.props.users}/>
             );
         }.bind(this));

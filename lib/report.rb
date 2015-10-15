@@ -39,10 +39,11 @@ module Report
 
       def to_hash()
         hash = {
-          'status'    => status?,
-          'timestamp' => @data['timestamp'],
-          'submit'    => @data['id'],
+          'status'         => status?,
+          'timestamp'      => @data['timestamp'],
+          'submit'         => @data['id'],
           'initial_submit' => @data['initial_submit'],
+          'delay'          => @data['delay'],
         }
         @optional.each{|k| hash[k.to_s] = optional(k)}
         return hash
