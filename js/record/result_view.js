@@ -6,7 +6,7 @@ var Status = require('./status');
 
 function isPassed(t) {
     if (typeof t !== 'string') t = t.result;
-    return t =~ /^\s*ok\s*/i;
+    return t.match(/^\s*ok\s*/i);
 }
 
 var defs = [
@@ -102,6 +102,7 @@ module.exports = React.createClass({
             switch (status) {
             case 'report':
             case 'OK':
+            case 'check:NG':
                 api.get({
                     api: 'test_result',
                     data: data
@@ -123,7 +124,6 @@ module.exports = React.createClass({
 
             case 'NG':
             case 'build:NG':
-            case 'check:NG':
             case 'none':
                 this.setState({
                     status: status
