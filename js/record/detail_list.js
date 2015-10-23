@@ -66,7 +66,7 @@ var ReportList = React.createClass({
                                             comment={comment}/>
                         );
                     } else if (/^optional/.test(r.field)) {
-                        var answered = ['report', this.props.scheme.id, 'optional'].reduce(function(r, k) {
+                        var answered = ['report', this.props.scheme.id, r.field].reduce(function(r, k) {
                             if (typeof r[k] === 'undefined') r[k] = {};
                             return r[k];
                         }, user);
