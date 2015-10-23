@@ -41,6 +41,16 @@ var Record = React.createClass({
         });
     },
 
+    changeDelayStatus: function(token, report, delay) {
+        var users = this.state.users;
+        users.forEach(function(user) {
+            if (user.token === token) {
+                user.report[report].delay = delay;
+            }
+        });
+        this.setState({ users: users });
+    },
+
     updateNews: function(token, report, news) {
         ['comments', report, token].reduce(function(r, k) {
             if (!_.has(r, k)) r[k] = {};
@@ -83,6 +93,7 @@ var Record = React.createClass({
                     user: true,
                     admin: true,
                     token: true,
+                    delay_options: true,
                     reload: true,
                     interact: true
                 }
@@ -115,6 +126,7 @@ var Record = React.createClass({
                     admin: master.admin,
                     reload: master.reload,
                     interact: master.interact,
+                    delayOptions: master.delay_options,
                     scheme: scheme,
                     users: users,
                     comments: {},
@@ -202,6 +214,8 @@ var Record = React.createClass({
                               scheme={this.state.scheme}
                               users={users}
                               updateStatus={this.updateStatus}
+                              changeDelayStatus={this.changeDelayStatus}
+                              delayOptions={this.state.delayOptions}
                               loginUser={this.state.user}
                               updateNews={this.updateNews}
                               comments={this.state.comments}/>

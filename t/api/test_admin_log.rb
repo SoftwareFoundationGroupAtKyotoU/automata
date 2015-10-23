@@ -16,7 +16,14 @@ class AdminLogTest < Test::Unit::TestCase
     Conf.class_eval do
       define_method(:initialize) do
         @conf = {
-          'master' => { 'su' => %w(user0) }
+          'master' => { 'su' => %w(user0),
+                        'delay' => [ { 'label' => '遅れなし',
+                                       'day' => '0'},
+                                     { 'label' => '提出遅れ',
+                                       'day' => '3'},
+                                     { 'label' => '3日以上の遅れ',
+                                       'otherwise' => true } ]
+                      }
         }
       end
     end
@@ -124,33 +131,36 @@ class AdminLogTest < Test::Unit::TestCase
     # log id must be latest
     get '/',
         { 'user' => @user, 'report' => @report, 'id' => @log_id[0],
-          'status' => 'ok' },
+          'status' => 'ok', 'delay' => '遅れなし' },
         'REMOTE_USER' => 'user0'
     assert last_response.bad_request?
 
     get '/',
         { 'user' => @user, 'report' => @report, 'id' => @log_id[1],
-          'status' => 'good' },
+          'status' => 'good', 'delay' => '提出遅れ' },
         'REMOTE_USER' => 'user0'
     assert last_response.ok?
 
     @log.transaction do |log|
       assert_equal log.retrieve(:data, @log_id[0])['status'], 'bad'
+      assert_equal log.retrieve(:data, @log_id[0])['delay'], nil
     end
     @log.transaction do |log|
       assert_equal log.retrieve(:data, @log_id[1])['status'], 'good'
+      assert_equal log.retrieve(:data, @log_id[1])['delay'], '提出遅れ'
     end
 
     # change all data
     get '/',
         { 'user' => @user, 'report' => @report, 'id' => @log_id[1],
-          'status' => 'status', 'message' => 'message', 'error' => 'error',
-          'reason' => 'reason' },
+          'status' => 'status', 'delay' => 'delay', 'message' => 'message',
+          'error' => 'error', 'reason' => 'reason' },
         'REMOTE_USER' => 'user0'
     assert last_response.ok?
     @log.transaction do |log|
       d = log.retrieve(:data, @log_id[1])
       assert_equal d['status'], 'status'
+      assert_equal d['delay'], 'delay'
       assert_equal d['log']['message'], 'message'
       assert_equal d['log']['error'], 'error'
       assert_equal d['log']['reason'], 'reason'
@@ -159,15 +169,33 @@ class AdminLogTest < Test::Unit::TestCase
     # change except status
     get '/',
         { 'user' => @user, 'report' => @report, 'id' => @log_id[1],
-          'message' => 'message1', 'error' => 'error1', 'reason' => 'reason1' },
+          'delay' => 'delay1', 'message' => 'message1', 'error' => 'error1',
+          'reason' => 'reason1' },
         'REMOTE_USER' => 'user0'
     assert last_response.ok?
     @log.transaction do |log|
       d = log.retrieve(:data, @log_id[1])
       assert_equal d['status'], 'status'
+      assert_equal d['delay'], 'delay1'
       assert_equal d['log']['message'], 'message1'
       assert_equal d['log']['error'], 'error1'
       assert_equal d['log']['reason'], 'reason1'
+    end
+
+    # change except delay
+    get '/',
+        { 'user' => @user, 'report' => @report, 'id' => @log_id[1],
+          'status' => 'status2', 'message' => 'message2', 'error' => 'error2',
+          'reason' => 'reason2' },
+        'REMOTE_USER' => 'user0'
+    assert last_response.ok?
+    @log.transaction do |log|
+      d = log.retrieve(:data, @log_id[1])
+      assert_equal d['status'], 'status2'
+      assert_equal d['delay'], 'delay1'
+      assert_equal d['log']['message'], 'message2'
+      assert_equal d['log']['error'], 'error2'
+      assert_equal d['log']['reason'], 'reason2'
     end
   end
 end

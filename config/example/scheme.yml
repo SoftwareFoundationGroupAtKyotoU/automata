@@ -3,6 +3,24 @@ scheme:
     type: post
     update: auto
     name: "Report1"
+    # Users are required to turn in the report by 23:59:59JST on Oct 1st 2015
+    deadline:
+      date: "2015-10-01"
+      timezone: "+09:00"
+    # Here are other examples of setting of deadline:
+    # Users are required to turn in the report by 16:59:59JST on Oct 10th 2015
+    # deadline:
+    #   date: "2015-10-10"
+    #   time: "17:00"
+    #   timezone: "+09:00"
+    # Users are required to turn in the report by 23:59:59JST on Oct "16th" 2015
+    # deadline:
+    #   date: "2015-10-17"
+    #   time: "00:00"
+    #   timezone: "+09:00"
+    # No delay status of a report is displayed if the deadline of the report is
+    # not specified.
+
     record:
       - field: name
         label: "Name"
@@ -11,7 +29,7 @@ scheme:
       - field: unsolved
         label: "Unsolved"
   - id: closed_report
-    type: closed
+    type: post
     update: auto
     name: "Report2"
     record:

@@ -83,3 +83,20 @@ check:
         - ./command_to_build
       file_location:
         - location: example_report
+
+# Users are required to submit reports by the deadline specified
+# in report settings of scheme.yml.
+# In the case of late submission, the labels of delay status are determined
+# by how late they are.
+# A label with otherwise property can be always matched.
+# The upper label is displayed if some labels are matched.
+# The last label is displayed if there is no matched label.
+# Delay time of a report is displayed on a status cell
+# if this setting is ommited.
+delay:
+  - label: '遅れなし'
+    day: 0 # hour, min, sec can be also specified
+  - label: '提出遅れ'
+    day: 3
+  - label: '3日以上の遅れ'
+    otherwise: true

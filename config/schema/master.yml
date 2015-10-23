@@ -237,3 +237,28 @@ mapping:
             mapping:
               "command": *command
               "file_location": *file_location
+
+  "delay":
+    type: seq
+    required: no
+    sequence:
+      - type: map
+        mapping:
+          "label":
+            type: str
+            required: yes
+          "day":
+            type: int
+            required: no
+          "hour":
+            type: int
+            required: no
+          "min":
+            type: int
+            required: no
+          "sec":
+            type: int
+            required: no
+          "otherwise":
+            type: bool
+            required: no
