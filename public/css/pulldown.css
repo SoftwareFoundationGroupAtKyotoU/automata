@@ -1,0 +1,135 @@
+/* mostly compiled from the less-css presented in
+https://www.codementor.io/reactjs/tutorial/create-a-dropdown-using-react-js--font-awesome-and-less-css
+*/
+body {
+  font-family: Arial;
+  font-size: 14px;
+}
+body > span,
+body > h1 {
+  float: left;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  margin-bottom: 10px;
+}
+span {
+  color: #888888;
+}
+span > b {
+  color: black;
+}
+#selected {
+  float: left;
+  width: 100%;
+  margin-top: 20px;
+}
+.border-box {
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+div.dropdown-container {
+  float: left;
+  display: block;
+  width: 250px;
+  margin-top: 20px;
+}
+div.dropdown-container.show > div.dropdown-list {
+  transform: scale(1, 1);
+  -ms-transform: scale(1, 1);
+  -webkit-transform: scale(1, 1);
+  -o-transform: scale(1, 1);
+  -moz-transform: scale(1, 1);
+}
+div.dropdown-container > div.dropdown-display {
+  float: left;
+  width: 100%;
+  background: white;
+  height: 40px;
+  cursor: pointer;
+  border: solid 1px #DDD;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+div.dropdown-container > div.dropdown-display > * {
+  float: left;
+  height: 100%;
+  height: 40px;
+  line-height: 40px !important;
+  display: inline-block;
+  vertical-align: middle;
+}
+div.dropdown-container > div.dropdown-display > span {
+  font-size: 14px;
+  width: 100%;
+  color: "#AAAAAA";  
+  position: relative;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  padding-right: 34px;
+  padding-left: 10px;
+}
+div.dropdown-container > div.dropdown-display > i {
+  position: relative;
+  width: 14px;
+  margin-left: -24px;
+  font-size: 1.125em;
+  font-weight: bold;
+  padding-right: 10px;
+  text-align: right;
+}
+div.dropdown-container > div.dropdown-list {
+  float: left;
+  position: relative;
+  width: 100%;
+  transform: scale(1, 0);
+  -ms-transform: scale(1, 0);
+  -webkit-transform: scale(1, 0);
+  -o-transform: scale(1, 0);
+  -moz-transform: scale(1, 0);
+  -webkit-transition: -webkit-transform ease 250ms;
+  -moz-transition: -webkit-transform ease 250ms;
+  -ms-transition: -webkit-transform ease 250ms;
+  -o-transition: -webkit-transform ease 250ms;
+  transition: -webkit-transform ease 250ms;
+  -webkit-transition: transform ease 250ms;
+  -moz-transition: transform ease 250ms;
+  -ms-transition: transform ease 250ms;
+  -o-transition: transform ease 250ms;
+  transition: transform ease 250ms;
+}
+div.dropdown-container > div.dropdown-list > div {
+  position: absolute;
+  width: 100%;
+  z-index: 2;
+  cursor: pointer;
+  background: white;
+}
+div.dropdown-container > div.dropdown-list > div > div {
+  float: left;
+  width: 100%;
+  padding: 0 10px;
+  font-size: 14px;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  border: solid 1px #DDD;
+  border-top: none;
+}
+div.dropdown-container > div.dropdown-list > div > div:hover {
+  background: #F0F0F0;
+}
+div.dropdown-container > div.dropdown-list > div > div.selected {
+  background: #2875C7;
+  color: white;
+}
+div.dropdown-container > div.dropdown-list > div > div > * {
+  height: 40px;
+  line-height: 40px !important;
+  display: inline-block;
+  vertical-align: middle;
+}
+div.dropdown-container > div.dropdown-list > div > div > span {
+  color: "#AAAAAA";
+  float: left;
+  width: 100%;
+}

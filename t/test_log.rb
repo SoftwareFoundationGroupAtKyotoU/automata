@@ -31,6 +31,13 @@ class LogTest < Test::Unit::TestCase
     assert_equal('second', latest['key'])
   end
 
+  def test_idlist()
+    @log.add(@root, { 'id' => 'first' })
+    @log.add(@root, { 'id' => 'second' })
+
+    assert_equal(['second','first'], @log.idlist(@root))
+  end  
+
   def test_pop()
     id1 = Time.now
     @log.write(@root, id1, { 'key' => 'first' })
