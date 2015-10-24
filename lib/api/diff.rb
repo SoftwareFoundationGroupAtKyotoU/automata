@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+require 'shellwords'
+require 'cgi'
 require 'time'
 require 'open3'
 
