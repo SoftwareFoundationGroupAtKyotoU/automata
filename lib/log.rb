@@ -14,6 +14,16 @@ class Log < Store::YAML
     end
   end
 
+  # Return the list of 'id'
+  # @param [Symbol] root the kind of the record
+  def idlist(root)
+    transaction do
+      list = (@store[root.to_s]||[]).sort{|a,b| b['id'] <=> a['id']}
+      return {} if list.empty? 
+      return list.map{|data| data['id']}
+    end
+  end
+
   def retrieve(root, id)
     id = id.iso8601 if id.is_a?(Time)
     transaction do

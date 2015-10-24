@@ -17,6 +17,7 @@ require 'lib/api/template'
 require 'lib/api/test_result'
 require 'lib/api/user'
 require 'lib/api/download'
+require 'lib/api/diff'
 require 'lib/account/reset'
 require 'lib/account/register'
 require 'lib/sandbox/tester'
@@ -102,6 +103,7 @@ map base_path do
     { pattern: '/api/test_result.cgi', controller: API::TestResult.new },
     { pattern: '/api/user.cgi', controller: API::User.new },
     { pattern: '/api/download.cgi', controller: API::Download.new },
+    { pattern: '/api/diff.cgi', controller: API::Diff.new },
   ]
 
   if ENV['WITH_SANDBOX']

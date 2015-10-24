@@ -8,6 +8,7 @@ var ResultView = require('./result_view.js');
 var FileView = require('./file_view.js');
 var CommentView = require('./comment_view.js');
 var InteractView = require('./interact_view.js');
+var DiffView = require('./diff_view.js');
 
 var tabs = [
     { name: 'log',      path: 'log/',      label: 'ログ',         handler: LogView },
@@ -15,7 +16,8 @@ var tabs = [
     { name: 'result',   path: 'result/',   label: 'テスト結果',   handler: ResultView },
     { name: 'file',     path: 'file/*',    label: 'ファイル一覧', handler: FileView },
     { name: 'comment',  path: 'comment/',  label: 'コメント',     handler: CommentView },
-    { name: 'interact', path: 'interact/', label: '対話',         handler: InteractView }
+    { name: 'interact', path: 'interact/', label: '対話',         handler: InteractView },
+    { name: 'diff',     path: 'diff/',     label: 'diff',         handler: DiffView }
 ];
 
 module.exports = React.createClass({
