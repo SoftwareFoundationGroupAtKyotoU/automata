@@ -7,7 +7,13 @@ rvm:
   - 2.0.0-p598
   - 2.1.5
   - 2.2.0
+env:
+  - TRAVIS_NODE_VERSION="0.10"
 
+before_install:
+  - nvm install $TRAVIS_NODE_VERSION
+  - npm install
 script:
   - bundle exec rake test
   - cp config/example/*.yml config/ && bundle exec rake verify
+  - ./node_modules/.bin/gulp build
