@@ -76,7 +76,7 @@ module Account
            value: "#{ruby}"}
     %br
     %label
-      %input{type: "text", name: "login", placeholder: "学籍番号",
+      %input{type: "text", name: "login", placeholder: "学生番号",
              pattern: "^[0-9]{10}$", required: true, value: "#{login}"}
       ※数字は半角、ハイフンなしの10桁
     %br
@@ -95,7 +95,7 @@ module Account
     %legend
     %div 名前: #{name}
     %div ふりがな: #{ruby}
-    %div 学籍番号: #{login}
+    %div 学生番号: #{login}
     %div email: #{email}
     %button{type: "submit", name: "confirm", value: "register"} 登録
     %button{type: "submit", name: "confirm", value: "reset"} やり直す
@@ -149,9 +149,9 @@ module Account
           Haml::Engine.new(confirm(email_s, name, ruby, login)).render
         end
       rescue InvalidArguments
-        msg = '入力された値のどれかが空か，学籍番号が10桁の半角数字ではありません．'
+        msg = '入力された値のどれかが空か，学生番号が10桁の半角数字ではありません．'
       rescue AlreadyRegistered
-        msg = '入力された学籍番号は既に登録されています．'
+        msg = '入力された学生番号は既に登録されています．'
       rescue => e
         logger = App::Logger.new
         logger.error(e.to_s)
