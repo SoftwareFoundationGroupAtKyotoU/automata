@@ -1,8 +1,12 @@
+require 'securerandom'
+
 class String
   # Return a random string which includes characters of a reciever
   # @param [Integer] len the length of the returned string
   def randomize(len=128)
-    return Array.new(len).map{ self[rand(self.length)].chr }.join
+    return Array.new(len).map{
+      self[SecureRandom.random_number(self.length)].chr
+    }.join
   end
 
   # Return a random string
