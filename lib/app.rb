@@ -97,7 +97,7 @@ class App
       # add timestamp of initial submit
       yaml['initial_submit'] = Log.new(fname, true).oldest(:data)['id']
       # add delay status of the report
-      if su?
+      if su? and not yaml['initial_submit'].nil?
         if yaml['delay'].nil?
           yaml['delay'] = delay_status(id, yaml['initial_submit'])
         else
